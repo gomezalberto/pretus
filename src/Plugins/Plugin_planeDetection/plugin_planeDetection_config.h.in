@@ -1,0 +1,14 @@
+// the configured options and settings for Plugin python
+#ifndef PLUGIN_PLANEDETECT_PYTHON_FOLDER
+#define PLUGIN_PLANEDETECT_PYTHON_FOLDER @PYTHON_INSTALL_PATH@
+
+namespace planeDetection {
+
+char * getPythonFolder()
+{
+    return "@PYTHON_INSTALL_PATH@";
+}
+
+}
+
+#endif // PLUGIN_PLANEDETECT_PYTHON_FOLDER

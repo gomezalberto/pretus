@@ -1,0 +1,36 @@
+#pragma once
+
+
+#include <QtPluginWidgetBase.h>
+#include <Worker.h>
+#include <memory>
+#include <mutex>
+/// For image data. Change if image data is different
+#include <ifindImage.h>
+
+
+
+class Worker_visualizer : public Worker{
+    Q_OBJECT
+
+public:
+
+    typedef Worker_visualizer            Self;
+    typedef std::shared_ptr<Self>       Pointer;
+
+    /** Constructor */
+    static Pointer New(QObject *parent = 0) {
+        return Pointer(new Self(parent));
+    }
+    ~Worker_visualizer();
+
+    void Initialize();
+
+    unsigned char mThreshold;
+
+protected:
+    Worker_visualizer(QObject* parent = 0);
+    void doWork(ifind::Image::Pointer image);
+
+
+};

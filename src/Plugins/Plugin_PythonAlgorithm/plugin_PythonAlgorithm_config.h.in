@@ -1,0 +1,14 @@
+// the configured options and settings for Plugin python
+#ifndef PLUGIN_PYTHONALGORITHM_PYTHON_FOLDER
+#define PLUGIN_PYTHONALGORITHM_PYTHON_FOLDER @PYTHON_INSTALL_PATH@
+
+namespace PythonAlgorithm {
+
+char * getPythonFolder()
+{
+    return "@PYTHON_INSTALL_PATH@";
+}
+
+}
+
+#endif // PLUGIN_PYTHONALGORITHM_PYTHON_FOLDER

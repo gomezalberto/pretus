@@ -1,0 +1,30 @@
+#include "Worker_visualizer.h"
+#include <iostream>
+#include <QDebug>
+
+Worker_visualizer::Worker_visualizer(QObject *parent) : Worker(parent){
+    this->mThreshold = 50;
+}
+
+void Worker_visualizer::Initialize(){
+    // do something if needed
+}
+
+Worker_visualizer::~Worker_visualizer(){
+    // do something if needed
+}
+
+void Worker_visualizer::doWork(ifind::Image::Pointer image){
+
+    if (image == nullptr){
+        if (this->params.verbose){
+            std::cout << "Worker_visualizer::doWork() - input image was null" <<std::endl;
+        }
+        return;
+    }
+
+
+    Q_EMIT this->ImageProcessed(image);
+
+
+}

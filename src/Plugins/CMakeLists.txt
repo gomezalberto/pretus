@@ -1,0 +1,38 @@
+## #################################################################
+## Qt required for signals and slots (even if no GUI is required)
+## #################################################################
+
+
+# Non optional plug-ins
+add_subdirectory(Plugin_filemanager)
+add_subdirectory(Plugin_imageFileWriter)
+
+option(BUILD_PLUGIN_GUI "Build plugin to visualize images and plugin outputs" ON)
+if (BUILD_PLUGIN_GUI)
+    add_subdirectory(Plugin_GUI)
+endif()
+
+option(BUILD_PLUGIN_VIDEOMANAGER "Build plugin to receive images from video file using OpenCV" ON)
+if (BUILD_PLUGIN_VIDEOMANAGER)
+    add_subdirectory(Plugin_videomanager)
+endif()
+
+option(BUILD_PLUGIN_FRAMEGRABBER "Build plugin to receive images from the Epiphan DVI2USB 3.0 framegrabber" ON)
+if (BUILD_PLUGIN_FRAMEGRABBER)
+  add_subdirectory(Plugin_framegrabber)
+endif()
+
+option(BUILD_PLUGIN_PLANEDETECTION "Build plugin to detect standard planes. Requires python bindings, and pytorch" OFF)
+if (BUILD_PLUGIN_PLANEDETECTION)
+  add_subdirectory(Plugin_planeDetection)
+endif()
+
+option(BUILD_PLUGIN_CPPALGORITHM "Build a sample Cpp Algorithm plug-in" OFF)
+if (BUILD_PLUGIN_CPPALGORITHM)
+  add_subdirectory(Plugin_CppAlgorithm)
+endif()
+option(BUILD_PLUGIN_PYTHONALGORITHM "Build a sample Python Algorithm plug-in" OFF)
+if (BUILD_PLUGIN_PYTHONALGORITHM)
+  add_subdirectory(Plugin_PythonAlgorithm)
+endif()
+

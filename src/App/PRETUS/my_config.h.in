@@ -1,0 +1,13 @@
+// the configured options and settings for simpleApp
+#define PLUGIN_FOLDER @PLUGIN_FOLDER@
+
+#ifndef SIMPLE_APP_CONFIG_H
+#define SIMPLE_APP_CONFIG_H
+
+
+char * getPluginFolder()
+{
+    return "@PLUGIN_FOLDER@";
+}
+
+#endif // SIMPLE_APP_H
