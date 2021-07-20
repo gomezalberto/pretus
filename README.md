@@ -31,36 +31,171 @@ Once the initialization is complete, each plugin passes, in turn, the image gene
 # Usage
 
 The available plug-ins can be checked with the `-h` flag:
+
 ```bash
 $ pretus -h
 ```
+
 which will give an example output (this varies depending on the available plug-ins) like:
+
 ```
 $ pretus -h
-Loading plug-ins
-	0 [Plugin] loading <plug-ins folder>/libPlugin_visualization.so...	Plugin visualization(0) successfully loaded
-	1 [Plugin] loading <plug-ins folder>/libPlugin_filenamanager.so...	Plugin File manager(1) successfully loaded
-
-pretus [-h]
+Loading plug-ins from <plugins folder>
+	0 [Plugin] loading <plugins folder>/libPlugin_filemanager.so...	File manager(0) successfully loaded
+	1 [Plugin] loading <plugins folder>/libPlugin_imageFileWriter.so...	Image file writer(1) successfully loaded
+	2 [Plugin] loading <plugins folder>/libPlugin_videomanager.so...	Video manager(2) successfully loaded
+	3 [Plugin] loading <plugins folder>/libPlugin_CppAlgorithm.so...	Cpp Algorithm(3) successfully loaded
+	4 [Plugin] loading <plugins folder>/libPlugin_framegrabber.so...	Frame grabber(4) successfully loaded
+	5 [Plugin] loading <plugins folder>/libPlugin_PythonAlgorithm.so...	Python Algorithm(5) successfully loaded
+	6 [Plugin] loading <plugins folder>/libPlugin_planeDetection.so...	Standard plane detection(6) successfully loaded
+	7 [Plugin] loading <plugins folder>/libPlugin_GUI.so...	GUI(7) successfully loaded
+./bin/pretus [-h]
 Optional arguments:
 	-h 	Show this help.
+
 	-pipeline <int>	String with the pipeline to carry out.
-		Examples of pipeline strings
-		pretus -pipeline "1>0"	Loads from file and visualizes
+		-pipeline "index>index" -plugin_option value -plugin_option value
+	or...
+		-pipeline "plugin_name>plugin_name" -plugin_option value -plugin_option value
+			Where 'plugin_name' comparison is case and space insensitive
 
-# PLUGIN Plugin visualization
-	Additional arguments:
-		-timerinterval <val>	Value (in ms) between displayed frames. Default: 40
-		-showruler <0/1>	Whether to show (1) or not (0) a ruler. Default: 0
-		-layer <number of layer>	Display (if available) the requested layer. Default: 0
-		-overlay <0/1>	Activate (1) or desactivate (0) displaying multiple layers as overlay. Default: 0
+	Examples of pipeline strings
+	./bin/pretus -pipeline "3>0"	Loads from file then processes with python and visualizes (Default)
+	./bin/pretus -pipeline "3>1>0"	Loads from file then processes with python and visualizes
+	./bin/pretus -pipeline "PluginFileManager>PluginVisualization" - fm_input_folder "some_path"
 
+(0) Plugin Name: 'File manager'
 
-# PLUGIN Plugin File manager
-	Additional arguments:
-		-fr <frame rate>	frame rate
-		-noloop 	Do not loop around. Default: loop around
-		-input_folder <path to folder>	Take images from a folder. Default: current folder
+# PLUGIN File manager
+   Reads and transmits images from a folder hierarchy.
+	--filemanager_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--filemanager_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--filemanager_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--filemanager_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                           		(Default: <1 for input plugins, 0 for the rest>) 
+	--filemanager_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                            		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                            		default location depends on widget.) 
+   Plugin-specific arguments:
+	--filemanager_loop <val> [ type: INT]	loop around (1) or not (0). (Default: 0) 
+	--filemanager_asraw <val> [ type: INT]	Load the data as raw (1), without any preprovcessing available in the header 
+                                       		(0). (Default: 0) 
+	--filemanager_checkMhdConsistency <val> [ type: INT]	Check that data is consistent and ignore inconsistent files (1) or not (0). 
+                                                     		(Default: 1) 
+	--filemanager_input <path to folder> [ type: STRING]	Take images from a folder. (Default: Currentfolder) 
+
+(1) Plugin Name: 'Image file writer'
+
+# PLUGIN Image file writer
+   Save image data to the file system.
+	--imagefilewriter_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--imagefilewriter_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--imagefilewriter_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--imagefilewriter_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                                		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                                		default location depends on widget.) 
+   Plugin-specific arguments:
+	--imagefilewriter_folder <folder> [ type: STRING]	Parent folder to save images. Will be created if does not exist. (Default: ) 
+	--imagefilewriter_stream <stream name> [ type: STRING]	Write images only of a certain stream type, given as a string. If set to "-", it 
+                                                       		saves all. (Default: Input) 
+	--imagefilewriter_maxfiles <N> [ type: INT]	Maximum number of images in a single folder, will create another folder if this 
+                                            		is exceeded. If 0, all files in same folder. (Default: 0) 
+	--imagefilewriter_firstsubdivision <N> [ type: INT]	Initial id for the subdivision folder. (Default: 0) 
+
+(2) Plugin Name: 'Video manager'
+
+# PLUGIN Video manager
+   Reads video files from disk. File format depends on opencv installation.
+	--videomanager_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--videomanager_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--videomanager_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--videomanager_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                            		(Default: <1 for input plugins, 0 for the rest>) 
+	--videomanager_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                             		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                             		default location depends on widget.) 
+   Plugin-specific arguments:
+	--videomanager_loop <val> [ type: INT]	loop around (1) or not (0). (Default: 1) 
+	--videomanager_ff <fast forward factor> [ type: FLOAT]	Fast forward factor, in (0, inf). 1 means native speed, >1 is faster, <1 is 
+                                                       		slower. (Default: 1.1) 
+	--videomanager_starttime <mm:ss> [ type: STRING]	Initial time to start getting frames from the video. (Default: 00:00) 
+	--videomanager_input <path to video> [ type: STRING]	Take images from a video file. (Default: N/A (compulsory)) 
+
+(3) Plugin Name: 'Cpp Algorithm'
+
+# PLUGIN Cpp Algorithm
+   Sample plug-in that does a simple threshold based segmentation.
+	--cppalgorithm_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--cppalgorithm_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--cppalgorithm_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--cppalgorithm_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                            		(Default: <1 for input plugins, 0 for the rest>) 
+	--cppalgorithm_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                             		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                             		default location depends on widget.) 
+   Plugin-specific arguments:
+	--cppalgorithm_threshold <val> [ type: INT]	Intensity threshold for segmentation. (Default: 50) 
+
+(4) Plugin Name: 'Frame grabber'
+
+# PLUGIN Frame grabber
+   Reads real-time imaging from a video source using the Epiphan DVI2USB 3.0  grabber.
+	--framegrabber_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--framegrabber_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--framegrabber_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--framegrabber_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                            		(Default: <1 for input plugins, 0 for the rest>) 
+	--framegrabber_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                             		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                             		default location depends on widget.) 
+   Plugin-specific arguments:
+	--framegrabber_studioswing <val> [ type: BOOL]	Correct for studio swing (1) or not (0). (Default: 1) 
+	--framegrabber_resolution <val> [ type: FLOAT]	Value, in mm, of the pixel size (isotropic). (Default: 1) 
+
+(5) Plugin Name: 'Python Algorithm'
+
+# PLUGIN Python Algorithm
+   Sample plug-in that does a simple Gaussian blurring.
+	--pythonalgorithm_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--pythonalgorithm_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--pythonalgorithm_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--pythonalgorithm_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                               		(Default: <1 for input plugins, 0 for the rest>) 
+	--pythonalgorithm_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                                		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                                		default location depends on widget.) 
+   Plugin-specific arguments:
+	--pythonalgorithm_sigma <val> [ type: FLOAT]	Sigma (in mm) for Gaussian blurring. (Default: 3) 
+	--pythonalgorithm_delay <val> [ type: FLOAT]	Delay (in sec) for artificially slowing doen the execution. (Default: 0) 
+
+(6) Plugin Name: 'Standard plane detection'
+
+# PLUGIN Standard plane detection
+   Standard plane detection using SonoNet by Baumgartner et al.
+	--standardplanedetection_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--standardplanedetection_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--standardplanedetection_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--standardplanedetection_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                                      		(Default: <1 for input plugins, 0 for the rest>) 
+	--standardplanedetection_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                                       		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                                       		default location depends on widget.) 
+   Plugin-specific arguments:
+	--standardplanedetection_taverage <val> [ type: INT]	Number of frames used for a temporal average of the detection. (Default: 0) 
+	--standardplanedetection_modelname <*.pth> [ type: STRING]	Model file name (without folder). (Default: ifind2_net_Jan15.pth) 
+	--standardplanedetection_bckth <val> [ type: FLOAT]	Min value for background to be considered; below this value, background will be 
+                                                    		ignored and second best picked. Range is [0.0, 1.0] If -1, ths flag is not used. 
+                                                    		(Default: -1) 
+	--standardplanedetection_savebck <0/1> [ type: INT]	Whether to save background images to file (1, in this stream) or not (0). 
+                                                    		(Default: 0) 
+
+(7) Plugin Name: 'GUI'
+
+# PLUGIN GUI
+   Displays imaging and non-imaging data in real time.
+	--gui_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--gui_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--gui_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
 ```
 
 # Plug-ins
