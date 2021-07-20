@@ -40,7 +40,6 @@ def main(argv):
     print('Sigma is {}'.format(sigma))
     print('Delay is {}'.format(delay))
 
-
     im_file = 'test_image.png'
     out_file = 'test_image_processed.png'
 
