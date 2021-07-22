@@ -92,7 +92,20 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     }
 
     /// Extract central slice and crop
-    GrayImageType2D::Pointer image_2d = this->get2dimage(image);
+
+    GrayImageType2D::Pointer image_2d, output_2d;
+
+    /// Use the appropriate layer
+    if (this->params.inputLayer >=0){
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
+        image_2d = this->get2dimage(layerImage);
+    } else {
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
+        image_2d = this->get2dimage(layerImage);
+    }
+
     GrayImageType2D::Pointer image_2d_cropped = this->crop_ifind_2D_image_data(image_2d);
 
     if (this->params.verbose){
