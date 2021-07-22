@@ -37,7 +37,7 @@ Plugin_PythonAlgorithm::Plugin_PythonAlgorithm(QObject *parent) : Plugin(parent)
         // set image viewer default options:
         // overlays, colormaps, etc
         ImageWidgetType::Parameters default_params = mWidget_->Params();
-        default_params.SetBaseLayer(1); // use the input image as background image
+        default_params.SetBaseLayer(-1); // use the input image as background image
         mWidget_->SetParams(default_params);
 
     }

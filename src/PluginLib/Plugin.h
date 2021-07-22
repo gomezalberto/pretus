@@ -111,6 +111,7 @@ public:
 
   virtual void SetImageWidgets(QList<QtPluginWidgetBase *> &widgets){};
 
+  virtual void SetInputStream(ifind::StreamTypeSet &stream);
 
   /**
   @brief [deprecated] used when the filters are activated

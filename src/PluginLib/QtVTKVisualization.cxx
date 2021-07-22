@@ -23,14 +23,14 @@
 static const bool sDefaultParametersShowRuler(false);
 static const bool sDefaultParametersShowColorbar(false);
 static const int sDefaultParametersBaseLayer(0);
-static const int sDefaultParametersDisplayMultiLayers(0); // by default, only display one layer
+static const int sDefaultOverlayLayer(0); // by default, only display one layer
 static const int sDefaultParametersLutId(15);
 
 QtVTKVisualization::Parameters::Parameters()
     : mShowRuler(sDefaultParametersShowRuler)
     , mShowColorbar(sDefaultParametersShowColorbar)
     , mBaseLayer(sDefaultParametersBaseLayer)
-    , mDisplayMultiLayers(sDefaultParametersDisplayMultiLayers)
+    , mOverlayLayer(sDefaultOverlayLayer)
     , mLutId(sDefaultParametersLutId)
 {}
 
@@ -46,8 +46,8 @@ const int QtVTKVisualization::Parameters::BaseLayer() const {
     return mBaseLayer;
 }
 
-const int QtVTKVisualization::Parameters::DisplayMultiLayers() const {
-    return mDisplayMultiLayers;
+const int QtVTKVisualization::Parameters::OverlayLayer() const {
+    return mOverlayLayer;
 }
 
 const int QtVTKVisualization::Parameters::LutId() const {
@@ -68,7 +68,7 @@ void QtVTKVisualization::Parameters::Usage()
         << sDefaultParametersBaseLayer << std::endl;
     std::cout << "\t"
         << "\t-vs_overlay <num>\tdesactivate (0) or activate (1,... n_overlays)  displaying multiple layers as overlay. If -1, display all. Default: "
-        << sDefaultParametersDisplayMultiLayers << std::endl;
+        << sDefaultOverlayLayer << std::endl;
     std::cout << "\t"
         << "\t-vs_lut <num>\tLookup table (int) (0: SPECTRUM, 1: WARM, 2: COOL, 3: BLUES, 4: WILD_FLOWER, 5: CITRUS, etc). Default: "
         << sDefaultParametersLutId << std::endl;
@@ -79,8 +79,8 @@ void QtVTKVisualization::Parameters::SetBaseLayer(int a){
     this->mBaseLayer = a;
 }
 
-void QtVTKVisualization::Parameters::SetDisplayMultiLayers(int a){
-    this->mDisplayMultiLayers = a;
+void QtVTKVisualization::Parameters::SetOverlayLayer(int a){
+    this->mOverlayLayer = a;
 }
 
 void QtVTKVisualization::Parameters::SetLutId(int a){
@@ -105,7 +105,7 @@ void QtVTKVisualization::Parameters::SetCommandLineArguments(const std::vector<s
         }
         else if (*argIter == "-vs_overlay")
         {
-            mDisplayMultiLayers = std::stoi(*(++argIter));
+            mOverlayLayer = std::stoi(*(++argIter));
         }
         else if (*argIter == "-vs_lut")
         {
@@ -117,15 +117,15 @@ void QtVTKVisualization::Parameters::SetCommandLineArguments(const std::vector<s
 
 QtVTKVisualization::QtVTKVisualization(QWidget *parent)
     :
-    QtPluginWidgetBase(parent),
-    vtkWidget(nullptr),
-    renderWindow(nullptr),
-    lookupTables(),
-    sliceExtractor(vtkSmartPointer<vtkExtractVOI>::New()),
-    imageActor(nullptr),
-    colorBar(nullptr),
-    latestTimeStamp(std::numeric_limits<uint64_t>::digits10 + 1),
-    zSlice(0)
+      QtPluginWidgetBase(parent),
+      vtkWidget(nullptr),
+      renderWindow(nullptr),
+      lookupTables(),
+      sliceExtractor(vtkSmartPointer<vtkExtractVOI>::New()),
+      imageActor(nullptr),
+      colorBar(nullptr),
+      latestTimeStamp(std::numeric_limits<uint64_t>::digits10 + 1),
+      zSlice(0)
 {
     this->vtkWidget = new QVTKWidget(this);
     vtkWidget->resize(256, 256);
@@ -186,33 +186,31 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
     //    &this->mParams.BaseLayer(), // WTF! This is supposed to be an iterator
     //    &this->mParams.BaseLayer()+1, // and its end FFS! Unbeliveable
     //    std::inserter(layerOrder, layerOrder.begin()));
-    // 
+    //
 
-    std::vector<int> baseLayers{ mParams.BaseLayer() };
+    int baselayer = mParams.BaseLayer() >= 0 ? mParams.BaseLayer()  : image->GetNumberOfLayers() + mParams.BaseLayer();
+
+    std::vector<int> baseLayers{ baselayer };
     std::set_difference(
-        VisualizationConsts::StandardLayerOrder().begin(),
-        VisualizationConsts::StandardLayerOrder().end(),
-        baseLayers.begin(),
-        baseLayers.end(),
-        std::inserter(layerOrder, layerOrder.begin()));
+                VisualizationConsts::StandardLayerOrder().begin(),
+                VisualizationConsts::StandardLayerOrder().end(),
+                baseLayers.begin(),
+                baseLayers.end(),
+                std::inserter(layerOrder, layerOrder.begin()));
 
-    layerOrder.insert(layerOrder.begin(), this->mParams.BaseLayer()); // This will always have 6 elements
+    layerOrder.insert(layerOrder.begin(), baselayer); // This will always have 6 elements
 
-//    bool debug = false;
-//    if (debug){
-//        std::cout << "[QtVTKVisualization::SendImageToWidgetImpl] layer order ";
-//        for (int i=0; i<layerOrder.size(); i++){
-//            std::cout << i<<"\t"<< layerOrder[i]<<std::endl;
-//        }
-//    }
+    unsigned int upperlimit = this->mParams.OverlayLayer() != 0 ? image->GetNumberOfLayers() : 1;
 
-    unsigned int upperlimit = this->mParams.DisplayMultiLayers() != 0 ? image->GetNumberOfLayers() : 1;
-
-    if (this->mParams.DisplayMultiLayers()>0){
+    if (this->mParams.OverlayLayer() != 0){
         /// show only one layer, as overlay, selected by the user
         layerOrder.clear();
-        layerOrder.push_back(this->mParams.BaseLayer());
-        layerOrder.push_back(this->mParams.DisplayMultiLayers());
+        layerOrder.push_back(baselayer);
+        if (this->mParams.OverlayLayer() <0){
+            layerOrder.push_back(image->GetNumberOfLayers() + this->mParams.OverlayLayer());
+        } else {
+            layerOrder.push_back(this->mParams.OverlayLayer());
+        }
         upperlimit = 2;
     }
 
@@ -485,8 +483,8 @@ void QtVTKVisualization::SetPredefinedLookupTable(int id, int LUTid)
 }
 
 void QtVTKVisualization::SetLookupTable(
-    unsigned int idx, 
-    vtkSmartPointer<vtkLookupTable> lookupTable)
+        unsigned int idx,
+        vtkSmartPointer<vtkLookupTable> lookupTable)
 {
     if (idx != this->lookupTables.length())
     {

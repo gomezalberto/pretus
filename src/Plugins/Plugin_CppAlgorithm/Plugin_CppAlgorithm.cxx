@@ -37,7 +37,7 @@ Plugin_CppAlgorithm::Plugin_CppAlgorithm(QObject *parent) : Plugin(parent)
         // overlays, colormaps, etc
         ImageWidgetType::Parameters default_params = mWidget_->Params();
         default_params.SetBaseLayer(0); // use the input image as background image
-        default_params.SetDisplayMultiLayers(1); // show 1 layer on top of the background
+        default_params.SetOverlayLayer(-1); // show 1 layer on top of the background
         default_params.SetLutId(5);
         default_params.SetShowColorbar(false);
         mWidget_->SetParams(default_params);

@@ -19,8 +19,7 @@ Widget_PythonAlgorithm::Widget_PythonAlgorithm(QWidget *parent, Qt::WindowFlags 
     mLabel->setFont(labelFont);
     //
     mSlider = new QSlider(Qt::Orientation::Horizontal);
-    mSlider ->setStyleSheet("QSlider { background-color : black}"
-    "QSlider::handle:horizontal { background: white; border: 2px solid white;  border-radius: 3px;}");
+    mSlider ->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
     mSlider->setMaximum(50);
     mSlider->setMinimum(1);
     mSlider->setAutoFillBackground(true);

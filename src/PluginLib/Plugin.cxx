@@ -184,6 +184,10 @@ void Plugin::slot_configurationReceived(ifind::Image::Pointer image){
     Q_EMIT this->ConfigurationGenerated(image);
 }
 
+void Plugin::SetInputStream(ifind::StreamTypeSet &stream){
+    this->mStreamTypes = stream;
+}
+
 void Plugin::RemoveArgument(const QString &name){
 
     std::vector<QStringList> copy;
@@ -207,19 +211,28 @@ void Plugin::RemoveArgument(const QString &name){
 }
 
 void Plugin::SetDefaultArguments(){
+
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
+    mGenericArguments.push_back({"stream", "<val>",
+                                 QString( ArgumentType[3] ),
+                                 "Name of the stream(s) that this plug-in takes as input.",
+                                 QString(ifind::StreamTypeSetToString(mStreamTypes).c_str())});
+    mGenericArguments.push_back({"layer", "<val>",
+                                 QString( ArgumentType[1] ),
+                                 "Number of the input layer to pass to the processing task. If negative, starts from te end.",
+                                 QString::number(0)});
     mGenericArguments.push_back({"framerate", "<val>",
                                  QString( ArgumentType[2] ),
                                  "Frame rate at which the plugin does the work.",
-                                 "20"});
+                                 QString::number(this->FrameRate)});
     mGenericArguments.push_back({"verbose", "<val>",
                                  QString( ArgumentType[0] ),
                                  "Whether to print debug information (1) or not (0).",
-                                 "0"});
+                                 QString::number(this->mVerbose)});
     mGenericArguments.push_back({"time", "<val>",
                                  QString( ArgumentType[0] ),
                                  "Whether to measure execution time (1) or not (0).",
-                                 "0"});
+                                 QString::number(0)});
     mGenericArguments.push_back({"showimage", "<val>",
                                  QString( ArgumentType[1] ),
                                  "Whether to display realtime image outputs in the central window  (1) or not (0).",
@@ -232,6 +245,16 @@ void Plugin::SetDefaultArguments(){
 
 void Plugin::SetCommandLineArguments(int argc, char* argv[]){   
     InputParser input(argc, argv, this->GetCompactPluginName().toLower().toStdString());
+
+    {const std::string &argument = input.getCmdOption("stream");
+        if (!argument.empty()){
+            ifind::StreamTypeSet stream =  ifind::InitialiseStreamTypeSetFromString(argument.c_str());
+            this->SetInputStream(stream);
+        }}
+    {const std::string &argument = input.getCmdOption("layer");
+        if (!argument.empty()){
+            this->worker->params.inputLayer = atoi(argument.c_str());
+        }}
     {const std::string &argument = input.getCmdOption("framerate");
         if (!argument.empty()){
             this->setFrameRate(atof(argument.c_str()));
@@ -273,6 +296,7 @@ void Plugin::SetCommandLineArguments(int argc, char* argv[]){
 
         }}
 }
+
 
 void Plugin::Usage(void){
     std::cout << std::endl;

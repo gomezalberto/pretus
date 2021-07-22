@@ -88,9 +88,18 @@ void Worker_PythonAlgorithm::doWork(ifind::Image::Pointer image){
         return;
     }
 
-    /// Extract central slice and crop
-    GrayImageType2D::Pointer image_2d = this->get2dimage(image);
-    GrayImageType2D::Pointer output_2d;
+    GrayImageType2D::Pointer image_2d, output_2d;
+
+    /// Use the appropriate layer
+    if (this->params.inputLayer >=0){
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
+        image_2d = this->get2dimage(layerImage);
+    } else {
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
+        image_2d = this->get2dimage(layerImage);
+    }
 
     if (this->params.verbose){
         std::cout << "Worker_PythonAlgorithm::doWork() - 2D image extracted" <<std::endl;
@@ -137,12 +146,13 @@ void Worker_PythonAlgorithm::doWork(ifind::Image::Pointer image){
         /// Disconnect the output from the filter
         /// @todo Check if that is sufficient to release the numpy buffer, or if the buffer needs to obe memcpy'ed
         output_2d = importer->GetOutput();
-        output_2d->DisconnectPipeline();
+        //output_2d->DisconnectPipeline();
 
         output_2d->SetMetaDataDictionary(image_2d->GetMetaDataDictionary());
 
         /// Create a 3D image with the 2D slice
         GrayImageType::Pointer output = this->get3dimagefrom2d(output_2d);
+        //output->DisconnectPipeline();
 
         /// Finally add to the image before emitting it.
         image->GraftOverlay(output.GetPointer(), image->GetNumberOfLayers());

@@ -5,11 +5,15 @@
 #include <QCheckBox>
 #include <QBoxLayout>
 
+
 class QtPluginWidgetBase : public QWidget
 {
     Q_OBJECT
 
 public:
+
+    static const QString sQSliderStyle;
+    static const QString sQCheckBoxStyle ;
 
     enum class WidgetLocation  { visible, visible_overlay, hidden, // for images
                                top_left, top_right, bottom_left, bottom_right, overlaid}; // for other widgets

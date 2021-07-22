@@ -1,6 +1,13 @@
 #include "QtPluginWidgetBase.h"
 
 static const std::string sDefaultStreamTypesStr("Input");
+const QString QtPluginWidgetBase::sQSliderStyle = "QSlider::groove:horizontal { background-color: none; border: 1px solid #828282;  height: 2px;  border-radius: 2px; }"
+    "QSlider::handle:horizontal { background-color: white; border: 2px solid white; width: 10px; height: 10px; line-height: 12px; margin-top: -6px; margin-bottom: -6px; border-radius: 2px; }"
+    "QSlider:sub-page:horizontal { background-color: rgb(50, 150, 255)}";
+
+const QString QtPluginWidgetBase::sQCheckBoxStyle = "QCheckBox { background-color : black; color : white} "
+    "QCheckBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
+    "QCheckBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
 
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)
@@ -26,7 +33,7 @@ void QtPluginWidgetBase::AddImageViewCheckboxToLayout(QBoxLayout *vLayout){
 
     mViewImageCheckbox = new QCheckBox("View image",this);
     mViewImageCheckbox->setChecked(true);
-    mViewImageCheckbox->setStyleSheet("QCheckBox { background-color : black; color : white; }");
+    mViewImageCheckbox->setStyleSheet(sQCheckBoxStyle);
     vLayout->addWidget(mViewImageCheckbox);
 }
 

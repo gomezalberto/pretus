@@ -28,14 +28,18 @@ public:
         const bool ShowRuler() const;
         const bool ShowColorbar() const;
         const int BaseLayer() const;
-        const int DisplayMultiLayers() const;
+        const int OverlayLayer() const;
         const int LutId() const;
 
         static void Usage();
         void SetCommandLineArguments(const std::vector<std::string> &args);
 
         void SetBaseLayer(int a);
-        void SetDisplayMultiLayers(int a);
+        /**
+         * @brief SetOverlayLayer
+         * @param the id of the overlay layer. If negative, counts from the last.
+         */
+        void SetOverlayLayer(int a);
         void SetLutId(int a);
         void SetShowColorbar(bool a);
 
@@ -49,12 +53,12 @@ public:
          */
         int mBaseLayer;
         /**
-         * @brief Display Multiple Layers
-         * desactivate (0) or activate (1,... n_overlays)  displaying two layers
+         * @brief Set Overlay layer.
+         * no overlay (0) or activate (1,... n_overlays)  displaying two layers
          * The base layer, and the one indicated here.
-         * layers as overlay. If -1, display all (not recomended)
+         *  If negative, starts from last: -1 is the last, -2 the one before the last, etc.
          */
-        int mDisplayMultiLayers;
+        int mOverlayLayer;
         /**
          * @brief Lookup table  id
          * 0: SPECTRUM, 1: WARM, 2: COOL, 3: BLUES, 4: WILD_FLOWER, 5: CITRUS

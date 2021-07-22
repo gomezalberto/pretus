@@ -134,7 +134,7 @@ The visualization in this case is the Gaussian blurred image, so we configure th
         // set image viewer default options:
         // overlays, colormaps, etc
         ImageWidgetType::Parameters default_params = mWidget_->Params();
-        default_params.SetBaseLayer(1); // use the input image as background image
+        default_params.SetBaseLayer(-1); // use the input image as background image
         mWidget_->SetParams(default_params);
 
     }
@@ -444,7 +444,7 @@ For this plug-in, similarly to the `Plugin_CppAlgorithm` the widget will show th
 
 # 8. Using the `PythonAlgorithm` plugin
 
-To test the plug-in within PRETUS, we build a simple pipeline where we read a video from file, apply the blurring, and visualize the results. To this end we use, in this order, the `video manager` plug-in, the `Python Algorithm` plug-in, and the `GUI` plug-in, which have numbers 2, 4 and 5 respectively. These numbers may change depending on the build so the user should check by typing `pretus -h`. Then we call PRETUS as follows:
+To test the plug-in within PRESTUS, we build a simple pipeline where we read a video from file, apply the blurring, and visualize the results. To this end we use, in this order, the `video manager` plug-in, the `Python Algorithm` plug-in, and the `GUI` plug-in, which have numbers 2, 4 and 5 respectively. These numbers may change depending on the build so the user should check by typing `pretus -h`. Then we call PRETUS as follows:
 
 ```
 ./bin/pretus -pipeline "2>4>5"  --videomanager_input /home/username/videos/video.MP4  --pythonalgorithm_sigma 10  --videomanager_showimage 1 --pythonalgorithm_showimage 1

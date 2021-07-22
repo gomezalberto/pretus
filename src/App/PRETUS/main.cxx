@@ -214,7 +214,7 @@ PluginQList LoadPlugins(int argc, char* argv[])
             //plugin->SetSettings(this->Settings);
             plugin_list.append(plugin);
 
-            std::cout << "\t" << plugin->GetPluginName().toStdString()<< "("<< total_plugin_count <<") successfully loaded";
+            std::cout << "\t" << plugin->GetPluginName().toStdString()<< "("<< total_plugin_count <<") loaded";
             plugin->SetCommandLineArguments(argc, argv);
 
             std::cout <<std::endl;

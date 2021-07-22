@@ -21,15 +21,22 @@ def dowork(image_cpp, fsigma=1.0, delay_sec=0, verbose=False):
         time.sleep(delay_sec)
         im = sitk.GetImageFromArray(image_cpp)
         pixelID = im.GetPixelID()
+
+        # convert to float
+        caster0 = sitk.CastImageFilter()
+        caster0.SetOutputPixelType(sitk.sitkFloat32)
+        im_float = caster0.Execute(im)
+
         gaussian = sitk.SmoothingRecursiveGaussianImageFilter()
         gaussian.SetSigma(fsigma)
-        output = gaussian.Execute(im)
+        output_float = gaussian.Execute(im_float)
 
-        caster = sitk.CastImageFilter()
-        caster.SetOutputPixelType(pixelID)
-        output = caster.Execute(output)
+        caster1 = sitk.CastImageFilter()
+        caster1.SetOutputPixelType(pixelID)
+        output = caster1.Execute(output_float)
 
         output_np = sitk.GetArrayFromImage(output)
+
         return output_np
 
     except Exception as inst:

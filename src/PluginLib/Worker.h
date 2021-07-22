@@ -77,6 +77,7 @@ public:
             origin = OriginPolicy::Top;
             verbose = false;
             measureTime = false;
+            inputLayer = 0;
         }
 
         double out_spacing[3];
@@ -84,6 +85,7 @@ public:
         OriginPolicy origin;
         bool verbose;
         bool measureTime;
+        int inputLayer;
     };
 
     WorkerParameters params;

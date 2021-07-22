@@ -65,6 +65,8 @@ void Plugin_GUI::SetImageWidgets(QList<QtPluginWidgetBase *> &imageWidgets){
 }
 
 void Plugin_GUI::SetDefaultArguments(){
+    this->RemoveArgument("stream");
+    this->RemoveArgument("layer");
     this->RemoveArgument("showimage");
     this->RemoveArgument("showwidget");
 }

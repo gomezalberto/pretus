@@ -61,6 +61,7 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
 void Plugin_imageFileWriter::SetDefaultArguments(){
     this->RemoveArgument("showimage");
+    this->RemoveArgument("layer");
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
     mArguments.push_back({"folder", "<folder>",
                           QString( Plugin::ArgumentType[3] ),

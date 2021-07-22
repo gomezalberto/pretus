@@ -101,7 +101,7 @@ Plugin_CppAlgorithm::Plugin_CppAlgorithm(QObject *parent) : Plugin(parent)
         // overlays, colormaps, etc
         ImageWidgetType::Parameters default_params = mWidget_->Params();
         default_params.SetBaseLayer(0); // use the input image as background image
-        default_params.SetDisplayMultiLayers(1); // show 1 layer on top of the background
+        default_params.SetOverlayLayer(-1); // show the last layer layer on top of the background
         default_params.SetLutId(15);
         default_params.SetShowColorbar(false);
         mWidget_->SetParams(default_params);
@@ -332,7 +332,7 @@ void Widget_CppAlgorithm::SendImageToWidgetImpl(ifind::Image::Pointer image){
 }
 ```
 
-#5. Using the `CppAlgorithm` plugin
+# 5. Using the `CppAlgorithm` plugin
 
 To test the plug-in within PRETUS, we build a simple pipeline where we read a video from file, apply the thresholding, and visualize the results. To this end we use, in this order, the `video manager` plug-in, the `Cpp Algorithm` plug-in, and the `GUI` plug-in, which have numbers 2, 3 and 5 respectively. These numbers may change depending on the build so the user should check by typing `pretus -h`. Then we call PRETUS as follows:
 
@@ -344,6 +344,34 @@ With this call, we display both the input stream and show the output of the `Cpp
 
 
 ![demo.gif](demo.gif)
+
+# 6. Advanced options
+
+When connected in a pipeline, the user can specify what stream is fed to a plug-in. Any stream may contain multiple layers, so the user can also specify what layer from that stream is used.
+
+Because every time an image is processed any output layer stacks on, it is often convenient to address layers from the end instead of from the beginning. This can be done by using negative indices.
+
+To implement layer selection at the worker, we recommend the following snippet:
+
+```cpp
+    using FilterType = ...
+    FilterType::Pointer filter = FilterType::New();
+
+    /// Use the appropriate layer
+    if (this->params.inputLayer >=0){
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
+        filter->SetInput(layerImage);
+    } else {
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
+        filter->SetInput(layerImage);
+    }
+
+    filter->Set...
+	...
+    filter->Update();
+```
 
 
 This concludes the tutorial for implementing this plug-in. The `Plugin_PythonAlgorithm` describes more advanced options and how to use python from within plugins.

@@ -23,9 +23,23 @@ void Worker_CppAlgorithm::doWork(ifind::Image::Pointer image){
         return;
     }
 
+
+
     using FilterType = itk::BinaryThresholdImageFilter<ifind::Image, GrayImageType>;
     FilterType::Pointer filter = FilterType::New();
-    filter->SetInput(image);
+
+    /// Use the appropriate layer
+    if (this->params.inputLayer >=0){
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
+        filter->SetInput(layerImage);
+    } else {
+        ifind::Image::Pointer layerImage = ifind::Image::New();
+        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
+        filter->SetInput(layerImage);
+        //filter->SetInput(image);
+    }
+
     filter->SetLowerThreshold(this->mThreshold);
     filter->SetUpperThreshold(255);
     filter->SetOutsideValue(0);
