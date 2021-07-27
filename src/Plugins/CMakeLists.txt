@@ -7,7 +7,7 @@ find_library(PLUGIN_LIBRARY
     HINTS "${CMAKE_PREFIX_PATH}/"
 )
 
-find_path(PLUGIN_INCLUDE_DIR NAMES Plugin.h)
+set(PLUGIN_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/PluginLib")
 include_directories("${PLUGIN_INCLUDE_DIR}")
 
 # need this to locate the PluginLib
