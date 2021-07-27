@@ -21,14 +21,12 @@ public:
             LoopAround = true;
             AsRaw = false;
             verbose = false;
-            framecount = 0;
             checkMhdConsistency = true;
         }
         int FrameRate;
         bool LoopAround;
         bool AsRaw;
         bool verbose;
-        int framecount;
         bool checkMhdConsistency;
     };
 

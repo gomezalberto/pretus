@@ -14,7 +14,7 @@
 #include <itkShiftScaleImageFilter.h>
 #include <QApplication>
 
-FrameGrabberManager::FrameGrabberManager(QObject *parent){
+FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
@@ -83,9 +83,9 @@ void FrameGrabberManager::Send(void){
         //            }
         //        }
 
-        params.framecount++;
+        this->mTransmitedFramesCount++;
         if (params.verbose){
-            std::cout << "FrameGrabberManager::Send() frame count "<< params.framecount<<std::endl;
+            std::cout << "FrameGrabberManager::Send() frame count "<< this->mTransmitedFramesCount<<std::endl;
         }
 
         /// Add basic meta data
@@ -116,7 +116,7 @@ void FrameGrabberManager::Send(void){
             Y->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
             Y->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
             Y->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
-            Y->SetMetaData<>("FrameCount", QString::number(this->params.framecount).toStdString());
+            Y->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
         }
         Y->SetSpacing(params.pixel_size);
         Q_EMIT this->ImageGenerated(Y);

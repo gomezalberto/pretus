@@ -10,6 +10,7 @@ Manager::Manager(QObject* parent){
     this->Active = false;
     this->CurrentId = 0;
     this->verbose = false;
+    this->mTransmitedFramesCount =0;
 }
 
 

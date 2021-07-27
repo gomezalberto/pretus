@@ -32,6 +32,9 @@ void Plugin_VideoManager::Initialize(void){
 }
 
 void Plugin_VideoManager::SetDefaultArguments(){
+    this->RemoveArgument("stream");
+    this->RemoveArgument("layer");
+    this->RemoveArgument("time");
 
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
     mArguments.push_back({"loop", "<val>",

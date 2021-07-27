@@ -8,7 +8,7 @@
 
 #include <QObject>
 #include <ifindImage.h>
-#include <QThread>
+//#include <QThread>
 #include <mutex>
 #include <memory>
 class QSettings;
@@ -150,12 +150,6 @@ protected:
 
     QString mPluginName;
 
-    /**
-     * @brief counts the number of processed images; only used in verbose mode
-     */
-    int FrameCount;
-    std::mutex mutex_FrameCount;
-
     ifind::Image::Pointer AdjustImageSize(ifind::Image::Pointer image);
     GrayImageType::Pointer UnAdjustImageSize(GrayImageType::Pointer image, ifind::Image::Pointer reference);
     GrayImageType2D::Pointer crop_ifind_2D_image_data(GrayImageType2D::Pointer image);
@@ -173,4 +167,11 @@ protected:
      * @param image
      */
     virtual void doWork(ifind::Image::Pointer image) = 0;
+
+private:
+    /**
+     * @brief counts the number of processed images; only used in verbose mode
+     */
+    int FrameCount;
+    std::mutex mutex_FrameCount;
 };

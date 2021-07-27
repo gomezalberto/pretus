@@ -18,7 +18,7 @@ def dowork(image_cpp, fsigma=1.0, delay_sec=0, verbose=False):
     """
     try:
 
-        time.sleep(delay_sec)
+        time.sleep(delay_sec+0.01)
         im = sitk.GetImageFromArray(image_cpp)
         pixelID = im.GetPixelID()
 

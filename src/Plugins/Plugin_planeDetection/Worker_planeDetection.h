@@ -45,6 +45,10 @@ public:
      */
     bool m_write_background;
 
+public Q_SLOTS:
+
+    virtual void slot_temporalAverageValueChanged(int v);
+    virtual void slot_bckThresholdValueChanged(int v);
 
 protected:
     Worker_planeDetection(QObject* parent = 0);

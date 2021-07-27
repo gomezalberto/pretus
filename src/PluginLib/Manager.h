@@ -130,7 +130,7 @@ protected:
     void FindFiles(const QString &path, const QString &extension);
     Manager(QObject* parent = 0);
     QStringList DataBase;
-
+    int mTransmitedFramesCount;
 
 
 private:

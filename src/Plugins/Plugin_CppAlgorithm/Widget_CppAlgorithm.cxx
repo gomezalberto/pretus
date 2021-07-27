@@ -19,7 +19,7 @@ Widget_CppAlgorithm::Widget_CppAlgorithm(QWidget *parent, Qt::WindowFlags f): Qt
     mLabel->setFont(labelFont);
     //
     mSlider = new QSlider(Qt::Orientation::Horizontal);
-    mSlider ->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
+    mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
 
     mSlider->setMaximum(255);
     mSlider->setMinimum(1);

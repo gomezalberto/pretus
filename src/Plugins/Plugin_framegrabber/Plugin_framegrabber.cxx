@@ -33,16 +33,19 @@ void Plugin_framegrabber::Initialize(void){
 }
 
 void Plugin_framegrabber::SetDefaultArguments(){
-// arguments are defined with: name, placeholder for value, argument type,  description, default value
-mArguments.push_back({"studioswing", "<val>",
-                             QString( Plugin::ArgumentType[0] ),
-                             "Correct for studio swing (1) or not (0).",
-                             QString::number(manager->params.correct_studio_swing)});
+    this->RemoveArgument("stream");
+    this->RemoveArgument("layer");
+    this->RemoveArgument("time");
+    // arguments are defined with: name, placeholder for value, argument type,  description, default value
+    mArguments.push_back({"studioswing", "<val>",
+                          QString( Plugin::ArgumentType[0] ),
+                          "Correct for studio swing (1) or not (0).",
+                          QString::number(manager->params.correct_studio_swing)});
 
-mArguments.push_back({"resolution", "<val>",
-                             QString( Plugin::ArgumentType[2] ),
-                             "Value, in mm, of the pixel size (isotropic).",
-                             QString::number(manager->params.pixel_size[0])});
+    mArguments.push_back({"resolution", "<val>",
+                          QString( Plugin::ArgumentType[2] ),
+                          "Value, in mm, of the pixel size (isotropic).",
+                          QString::number(manager->params.pixel_size[0])});
 
 }
 

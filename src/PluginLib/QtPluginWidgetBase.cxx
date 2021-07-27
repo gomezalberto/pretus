@@ -9,6 +9,8 @@ const QString QtPluginWidgetBase::sQCheckBoxStyle = "QCheckBox { background-colo
     "QCheckBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
     "QCheckBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
 
+const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : black; color : white; }";
+
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f)

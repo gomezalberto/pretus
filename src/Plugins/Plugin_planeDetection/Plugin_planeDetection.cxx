@@ -2,6 +2,7 @@
 #include <generated/plugin_planeDetection_config.h>
 #include <ifindImagePeriodicTimer.h>
 #include <QObject>
+#include <QSlider>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_planeDetection::Plugin_planeDetection(QObject *parent) : Plugin(parent)
@@ -19,6 +20,15 @@ Plugin_planeDetection::Plugin_planeDetection(QObject *parent) : Plugin(parent)
         // create widget
         WidgetType * mWidget_ = new WidgetType;
         this->mWidget = mWidget_;
+
+        WorkerType *w = std::dynamic_pointer_cast< WorkerType >(this->worker).get();
+        QObject::connect(mWidget_->mSlider,
+                &QSlider::valueChanged, w,
+                &WorkerType::slot_bckThresholdValueChanged);
+
+        QObject::connect(mWidget_->mSliderTA,
+                &QSlider::valueChanged, w,
+                &WorkerType::slot_temporalAverageValueChanged);
     }
 
     this->SetDefaultArguments();

@@ -34,8 +34,8 @@ void Widget_filemanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<< std::endl;
 
-    if (image->HasKey("FrameCount")){
-        stream << "Image "<<image->GetMetaData<std::string>("FrameCount") << "/" << image->GetMetaData<std::string>("FrameCountTotal")<< std::endl;
+    if (image->HasKey("TransmitedFrameCount")){
+        stream << "Image "<<image->GetMetaData<std::string>("TransmitedFrameCount") << "/" << image->GetMetaData<std::string>("FrameCountTotal")<< std::endl;
     }
     if (image->HasKey("AcquisitionFrameRate")){
         stream << "Framerate: "<<image->GetMetaData<std::string>("AcquisitionFrameRate") << " fps"<< std::endl;

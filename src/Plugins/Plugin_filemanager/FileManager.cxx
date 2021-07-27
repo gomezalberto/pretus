@@ -6,7 +6,7 @@
 #include <QApplication>
 #include <QFile>
 
-FileManager::FileManager(QObject *parent){
+FileManager::FileManager(QObject *parent) : Manager(parent){
 
 }
 
@@ -59,7 +59,7 @@ void FileManager::Send(void)
     reader->SetFileName(fname.c_str());
     reader->Read();
 
-    params.framecount++;
+    this->mTransmitedFramesCount++;
 
     ifind::Image::Pointer image = reader->GetifindImage();
 
@@ -87,7 +87,7 @@ void FileManager::Send(void)
         image->SetMetaData<std::string>("DNLTimestamp", ss.str());
     }
     image->SetMetaData<std::string>("OriginalFilename", fname);
-    image->SetMetaData<>("FrameCount", QString::number(this->params.framecount).toStdString());
+    image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
     image->SetMetaData<>("FrameCountTotal", QString::number(this->GetDataBase().size()).toStdString());
 
 

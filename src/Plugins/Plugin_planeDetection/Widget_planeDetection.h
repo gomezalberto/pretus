@@ -4,6 +4,7 @@
 #include <QtPluginWidgetBase.h>
 
 class QLabel;
+class QSlider;
 
 class Widget_planeDetection : public QtPluginWidgetBase
 {
@@ -28,6 +29,8 @@ public:
     Widget_planeDetection(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
 
+    QSlider *mSlider;
+    QSlider *mSliderTA;
 private:
     // raw pointer to new object which will be deleted by QT hierarchy
     QLabel *mLabel;

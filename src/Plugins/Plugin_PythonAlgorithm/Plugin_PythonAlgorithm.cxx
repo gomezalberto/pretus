@@ -32,7 +32,7 @@ Plugin_PythonAlgorithm::Plugin_PythonAlgorithm(QObject *parent) : Plugin(parent)
         ImageWidgetType * mWidget_ = new ImageWidgetType;
         this->mImageWidget = mWidget_;
         this->mImageWidget->SetStreamTypes(ifind::InitialiseStreamTypeSetFromString(this->GetCompactPluginName().toStdString()));
-        this->mImageWidget->SetWidgetLocation(ImageWidgetType::WidgetLocation::hidden); // by default, do not show
+        this->mImageWidget->SetWidgetLocation(ImageWidgetType::WidgetLocation::visible); // by default, do not show
 
         // set image viewer default options:
         // overlays, colormaps, etc

@@ -1,5 +1,5 @@
 #include "Widget_planeDetection.h"
-
+#include <QSlider>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QtInfoPanelTrafficLightBase.h>
@@ -12,22 +12,54 @@ Widget_planeDetection::Widget_planeDetection(
     this->mWidgetLocation = WidgetLocation::top_right;
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Standardplanedetection");
     mIsBuilt = false;
+
+    mLabel = new QLabel("Text not set", this);
+    mLabel->setStyleSheet(sQLabelStyle);
+    //
+    mSlider = new QSlider(Qt::Orientation::Horizontal);
+    mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
+
+    mSlider->setMaximum(101);
+    mSlider->setMinimum(0);
+    mSlider->setAutoFillBackground(true);
+
+    //
+    mSliderTA = new QSlider(Qt::Orientation::Horizontal);
+    mSliderTA->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
+
+    mSliderTA->setMaximum(100);
+    mSliderTA->setMinimum(0);
+    mSliderTA->setAutoFillBackground(true);
 }
 
 void Widget_planeDetection::Build(){
 
-    mLabel = new QLabel("Text not set", this);
-    mLabel->setStyleSheet("QLabel { background-color : black; color : white; }");
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
     labelFont.setBold(true);
     mLabel->setFont(labelFont);
 
-
-    auto outmost_layout = new QVBoxLayout(this);
+    QVBoxLayout * outmost_layout = new QVBoxLayout(this);
+    outmost_layout->addWidget(mLabel, 1, Qt::AlignTop);
+    {
+        QHBoxLayout * slider_layout = new QHBoxLayout();
+        QLabel *sliderLabel = new QLabel("(1)",this);
+        sliderLabel->setStyleSheet(sQLabelStyle);
+        slider_layout->addWidget(sliderLabel);
+        slider_layout->addWidget(mSlider);
+        outmost_layout->addLayout(slider_layout);
+    }
+    {
+        QHBoxLayout * slider_layout = new QHBoxLayout();
+        QLabel *sliderLabel = new QLabel("(2)",this);
+        sliderLabel->setStyleSheet(sQLabelStyle);
+        slider_layout->addWidget(sliderLabel);
+        slider_layout->addWidget(mSliderTA);
+        outmost_layout->addLayout(slider_layout);
+    }
 
     if (mWidgetOptions.show_bars == true) {
-        QVBoxLayout *vLayout = dynamic_cast<QVBoxLayout*>(outmost_layout);
+        //QVBoxLayout *vLayout = dynamic_cast<QVBoxLayout*>(outmost_layout);
         /// This will have bar graphs of the live scan plane values
         {
             QtInfoPanelTrafficLightBase::Configuration standardPlaneTrafficLightConfig;
@@ -51,8 +83,7 @@ void Widget_planeDetection::Build(){
 
             auto infoPanel = new QtInfoPanelTrafficLightBase(standardPlaneTrafficLightConfig, this);
             infoPanel->SetStreamTypesFromStr("Standardplanedetection");
-            vLayout->addWidget(mLabel, 1, Qt::AlignTop);
-            vLayout->addWidget(infoPanel, 1, Qt::AlignTop);
+            outmost_layout->addWidget(infoPanel, 1, Qt::AlignTop);
 
             QObject::connect(this, &QtPluginWidgetBase::ImageAvailable,
                              infoPanel, &QtInfoPanelBase::SendImageToWidget);
@@ -93,7 +124,7 @@ void Widget_planeDetection::Build(){
             auto infoPanel = new QtInfoPanelTrafficLightBase(
                         standardPlaneTrafficLightConfig, this);
             infoPanel->SetStreamTypesFromStr("AutoReport");
-            vLayout->addWidget(infoPanel, 1, Qt::AlignTop);
+            outmost_layout->addWidget(infoPanel, 1, Qt::AlignTop);
 
             QObject::connect(
                         this, &QtPluginWidgetBase::ImageAvailable,
@@ -112,6 +143,12 @@ void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "==";
+
+    if (image->HasKey("Standardplanedetection_bckth")){
+        stream << std::endl<< "(1) Background threshold: "<< image->GetMetaData<std::string>("Standardplanedetection_bckth");
+        stream << std::endl<< "(2) Averaged frames: "<< image->GetMetaData<std::string>("Standardplanedetection_tempAvg");
+    }
+
     mLabel->setText(stream.str().c_str());
 
     Q_EMIT this->ImageAvailable(image);

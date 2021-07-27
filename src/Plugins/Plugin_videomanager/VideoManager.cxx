@@ -8,12 +8,12 @@
 #include <QApplication>
 #include <QString>
 #include <QStringList>
+#include <QThread>
 
-
-VideoManager::VideoManager(QObject *parent){
+VideoManager::VideoManager(QObject *parent) : Manager(parent){
     this->FrameRate = 25;
+    this->TransmitFrameRate.set_capacity(60);
     this->LoopAround = true;
-    this->FrameCount = 0;
     this->VideoFile = "";
     this->initial_time_msec = 0;
     this->FF_factor = 1.10; // This seems to be needed to compensate for the time during the frame processing. With this value, the playback seems real time. Might not be the case in a faster pc though.
@@ -50,9 +50,10 @@ int VideoManager::Initialize(){
     int nframes = this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT);
     this->VideoSource.set(CV_CAP_PROP_POS_MSEC, this->initial_time_msec);
     this->t_0 = std::chrono::steady_clock::now();
+    this->last_transmit_t = t_0;
 
     /// Also change the frame count
-    this->FrameCount = int(double(this->initial_time_msec)/1000.0*this->FrameRate);
+    this->mTransmitedFramesCount = int(double(this->initial_time_msec)/1000.0*this->FrameRate);
 
     std::cout << " loaded, FPS = "<< this->FrameRate<<", frames = "<<nframes<< std::endl;
     return 0;
@@ -84,7 +85,7 @@ void VideoManager::Send(void)
     {
         if (this->Frame.rows == 0 || this->Frame.cols == 0){
             if (this->LoopAround != true){
-                std::cerr << "[Error] VideoManager::Send() -  frame is empty. Finishing acquisition after "<< this->FrameCount/double(this->FrameRate) <<" seconds"<< std::endl;
+                std::cerr << "[Error] VideoManager::Send() -  frame is empty. Finishing acquisition after "<< this->mTransmitedFramesCount/double(this->FrameRate) <<" seconds"<< std::endl;
                 this->mutex_Frame.unlock();
                 QApplication::quit();
             } else {
@@ -98,7 +99,7 @@ void VideoManager::Send(void)
             }
             return;
         }
-        this->FrameCount++;
+        this->mTransmitedFramesCount++;
         ifind::Image::Pointer image = ifind::Image::New();
 
         typedef itk::OpenCVImageBridge BridgeType;
@@ -118,7 +119,7 @@ void VideoManager::Send(void)
             QString timestring;
             timestring.sprintf("%02d:%02d:%02.3f", hours, minutes, seconds);
             if (this->verbose){
-                std::cout << "[VERBOSE] VideoManager::Send() - Frame: "<< this->FrameCount << ", Play time: "<< timestring.toStdString()<<std::endl;
+                std::cout << ifind::LocalTimeStamp() << " [VERBOSE] VideoManager::Send() - Frame: "<< this->mTransmitedFramesCount << ", Play time: "<< timestring.toStdString()<<std::endl;
             }
 
             std::string timestamp = std::to_string(std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count());
@@ -127,10 +128,21 @@ void VideoManager::Send(void)
             image->SetMetaData<std::string>("AcquisitionSystem", this->VideoFile.toStdString());
             image->SetMetaData<std::string>("NDimensions", "2");
             image->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
-            image->SetMetaData<>("AcquisitionFrameRate", QString::number(0).toStdString());
-            image->SetMetaData<>("TransmissionFrameRate", QString::number(0).toStdString());
-            image->SetMetaData<>("FrameCount", QString::number(this->FrameCount).toStdString());
+            image->SetMetaData<>("AcquisitionFrameRate", QString::number(this->FrameRate).toStdString());
+
+            image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            auto current_transmit_t = std::chrono::steady_clock::now();
+            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(current_transmit_t - this->last_transmit_t).count();
+            this->TransmitFrameRate.push_back(1000.0 / double(duration));
+            double total_fr= 0;
+            for (boost::circular_buffer<double>::const_iterator cit = this->TransmitFrameRate.begin(); cit != this->TransmitFrameRate.end(); ++cit){
+                total_fr+= *cit;
+            }
+            auto current_fr = total_fr / this->TransmitFrameRate.size();
+            image->SetMetaData<>("TransmissionFrameRate", QString::number(current_fr).toStdString());
+            this->last_transmit_t = current_transmit_t;
         }
+
         Q_EMIT this->ImageGenerated(image);
     }
 

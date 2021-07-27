@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <memory>
 #include <chrono>
+#include <boost/circular_buffer.hpp>
 
 class VideoManager : public Manager {
     Q_OBJECT
@@ -59,13 +60,14 @@ private:
 
 
     int FrameRate;
-    int FrameCount;
+    boost::circular_buffer<double> TransmitFrameRate;
     bool LoopAround;
     QString VideoFile;
     cv::Mat Frame;
     std::mutex mutex_Frame;
     int initial_time_msec;
     std::chrono::steady_clock::time_point t_0;
+    std::chrono::steady_clock::time_point last_transmit_t;
 
 
     cv::VideoCapture VideoSource;

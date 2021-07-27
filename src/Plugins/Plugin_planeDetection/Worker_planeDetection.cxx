@@ -148,7 +148,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         }
 
         this->confidences.enqueue(confidences_current);
-        if (this->confidences.size()>this->temporalAverage+1){
+        while (this->confidences.size()>this->temporalAverage+1){
             this->confidences.dequeue();
         }
         if (this->params.verbose){
@@ -157,6 +157,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     }
     PyGILState_Release(gstate);
 
+    /// Sum all confidences
     std::vector<float> confidences_average(confidences_current.size(),0.0);
     for (auto l : confidences){
         for (int i=0; i<l.size(); i++){
@@ -164,27 +165,42 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
             confidences_average[i]+=lf;
         }
     }
-
-    if (this->background_threshold > 0){
-        for (int i=0; i<confidences_average.size(); i++){
-            if ((i == 3) && (confidences_average[i]/(this->temporalAverage+1.0) < this->background_threshold)){
-                //  std::cout << "Worker_planeDetection::doWork() - Confidences for "<< i << " are " << confidences_average[i]/(this->this->temporalAverage+1.0)<<
-                //               ", and the threshold is "<< this->this->background_threshold << " so we set to 0"<< std::endl;
-                confidences_average[i] = 0;
-            }
-        }
-    }
-
-    double max_confidence = -10000;
+    /// Now divide by the temporal average,
+    double max_confidence = -10000, min_confidence = 10000;
     int max_confidence_id = -1; // by default, background
-
-    QStringList confidences_str;
     for (int i=0; i<confidences_average.size(); i++){
         confidences_average[i]/=(this->temporalAverage+1.0);
         if (confidences_average[i]>max_confidence){
             max_confidence  = confidences_average[i];
             max_confidence_id = i;
         }
+        if (confidences_average[i]<min_confidence){
+            min_confidence  = confidences_average[i];
+        }
+    }
+
+    /// Now normalize to [0, 1] confidence
+    for (int i=0; i<confidences_average.size(); i++){
+        confidences_average[i]= (confidences_average[i]-min_confidence) /(max_confidence-min_confidence);
+    }
+
+    const int BACKGROUND_IDX = 3;
+    if (this->background_threshold > 0){
+        for (int i=0; i<confidences_average.size(); i++){
+            if (i == BACKGROUND_IDX) {
+                if (confidences_average[i] < this->background_threshold){
+                    //std::cout << "Worker_planeDetection::doWork() - Confidences for "<< i << " are " << confidences_average[i]<<
+                    //             ", and the threshold is "<< this->background_threshold << " so we set to 0"<< std::endl;
+                    confidences_average[i] = 0;
+                }
+            }
+        }
+    }
+
+    // convert to a string
+    QStringList confidences_str;
+    for (int i=0; i<confidences_average.size(); i++){
+
         confidences_str.append(QString::number(confidences_average[i]));
     }
 
@@ -207,6 +223,9 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     image->SetMetaData<std::string>( mPluginName.toStdString() + "_confidences", confidences_str.join(",").toStdString() );
     image->SetMetaData<std::string>( mPluginName.toStdString() + "_label", this->labels[max_confidence_id].toStdString() );
     image->SetMetaData<std::string>( mPluginName.toStdString() + "_confidence", confidences_str[max_confidence_id].toStdString() );
+    image->SetMetaData<std::string>( mPluginName.toStdString() + "_bckth", QString::number(this->background_threshold).toStdString() );
+    image->SetMetaData<std::string>( mPluginName.toStdString() + "_tempAvg", QString::number(this->temporalAverage).toStdString() );
+
 
     if (!this->m_write_background && this->labels[max_confidence_id]=="Background"){
         image->SetMetaData<std::string>( "DO_NOT_WRITE", "DO_NOT_WRITE");
@@ -220,6 +239,16 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         std::cout << "Worker_planeDetection::doWork() - image processed, class: "<< this->labels[max_confidence_id].toStdString() <<std::endl;
     }
 
+}
+
+void  Worker_planeDetection::slot_bckThresholdValueChanged(int v){
+    /// somehow communicate with the worker.
+    this->background_threshold = double(v)/100.0;
+}
+
+void  Worker_planeDetection::slot_temporalAverageValueChanged(int v){
+    /// somehow communicate with the worker.
+    this->temporalAverage = double(v);
 }
 
 QStringList Worker_planeDetection::getLabels() const

@@ -37,7 +37,6 @@ public:
             CaptureFrameRate  = 0; /// this will be as fast as can by default
             n_components = 1;
 
-            framecount = 0;
             verbose = false;
             correct_studio_swing = true;
         }
@@ -46,7 +45,6 @@ public:
         std::string Device_name;
         //float Resolution_factor;
         double CaptureFrameRate;
-        int framecount;
         bool verbose;
         bool correct_studio_swing;
         /**
