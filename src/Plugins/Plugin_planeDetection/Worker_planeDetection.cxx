@@ -16,7 +16,6 @@ Worker_planeDetection::Worker_planeDetection(QObject *parent) : Worker(parent){
 }
 
 void Worker_planeDetection::Initialize(){
-
     if (!this->PythonInitialized){
         try {
             py::initialize_interpreter(); // this will call Py_Initialize();
@@ -33,7 +32,8 @@ void Worker_planeDetection::Initialize(){
         std::string command = "sys.path.append('" + this->python_folder + "')";
         py::exec(command.c_str());
 
-        py::object processing = py::module::import("worker");
+        py::object processing = py::module::import("standardplanedetection_worker");
+
         /// Check for errors
         if (PyErr_Occurred())
         {
@@ -47,7 +47,6 @@ void Worker_planeDetection::Initialize(){
 
         this->PyPythonInitializeFunction = processing.attr("initialize");
         this->PyPythonInitializeFunction(this->python_folder, this->modelname);
-
         py::list pylabels  = py::list(getLabelsFunction());
         this->labels.clear();
         for (auto& el : pylabels) this->labels.push_back(QString(el.cast<std::string>().data()));

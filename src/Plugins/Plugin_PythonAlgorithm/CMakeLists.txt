@@ -54,7 +54,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 set(PYTHON_FILES
     python/demo.py
-    python/worker.py
+    python/pythonalgorithm_worker.py
     )
 
 file(GLOB SOURCES "*.h" "*.cxx")

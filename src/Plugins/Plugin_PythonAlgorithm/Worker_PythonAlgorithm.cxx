@@ -42,7 +42,7 @@ void Worker_PythonAlgorithm::Initialize(){
         std::string command = "sys.path.append('" + this->python_folder + "')";
         py::exec(command.c_str());
 
-        py::object processing = py::module::import("worker");
+        py::object processing = py::module::import("pythonalgorithm_worker");
         /// Check for errors
         if (PyErr_Occurred())
         {

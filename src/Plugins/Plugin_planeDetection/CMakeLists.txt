@@ -52,7 +52,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS) # needed because python has something called "
 
 set(PYTHON_FILES
     spd_pytorch/demo.py
-    spd_pytorch/planedetect2.py
+    spd_pytorch/standardplanedetection_worker.py
     )
 
 file(GLOB SOURCES "*.h" "*.cxx")
