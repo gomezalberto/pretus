@@ -33,7 +33,7 @@ void Worker_planeDetection::Initialize(){
         std::string command = "sys.path.append('" + this->python_folder + "')";
         py::exec(command.c_str());
 
-        py::object processing = py::module::import("planedetect2");
+        py::object processing = py::module::import("worker");
         /// Check for errors
         if (PyErr_Occurred())
         {
@@ -42,7 +42,7 @@ void Worker_planeDetection::Initialize(){
         }
 
         /// grabbing the functions from module
-        this->PyImageProcessingFunction = processing.attr("getprediction");
+        this->PyImageProcessingFunction = processing.attr("dowork");
         py::object getLabelsFunction = processing.attr("getlabels");
 
         this->PyPythonInitializeFunction = processing.attr("initialize");
