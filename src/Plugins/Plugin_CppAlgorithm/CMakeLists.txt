@@ -35,6 +35,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 file(GLOB SOURCES "*.h" "*.cxx")
 
+
 add_library(Plugin_CppAlgorithm "${PROJECT_BUILD_TYPE}"
     ${SOURCES}
     )
@@ -51,8 +52,8 @@ target_link_libraries(Plugin_CppAlgorithm
 
 install(TARGETS Plugin_CppAlgorithm
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION pluginlib
+    ARCHIVE DESTINATION pluginlib
     COMPONENT libraries
     )
 

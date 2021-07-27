@@ -39,8 +39,8 @@ target_link_libraries(Plugin_videomanager
 
 install(TARGETS Plugin_videomanager
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION pluginlib
+  ARCHIVE DESTINATION pluginlib
   COMPONENT libraries
   )
 

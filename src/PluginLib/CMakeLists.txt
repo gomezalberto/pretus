@@ -16,6 +16,9 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS) # needed because python has something called "
 
 file(GLOB SOURCES "*.h" "*.cxx" "*.md")
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_library(Plugin "${PROJECT_BUILD_TYPE}" ${SOURCES}
   )
 
@@ -45,4 +48,7 @@ install(TARGETS Plugin
   COMPONENT libraries  
   PUBLIC_HEADER DESTINATION include
   )
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+install (DIRECTORY ${CMAKE_BINARY_DIR}/exports/  DESTINATION include/exports)
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")

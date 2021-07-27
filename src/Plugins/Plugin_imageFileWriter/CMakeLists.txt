@@ -46,8 +46,8 @@ set(SCRIPT_INSTALL_PATH ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS Plugin_imageFileWriter
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION pluginlib
+    ARCHIVE DESTINATION pluginlib
     COMPONENT libraries
     )
 

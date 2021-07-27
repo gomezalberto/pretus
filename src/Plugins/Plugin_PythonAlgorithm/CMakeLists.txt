@@ -81,8 +81,8 @@ install( DIRECTORY python/  DESTINATION "${SCRIPT_INSTALL_PATH}/${PYTHON_FOLDERS
 
 install(TARGETS Plugin_PythonAlgorithm
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION pluginlib
+    ARCHIVE DESTINATION pluginlib
     COMPONENT libraries
     )
 

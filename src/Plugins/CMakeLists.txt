@@ -2,6 +2,17 @@
 ## Qt required for signals and slots (even if no GUI is required)
 ## #################################################################
 
+find_library(PLUGIN_LIBRARY
+    NAMES libPlugin.so
+    HINTS "${CMAKE_PREFIX_PATH}/"
+)
+
+find_path(PLUGIN_INCLUDE_DIR NAMES Plugin.h)
+include_directories("${PLUGIN_INCLUDE_DIR}")
+
+# need this to locate the PluginLib
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Non optional plug-ins
 add_subdirectory(Plugin_filemanager)

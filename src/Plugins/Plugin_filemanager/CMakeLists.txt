@@ -37,8 +37,8 @@ target_link_libraries(Plugin_filemanager
 
 install(TARGETS Plugin_filemanager
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION pluginlib
+  ARCHIVE DESTINATION pluginlib
   COMPONENT libraries
   )
 

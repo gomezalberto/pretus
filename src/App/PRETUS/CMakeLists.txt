@@ -18,6 +18,11 @@ include_directories( ${CMAKE_BINARY_DIR}/generated/ )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#message("${CMAKE_INSTALL_PREFIX}/lib")
+#link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+#link_directories("${PLUGIN_FOLDER}")
 
 # Boost (for signals slots)
 find_package(Boost REQUIRED COMPONENTS filesystem thread chrono)#COMPONENTS system filesystem thread date_time iostreams serialization)

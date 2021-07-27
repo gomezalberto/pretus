@@ -82,8 +82,8 @@ install( DIRECTORY spd_pytorch/  DESTINATION "${SCRIPT_INSTALL_PATH}/${PYTHON_FO
 
 install(TARGETS Plugin_planeDetection
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION pluginlib
+    ARCHIVE DESTINATION pluginlib
     COMPONENT libraries
     )
 
