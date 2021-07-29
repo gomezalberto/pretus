@@ -36,6 +36,7 @@ Image::Image()
     this->SetMetaData<std::string>("TransmissionFrameRate", "0");
     this->SetMetaData<std::string>("FrameRate", "0");
     this->SetMetaData<std::string>("StreamType", "Input");
+    this->SetMetaData<std::string>("StreamTypeHistory", "Input");
 }
 
 Image::StreamType Image::GetStreamType() 

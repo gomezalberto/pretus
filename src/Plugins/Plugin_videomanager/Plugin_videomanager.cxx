@@ -21,6 +21,8 @@ Plugin_VideoManager::Plugin_VideoManager(QObject *parent) : Plugin(parent)
     /// make sure that when the video generates an image, this plugin emits that image
     QObject::connect(manager.get(), &VideoManager::ImageGenerated,
                      this, &Plugin_VideoManager::slot_imageReceived,Qt::DirectConnection);
+
+
     this->SetDefaultArguments();
 }
 

@@ -48,19 +48,21 @@ QString Worker::pluginName() const
 
 void Worker::slot_Work(ifind::Image::Pointer image){
 
-    std::chrono::steady_clock::time_point t_begin, t_end ;
-    if (this->params.measureTime){
-        t_begin = std::chrono::steady_clock::now();
-    }
     if (image != nullptr){
+        std::chrono::steady_clock::time_point t_begin, t_end ;
+        if (this->params.measureTime){
+            t_begin = std::chrono::steady_clock::now();
+        }
+
         this->doWork(image);
-    }
-    if (this->params.measureTime){
         this->FrameCount++;
-        t_end = std::chrono::steady_clock::now();
-        int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
-        if (duration >0){
-            std::cout << ifind::LocalTimeStamp() << " Worker::slot_Work(): " << mPluginName.toStdString() << " frame "<< image->GetMetaData<std::string>("TransmitedFrameCount")<<" processed "<< this->FrameCount << " time "<< duration << " ms " << std::endl;
+
+        if (this->params.measureTime){
+            t_end = std::chrono::steady_clock::now();
+            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
+            if (duration >0){
+                std::cout << ifind::LocalTimeStamp() << " Worker::slot_Work(): " << mPluginName.toStdString() << " frame " << image->GetMetaData<std::string>("TransmitedFrameCount")<<" from "<< image->GetMetaData<std::string>("StreamTypeHistory") << " processed "<< this->FrameCount << " time "<< duration << " ms " << std::endl;
+            }
         }
     }
     Q_EMIT this->WorkFinished();
