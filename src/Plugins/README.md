@@ -35,3 +35,13 @@ PLug-ins are implemented in C++, however the plug-in functionality can be implem
 
 It is **crucial** that the same python version is used throughout. We recommend using a environment installation such as conda for the purpose. The python include and binary should be the same used for pybind11 too.
 
+When configuring/generating in CMake, some warning or errors might appear. Do not ignore python related warnings since they may prevent proper execution. For example, you may get a zlib error saying: 
+
+*runtime library [libz.so.1] in /usr/lib/x86_64-linux-gnu may be 
+hidden by files in [folder]/miniconda3/lib*
+
+In that case, find the CMake entry for libz and replace it by the miniconda version.
+
+
+
+

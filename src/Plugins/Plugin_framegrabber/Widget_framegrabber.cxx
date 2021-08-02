@@ -14,7 +14,7 @@ Widget_framegrabber::Widget_framegrabber(
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Input");
 
     mLabel = new QLabel("Text not set", this);
-    mLabel->setStyleSheet("QLabel { background-color : black; color : white; }");
+    mLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
 
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
@@ -37,10 +37,6 @@ void Widget_framegrabber::SendImageToWidgetImpl(ifind::Image::Pointer image){
     if (image->HasKey("StreamTime")){
         stream << "Stream time: "<<image->GetMetaData<std::string>("StreamTime") << std::endl;
     }
-    //uint64_t t_dnl = std::atol(image->GetMetaData<std::string>("DNLTimestamp").c_str());
-    //stream << "Timestamp DNL: " << t_dnl;
-
-
 
     mLabel->setText(stream.str().c_str());
 }

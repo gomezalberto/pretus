@@ -119,7 +119,9 @@ void VideoManager::Send(void)
             QString timestring;
             timestring.sprintf("%02d:%02d:%02.3f", hours, minutes, seconds);
             if (this->verbose){
-                std::cout << ifind::LocalTimeStamp() << " [VERBOSE] VideoManager::Send() - Frame: "<< this->mTransmitedFramesCount << ", Play time: "<< timestring.toStdString()<<std::endl;
+                std::stringstream timess;
+                timess << ifind::LocalTimeStamp() << " [VERBOSE] VideoManager::Send() - Frame: "<< this->mTransmitedFramesCount << ", Play time: "<< timestring.toStdString()<<std::endl;
+                std::cout << timess.str();
             }
 
             std::string timestamp = std::to_string(std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count());

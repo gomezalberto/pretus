@@ -48,21 +48,31 @@ QString Worker::pluginName() const
 
 void Worker::slot_Work(ifind::Image::Pointer image){
 
-    if (image != nullptr){
-        std::chrono::steady_clock::time_point t_begin, t_end ;
-        if (this->params.measureTime){
-            t_begin = std::chrono::steady_clock::now();
-        }
+    if (image == nullptr){
+        Q_EMIT this->WorkFinished();
+        return;
+    }
 
-        this->doWork(image);
-        this->FrameCount++;
+    this->FrameCount++;
+    std::chrono::steady_clock::time_point t_begin, t_end ;
+    if (this->params.measureTime){
+        t_begin = std::chrono::steady_clock::now();
+    }
 
-        if (this->params.measureTime){
-            t_end = std::chrono::steady_clock::now();
-            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
-            if (duration >0){
-                std::cout << ifind::LocalTimeStamp() << " Worker::slot_Work(): " << mPluginName.toStdString() << " frame " << image->GetMetaData<std::string>("TransmitedFrameCount")<<" from "<< image->GetMetaData<std::string>("StreamTypeHistory") << " processed "<< this->FrameCount << " time "<< duration << " ms " << std::endl;
-            }
+    image->SetMetaData<int>(this->mPluginName.toStdString() + "_FrameCount", this->FrameCount );
+    this->doWork(image);
+
+
+    if (this->params.measureTime){
+        t_end = std::chrono::steady_clock::now();
+        int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
+        if (duration >-1){
+            std::stringstream timess;
+            timess << ifind::LocalTimeStamp() << " Worker::slot_Work(): " << mPluginName.toStdString()
+                      << " frame " << image->GetMetaData<std::string>("TransmitedFrameCount")<<" from "
+                      << image->GetMetaData<std::string>("StreamTypeHistory") << " and "<< image->GetMetaData<std::string>("StreamType")
+                      <<  " processed "<< this->FrameCount << " time "<< duration << " ms " << std::endl;
+            std::cout << timess.str();
         }
     }
     Q_EMIT this->WorkFinished();
