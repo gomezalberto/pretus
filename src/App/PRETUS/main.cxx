@@ -43,16 +43,15 @@ void PrintUsage( char* argv[], const PluginQList &plugin_list){
     std::cout << "Optional arguments:"<<std::endl;
     std::cout <<"\t-h \tShow this help."<<std::endl;
     std::cout << std::endl;
-    std::cout <<"\t-pipeline <int>\tString with the pipeline to carry out."<<std::endl;
-    std::cout << "\t\t-pipeline \"index>index\" -plugin_option value -plugin_option value" << std::endl;
+    std::cout << "\t-pipeline <val> :"<<std::endl;
+    std::cout << "\t\t-pipeline \"index>index...>index\" [-plugin_option value -plugin_option value ...]" << std::endl;
     std::cout << "\tor..." << std::endl;
     std::cout << "\t\t-pipeline \"plugin_name>plugin_name\" -plugin_option value -plugin_option value" << std::endl;
     std::cout << "\t\t\tWhere 'plugin_name' comparison is case and space insensitive" << std::endl;
     std::cout << std::endl;
     std::cout << "\tExamples of pipeline strings"<<std::endl;
-    std::cout << "\t" << argv[0] << " -pipeline \"3>0\""<<"\tLoads from file then processes with python and visualizes (Default)"<<std::endl;
-    std::cout << "\t" << argv[0] << " -pipeline \"3>1>0\""<<"\tLoads from file then processes with python and visualizes"<<std::endl;
-    std::cout << "\t" << argv[0] << " -pipeline \"PluginFileManager>PluginVisualization\" - fm_input_folder \"some_path\"" << std::endl;
+    std::cout << "\t" << argv[0] << " -pipeline \"3>1>0\""<<std::endl;
+    std::cout << "\t" << argv[0] << " -pipeline \"FileManager>GUI\" --filemanager_input \"some_path\"" << std::endl;
 
     int j=0;
     for (auto plugin : plugin_list)

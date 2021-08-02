@@ -42,10 +42,12 @@ Dependencies for this plug-in:
 
 * Python 3 (tested on Python 3.7)
 * Python 3 library (tested on Python 3.7)
-* Scipy
+* numpy
+* pytorch, 
+* simpleitk
+* skimage
 * [PyBind11](https://pybind11.readthedocs.io/en/stable/advanced/cast/overview.html) (for the python interface if required), with python 3.
-* [Pytorch]()
-* [Scikit]()
+
 
 To build, first configure the plug-in dependencies using CMake. You will need to define the following CMake variables:
 
