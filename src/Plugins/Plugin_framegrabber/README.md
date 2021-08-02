@@ -6,17 +6,35 @@ A plug-in to read real time images using an EPIPHAN DVI2USB framegrabber.
 
 The following plug-in options can be tweaked via the command line interface:
 
-| Argument           | Values   | Default | Description                            |
-|--------------------|----------|---------|----------------------------------------|
-|  -fg_studio_swing  | \{1, 0\} |   1     | Correct for studio swing (1) or not (0)|
-|  -fg_framerate     | (0, 30)  |  0 (max)| Frame rate of the capture for the frame grabber. If <=0, then maximum framerate is used |
-|  -fg_pixelsize     | px py |   1 1    | Pixel size (x and y), in mm. |
-|  -fg_verbose     | \{1, 0\} |   0    | Output more information for debugging. |
+``` bash
+# PLUGIN Frame grabber
+   Reads real-time imaging from a video source using the Epiphan DVI2USB 3.0  grabber.
+	--framegrabber_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--framegrabber_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--framegrabber_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                            		(Default: <1 for input plugins, 0 for the rest>) 
+	--framegrabber_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                             		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                             		default location depends on widget.) 
+   Plugin-specific arguments:
+	--framegrabber_studioswing <val> [ type: BOOL]	Correct for studio swing (1) or not (0). (Default: 1) 
+	--framegrabber_resolution <val> [ type: FLOAT]	Value, in mm, of the pixel size (isotropic). (Default: 1) 
+```
 
 
 # Build and configuration
 
-This plug-in requires that the SDK is available and that the drivers are installed.
+This plug-in requires setting new CMake variables, the Epiphan SDK available and that the drivers are installed. More details below.
+
+## CMake configuration
+
+This plug-in requires to fill the following CMake variables:
+
+* EpiphanSDK_DIR (see subsection below)
+* z_lib {include, library} dirs: It is very importatnt that these folders are consistent with any potential pythoin installation. For example, if you have zlib installed within your anaconda path, you should use those (e.g. `<HOME>/anaconda3/lib/libz.so`)
+
+
+
 
 ## Epiphan SDK
 For this plug-in you need the driver and the EPIPHAN SDK. This folder must be indicated in the `EpiphanSDK_DIR` CMake tag. For example:

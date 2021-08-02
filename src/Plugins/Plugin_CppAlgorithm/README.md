@@ -7,6 +7,28 @@ This plug-in carries out a simple image processing task in C++, and is provided 
 
 The task of choice is a simple image segmentation task based on thresholding using ITK.
 
+# Usage
+
+```bash
+# PLUGIN Cpp Algorithm
+   Sample plug-in that does a simple threshold based segmentation.
+	--cppalgorithm_stream <val> [ type: STRING]	Name of the stream(s) that this plug-in takes as input. (Default: ) 
+	--cppalgorithm_layer <val> [ type: INT]	Number of the input layer to pass to the processing task. If negative, starts 
+                                        		from te end. (Default: 0) 
+	--cppalgorithm_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--cppalgorithm_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--cppalgorithm_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--cppalgorithm_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                            		(Default: <1 for input plugins, 0 for the rest>) 
+	--cppalgorithm_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                             		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                             		default location depends on widget.) 
+   Plugin-specific arguments:
+	--cppalgorithm_threshold <val> [ type: INT]	Intensity threshold for segmentation. (Default: 50)
+```
+
+# Tutorial
+
 # 1. Set up the files
 
 A basic plug-in will needs one class (the plugin itself) and optionally three more classes: the worker (if the taask is to be done in a separate thread, or at a certain interval), and the two widgets: one for the metadata, and one for images. In this case we will implement all four:

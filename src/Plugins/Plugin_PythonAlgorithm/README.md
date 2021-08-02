@@ -11,6 +11,44 @@ The task of choice is a simple image blurring task based on SimpleITK, and an ad
 
 *Note: it is recommended that the sample plugin CppAlgorithm is checked first, since it is more simple.*
 
+# Usage
+
+```bash
+# PLUGIN Python Algorithm
+   Sample plug-in that does a simple Gaussian blurring.
+	--pythonalgorithm_stream <val> [ type: STRING]	Name of the stream(s) that this plug-in takes as input. (Default: ) 
+	--pythonalgorithm_layer <val> [ type: INT]	Number of the input layer to pass to the processing task. If negative, starts 
+                                           		from te end. (Default: 0) 
+	--pythonalgorithm_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+	--pythonalgorithm_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
+	--pythonalgorithm_time <val> [ type: BOOL]	Whether to measure execution time (1) or not (0). (Default: 0) 
+	--pythonalgorithm_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
+                                               		(Default: <1 for input plugins, 0 for the rest>) 
+	--pythonalgorithm_showwidget <val> [ type: INT]	Whether to display widget with plugin information (1-4) or not (0). Location is 
+                                                		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
+                                                		default location depends on widget.) 
+   Plugin-specific arguments:
+	--pythonalgorithm_sigma <val> [ type: FLOAT]	Sigma (in mm) for Gaussian blurring. (Default: 3) 
+	--pythonalgorithm_delay <val> [ type: FLOAT]	Delay (in sec) for artificially slowing doen the execution. (Default: 0) 
+```
+
+# Build and install
+
+Dependencies for this plug-in:
+
+* Python 3 (tested on Python 3.7)
+* Python 3 library (tested on Python 3.7)
+* Scipy
+* [PyBind11](https://pybind11.readthedocs.io/en/stable/advanced/cast/overview.html) (for the python interface if required), with python 3.
+
+To build, first configure the plug-in dependencies using CMake. You will need to define the following CMake variables:
+
+* `PYTHON_LIBRARY` for example, `<HOME>/anaconda3/lib/libpython3.7m.so`
+* `PYTHON_INCLUDE_DIR` for example `<HOME>/anaconda3/include/python3.7m`
+* `PYTHON_EXECUTABLE` for example `<HOME>/anaconda3/bin/python3.7`
+* `PYBIND11_DIR` for example `<HOME>/local/pybind11/share/cmake/pybind11`
+
+# Tutorial
 
 # 1. Set up the files
 

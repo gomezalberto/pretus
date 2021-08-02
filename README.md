@@ -215,7 +215,7 @@ The minimum requirements are:
     * tested with 5.12
 * VTK 
     * Tested with 8.2.0 (Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`)
-* ITK (for the webcam plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
+* ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * Tested with 4.9.1
     * HDF5 enabled (tip on this later)
 * OpenCV and OpenCV contrib
@@ -233,18 +233,21 @@ The minimum requirements are:
 ## Brief build and install
 
 1. Launch CMake configure. CMake needs to be able to find (automatically if installed systemwide, or specifying the build directories otherwise) the following packages:
-    * VTK
-    * ITK
+    * VTK (Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`)
+    * ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * QT (should be the same version used for VTK)
-    * OpenCV
+    * OpenCV (needed for ITK - build with opencv contrib as decribed above)
     * Boost
 At this stage you can enable and disable what plug-ins will be built. See plug-in specific instructions on how to configure CMake options for them.
 2. [Optional] If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. These can be more than one folder, separated by `;`.
-3. Generate.  At this stage, you may bet some errors or warnings. If there is an error about conflicting library versions with conda, make sure you select the anaconda versions on CMake.
-4. make.
-5. And launch `iFIND2Standalone -h`.
+3. Set your install path using the `CMAKE_INSTALL_PREFIX` variable. We recommend a path within `<HOME>/local/`.
+4. Select the plug-ins to build with `BUILD_PLUGIN_XXX`. We recommend to initially build with the default enabled plug-ins, and gradually build the rest.
+**Each plug-in has different dependencies, so please do check the README in each Plug-in folder for specific build instructions.**
+5. Generate.  At this stage, you *might* get some errors or warnings. If there is an error about conflicting library versions with conda, make sure you select the anaconda versions on CMake.
+6. `make`, and `make install`. The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
+5. And launch `pretus -h`.
 
-More comprehensive instrunctions, and troubleshooting, can be found [here](src/troubleshooting.md).
+More comprehensive instructions, and troubleshooting, can be found [here](src/troubleshooting.md).
 
 
 # Acknowledgement 
