@@ -155,27 +155,9 @@ void QtVisualizationMainWindow::Initialize()
 
 void QtVisualizationMainWindow::InitializeCentralPanel(){
 
-    //std::cout << "QtVisualizationMainWindow::InitializeCentralPanel"<<std::endl;
 
     this->setStyleSheet("QWidget { background-color : black}");
     QGridLayout *centralLayout = static_cast<QGridLayout *>(this->centralWidget()->layout());
-
-
-//        /// First remove all widgets, then add them in the right order.
-//        if ( centralLayout != NULL )
-//        {
-//            QLayoutItem* item;
-//            while ( ( item = centralLayout->takeAt( 0 ) ) != NULL )
-//            {
-//                centralLayout->removeItem(item);
-//                //delete item->widget();
-//                std::cout << "    QtVisualizationMainWindow::InitializeCentralPanel() - delete one widget"<< std::endl;
-//                //delete item;
-//            }
-//            //delete m_view->layout();
-//        }
-
-//        std::cout << "QtVisualizationMainWindow::InitializeCentralPanel() - all widgets removed"<< std::endl;
 
     int N = 0;
     for (int i=0; i< mImageWidgets.size(); i++){
@@ -183,28 +165,28 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             N++;
         }
     }
-    //std::cout << "QtVisualizationMainWindow::InitializeCentralPanel there are "<< N << " visible widgets"<<std::endl;
 
-    int Nr=1, Nc=1;
+    int mNr=1;
+    int mNc=1;
 
     switch (N){
     case 2:
     {
-        Nc=2;
+        mNc=2;
         break;
     }
     case 3:
     case 4:
     {
-        Nr=2;
-        Nc=2;
+        mNr=2;
+        mNc=2;
         break;
     }
     case 5:
     case 6:
     {
-        Nr=2;
-        Nc=3;
+        mNr=2;
+        mNc=3;
         break;
     }
     }
@@ -216,11 +198,9 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
         case QtPluginWidgetBase::WidgetLocation::visible:
         {
             QtPluginWidgetBase *w = mImageWidgets[i];
-            //this->centralWidget()->layout()->addWidget(w, i, i);
-            int r = std::floor(nvisibles/Nc);
-            int c = nvisibles % Nc;
+            int r = std::floor(nvisibles/mNc);
+            int c = nvisibles % mNc;
 
-            //std::cout << "QtVisualizationMainWindow::Initialize() image widget ("<<Nr<<"x"<<Nc<<") "<< nvisibles<<" with image location to r: "<<r << " and c: "<< c << std::endl;
             nvisibles++;
             centralLayout->addWidget(w,r,c);
             break;

@@ -1,9 +1,7 @@
 #pragma once
 #include <QtInfoPanelBase.h>
-
 #include <ifindImage.h>
 
-//#include <map>
 
 class QLabel;
 class QtLevelMeter;

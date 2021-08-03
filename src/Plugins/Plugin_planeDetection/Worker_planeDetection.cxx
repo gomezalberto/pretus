@@ -203,6 +203,10 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
                 min_confidence_av  = confidences_average[i];
             }
         }
+        /// Now renormalize to [0, 1] confidence
+        for (int i=0; i<confidences_average.size(); i++){
+            confidences_average[i]= (confidences_average[i]-min_confidence_av) /(max_confidence_av-min_confidence_av);
+        }
     }
 
     // convert to a string
