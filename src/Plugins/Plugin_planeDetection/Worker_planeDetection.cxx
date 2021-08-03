@@ -183,15 +183,24 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         confidences_average[i]= (confidences_average[i]-min_confidence) /(max_confidence-min_confidence);
     }
 
-    const int BACKGROUND_IDX = 3;
     if (this->background_threshold > 0){
+        const int BACKGROUND_IDX = 3;
+        double max_confidence_av = -10000,  min_confidence_av = 10000;
+        /// recompute max_confidence ID
+        max_confidence_id = -1; // by default, background
         for (int i=0; i<confidences_average.size(); i++){
             if (i == BACKGROUND_IDX) {
                 if (confidences_average[i] < this->background_threshold){
-                    //std::cout << "Worker_planeDetection::doWork() - Confidences for "<< i << " are " << confidences_average[i]<<
-                    //             ", and the threshold is "<< this->background_threshold << " so we set to 0"<< std::endl;
                     confidences_average[i] = 0;
                 }
+            }
+            if (confidences_average[i]>max_confidence_av){
+
+                max_confidence_av  = confidences_average[i];
+                max_confidence_id = i;
+            }
+            if (confidences_average[i]<min_confidence_av){
+                min_confidence_av  = confidences_average[i];
             }
         }
     }
@@ -199,7 +208,6 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     // convert to a string
     QStringList confidences_str;
     for (int i=0; i<confidences_average.size(); i++){
-
         confidences_str.append(QString::number(confidences_average[i]));
     }
 
@@ -210,12 +218,6 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         }
         return;
     }
-
-    /* if (std::strcmp(this->labels[max_confidence_id].toStdString().c_str(),"Background")==0){
-        // We do not add Background images to the stream
-        return;
-    }
-    */
 
     /// Now add the classification information to the image and send it to the next plug-in.
     image->SetMetaData<std::string>( mPluginName.toStdString() +"_labels", this->labels.join(",").toStdString() );

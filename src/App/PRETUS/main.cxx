@@ -183,7 +183,8 @@ PluginQList LoadPlugins(int argc, char* argv[])
         }
 
         for (int idx=0; idx<plugin_paths.count(); idx++){
-            std::cout << "\t"<< total_plugin_count << " [Plugin] loading " << plugin_paths.at(idx).toStdString() << "...";
+
+            std::cout << "\t"<< total_plugin_count << " [Plugin] loading " << plugin_paths.at(idx).toStdString() << "..." << std::flush;
             // load the plugin's from shared library file,
             // imspired from https://teknoman117.wordpress.com/2012/08/05/c-plugins-with-boostfunction-on-linux/
             void *handle = NULL;
@@ -191,7 +192,7 @@ PluginQList LoadPlugins(int argc, char* argv[])
             // as per: http://stackoverflow.com/questions/8302810/undefined-symbol-in-c-when-loading-a-python-shared-library
             if(!(handle = dlopen(plugin_paths.at(idx).toUtf8().constData(), RTLD_NOW | RTLD_GLOBAL)))
             {
-                std::cerr << "A \t[Plugin] ERROR: " << dlerror() <<std::endl;
+                std::cerr << "A \t[Plugin] ERROR: "<< idx << " " << dlerror() <<std::endl;
                 continue;
             }
             dlerror();
@@ -200,6 +201,7 @@ PluginQList LoadPlugins(int argc, char* argv[])
 
             // get the pluginConstructor function
             PluginConstructorType construct = (Plugin* (*)(void)) dlsym(handle, "construct");
+
             char *error = NULL;
             if((error = dlerror()))
             {
@@ -207,6 +209,7 @@ PluginQList LoadPlugins(int argc, char* argv[])
                 dlclose(handle);
                 continue;
             }
+
 
             // construct a plugin
             std::shared_ptr<Plugin> plugin(construct());
