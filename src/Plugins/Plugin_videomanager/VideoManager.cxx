@@ -19,6 +19,14 @@ VideoManager::VideoManager(QObject *parent) : Manager(parent){
     this->FF_factor = 1.10; // This seems to be needed to compensate for the time during the frame processing. With this value, the playback seems real time. Might not be the case in a faster pc though.
 }
 
+void VideoManager::slot_frameValueChanged(int v){
+
+    /// Compute the stuff
+    int nframes = this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT);
+    int requested_frame = double(v)/1000.0*nframes;
+    this->VideoSource.set(CV_CAP_PROP_POS_FRAMES, requested_frame);
+}
+
 void VideoManager::SetStringTime(std::string timeString){
    int msec = 0;
 
@@ -133,6 +141,9 @@ void VideoManager::Send(void)
             image->SetMetaData<>("AcquisitionFrameRate", QString::number(this->FrameRate).toStdString());
 
             image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+
+            image->SetMetaData<std::string>("CurrentVideoFrame", QString::number(this->VideoSource.get(CV_CAP_PROP_POS_FRAMES)).toStdString());
+            image->SetMetaData<std::string>("TotalVideoFrames", QString::number(this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT)).toStdString());
             auto current_transmit_t = std::chrono::steady_clock::now();
             int duration = std::chrono::duration_cast<std::chrono::milliseconds>(current_transmit_t - this->last_transmit_t).count();
             this->TransmitFrameRate.push_back(1000.0 / double(duration));

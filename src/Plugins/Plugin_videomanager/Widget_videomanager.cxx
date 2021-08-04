@@ -1,5 +1,5 @@
 #include "Widget_videomanager.h"
-
+#include <QSlider>
 #include <QLabel>
 #include <QVBoxLayout>
 
@@ -18,6 +18,13 @@ Widget_videomanager::Widget_videomanager(
     labelFont.setPixelSize(15);
     labelFont.setBold(true);
     mLabel->setFont(labelFont);
+    //
+    mSlider = new QSlider(Qt::Orientation::Horizontal);
+    mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
+
+    mSlider->setMaximum(1000);
+    mSlider->setMinimum(0);
+    mSlider->setAutoFillBackground(true);
 
     auto vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0, 0, 0, 0);
@@ -25,6 +32,7 @@ Widget_videomanager::Widget_videomanager(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
+    vLayout->addWidget(mSlider);
     this->AddImageViewCheckboxToLayout(vLayout);
 }
 
@@ -40,6 +48,17 @@ void Widget_videomanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
         << " Hz"<< std::endl;
 
     }
+
+    // update the slider
+    if (image->HasKey("CurrentVideoFrame")){
+        int current_frame = stoi(image->GetMetaData<std::string>("CurrentVideoFrame"));
+        int total_frames = stoi(image->GetMetaData<std::string>("TotalVideoFrames"));
+
+        int current_slider_pos = (current_frame*100/total_frames)*10; // this convoluted *1000 in two steps is to only update every 1/100.
+        this->mSlider->setValue(current_slider_pos);
+
+    }
+
     //uint64_t t_dnl = std::atol(image->GetMetaData<std::string>("DNLTimestamp").c_str());
     //stream << "Timestamp DNL: " << t_dnl;
 

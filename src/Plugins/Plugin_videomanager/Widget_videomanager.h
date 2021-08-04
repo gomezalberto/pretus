@@ -4,6 +4,7 @@
 #include <QtPluginWidgetBase.h>
 
 class QLabel;
+class QSlider;
 
 class Widget_videomanager : public QtPluginWidgetBase
 {
@@ -13,7 +14,7 @@ public:
     Widget_videomanager(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
-
+    QSlider *mSlider;
 private:
     // raw pointer to new object which will be deleted by QT hierarchy
     QLabel *mLabel;
