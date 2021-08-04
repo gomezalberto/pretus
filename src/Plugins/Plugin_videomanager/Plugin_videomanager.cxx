@@ -1,4 +1,5 @@
 #include "Plugin_videomanager.h"
+#include <QSlider>
 #include <QObject>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
@@ -9,6 +10,12 @@ Plugin_VideoManager::Plugin_VideoManager(QObject *parent) : Plugin(parent)
         // create widget
         WidgetType * mWidget_ = new WidgetType;
         this->mWidget = mWidget_;
+
+        // Connect widget and worker here
+        VideoManager *w = std::dynamic_pointer_cast< VideoManager >(this->manager).get();
+        QObject::connect(mWidget_->mSlider,
+                &QSlider::valueChanged, w,
+                &VideoManager::slot_frameValueChanged);
     }
 
     {

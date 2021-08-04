@@ -42,6 +42,8 @@ public Q_SLOTS:
    */
     virtual void Send(void);
 
+    virtual void slot_frameValueChanged(int v);
+
 Q_SIGNALS:
 
     void FileNumberChanged(int arg);
