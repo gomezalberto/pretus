@@ -39,6 +39,6 @@ private:
     /**
      * @brief Build the widget
      */
-    void Build();
+    void Build(std::vector<std::string> &labelnames);
 
 };
