@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QtInfoPanelTrafficLightBase.h>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
 
 Widget_planeDetection::Widget_planeDetection(
         QWidget *parent, Qt::WindowFlags f)
@@ -32,7 +34,7 @@ Widget_planeDetection::Widget_planeDetection(
     mSliderTA->setAutoFillBackground(true);
 }
 
-void Widget_planeDetection::Build(){
+void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
 
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
@@ -66,9 +68,7 @@ void Widget_planeDetection::Build(){
 
             standardPlaneTrafficLightConfig.Mode =
                     QtInfoPanelTrafficLightBase::Modes::ImmediateBarNormalised;
-            standardPlaneTrafficLightConfig.LabelNames = { "3VV","4CH","Abdominal",
-                                                           "Background","Brain (Cb.)","Brain (Tv.)", "Femur","Kidneys","Lips","LVOT",
-                                                           "Profile","RVOT","Spine (cor.)","Spine (sag.)" };
+            standardPlaneTrafficLightConfig.LabelNames = labelnames;
             standardPlaneTrafficLightConfig.NGridColumns = 2;
 
             standardPlaneTrafficLightConfig.ValueColorsVector.push_back(
@@ -131,14 +131,24 @@ void Widget_planeDetection::Build(){
                         infoPanel, &QtInfoPanelBase::SendImageToWidget);
         }
     }
-
 }
 
 void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     if (mIsBuilt == false){
         mIsBuilt = true;
-        this->Build();
+        std::string labels = image->GetMetaData<std::string>((this->pluginName() +"_labels").toStdString().c_str());
+
+        boost::char_separator<char> sep(",");
+        boost::tokenizer< boost::char_separator<char> > tokens(labels, sep);
+        std::vector<std::string> labelnames;
+        BOOST_FOREACH (const std::string& t, tokens) {
+                labelnames.push_back(t);
+            }
+//        std::vector<std::string> labelnames = { "3VV","4CH","Abdominal",
+//                                                "Background","Brain (Cb.)","Brain (Tv.)", "Femur","Kidneys","Lips","LVOT",
+//                                                "Profile","RVOT","Spine (cor.)","Spine (sag.)" };
+        this->Build(labelnames);
     }
 
     std::stringstream stream;
