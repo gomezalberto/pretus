@@ -27,6 +27,7 @@ Widget_framegrabber::Widget_framegrabber(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
+    this->AddImageViewCheckboxToLayout(vLayout);
 }
 
 void Widget_framegrabber::SendImageToWidgetImpl(ifind::Image::Pointer image){

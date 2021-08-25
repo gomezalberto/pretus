@@ -24,8 +24,6 @@ if __name__ == '__main__':
     im_file = sys.argv[1]
     print('Input image: {}'.format(im_file))
 
-
-
     standardplanedetection_worker.initialize('./','ifind2_net_Jan15.pth')
 
     # Load Testing image
