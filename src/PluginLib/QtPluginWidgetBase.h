@@ -25,6 +25,10 @@ public:
     void SetStreamTypes(const ifind::StreamTypeSet &streamTypesIn);
     void SetStreamTypesFromStr(const std::string &streamTypesStr);
 
+    const ifind::StreamTypeSet &InputStreamTypes() const;
+    void SetInputStreamTypes(const ifind::StreamTypeSet &streamTypesIn);
+    void SetInputStreamTypesFromStr(const std::string &streamTypesStr);
+
     QString pluginName() const;
     void setPluginName(const QString &pluginName);
 
@@ -49,6 +53,7 @@ protected:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image) = 0;
     virtual void AddImageViewCheckboxToLayout(QBoxLayout *vLayout);
     ifind::StreamTypeSet mStreamTypes;
+    ifind::StreamTypeSet mInputStreamTypes;
     QString mPluginName;
 
     WidgetLocation mWidgetLocation;

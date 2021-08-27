@@ -13,6 +13,7 @@
 #include <ifindStreamTypeHelper.h>
 
 #include "Worker.h"
+#include "Manager.h"
 #include "QtPluginWidgetBase.h"
 #include <vector>
 #include <InputParser.h>
@@ -131,6 +132,10 @@ public:
   virtual void Initialize(void);
 
   virtual bool IsActive() const;
+  /**
+   *  True if this plugin creates a Input strewm
+   *  */
+  virtual bool IsInput() const;
 
   virtual void SetActivate(bool arg){};
 
@@ -139,6 +144,9 @@ public:
 
   unsigned int getTimerInterval() const;
   void setTimerInterval(unsigned int value);
+
+  ifind::Image::StreamType getTransmittedStreamType() const;
+  void setTransmittedStreamType(const ifind::Image::StreamType &transmittedStreamType);
 
 public Q_SLOTS:
 
@@ -150,7 +158,10 @@ public Q_SLOTS:
   virtual void slot_imageReceived(ifind::Image::Pointer image);
 
   /**
-   * @brief slot to receive an image that has been processed by the worker and needs to be passed on to the next plug-in
+   * @brief slot to receive an image that has been processed by the worker
+   * and needs to be passed on to the next plug-in.
+   * In this method, the type of the Stream is assigned, as the plug-ins name.
+   * Input type plug-ins should not use this slot.
    * @param image
    */
   virtual void slot_imageProcessed(ifind::Image::Pointer image);
@@ -210,6 +221,8 @@ protected:
 
     ifind::StreamTypeSet mStreamTypes;
 
+    ifind::Image::StreamType mTransmittedStreamType;
+
     bool Active;
 
     std::vector< QStringList > mArguments;
@@ -227,6 +240,7 @@ protected:
 
     ifindImagePeriodicTimer* Timer;
     Worker::Pointer worker;
+    Manager::Pointer manager;
     QtPluginWidgetBase *mWidget;
 
     /**
@@ -241,6 +255,8 @@ protected:
     bool isTimed;
 
     bool mVerbose;
+
+    bool mIsInput;
 
 private:
 

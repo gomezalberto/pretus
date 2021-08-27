@@ -3,6 +3,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTORCC ON)
 
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+find_package(ITK REQUIRED)
+include(${ITK_USE_FILE})
+
+
 # Please don't remove the win32 code!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 if(WIN32)
     SET(PLUGIN_FOLDER "${CMAKE_BINARY_DIR}/bin/Debug" CACHE FILEPATH "Folder where plugins will be")
@@ -55,11 +61,13 @@ add_executable(pretus
    )
 
 TARGET_LINK_LIBRARIES(pretus
+  ifind2_common
   Qt5::Core # need this for QT signal/slot system
   Qt5::Widgets
-  ${Boost_LIBRARIES}
-  ifind2_common
+  ${VTK_LIBRARIES}
   Plugin
+  ${ITK_LIBRARIES}
+  ${Boost_LIBRARIES}
   dl
 )
 

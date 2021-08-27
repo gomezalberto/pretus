@@ -152,7 +152,10 @@ void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
     }
 
     std::stringstream stream;
-    stream << "==" << this->mPluginName.toStdString() << "==";
+    stream << "==" << this->mPluginName.toStdString() << "=="<<std::endl;
+    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes);
+
 
     if (image->HasKey("Standardplanedetection_bckth")){
         stream << std::endl<< "(1) Background threshold: "<< image->GetMetaData<std::string>("Standardplanedetection_bckth");

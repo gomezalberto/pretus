@@ -156,6 +156,10 @@ void VideoManager::Send(void)
             this->last_transmit_t = current_transmit_t;
         }
 
+        if (this->mTransmitedStreamType.size()>0){
+            image->SetStreamType(this->mTransmitedStreamType);
+        }
+
         Q_EMIT this->ImageGenerated(image);
     }
 

@@ -4,7 +4,11 @@
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
 {
-    this->manager =FrameGrabberManager::New();
+    this->mIsInput = true;
+    {
+        ManagerType::Pointer manager_ = ManagerType::New();
+        this->manager = manager_;
+    }
     {
         // create widget
         WidgetType * mWidget_ = new WidgetType;
@@ -17,7 +21,7 @@ Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
         this->mImageWidget->SetWidgetLocation(ImageWidgetType::WidgetLocation::visible);
     }
 
-    QObject::connect(this->manager.get(), &FrameGrabberManager::ImageGenerated,
+    QObject::connect(this->manager.get(), &ManagerType::ImageGenerated,
                      this, &Plugin_framegrabber::slot_imageReceived, Qt::DirectConnection);
 
     this->SetDefaultArguments();
@@ -29,7 +33,7 @@ void Plugin_framegrabber::Initialize(void){
     if (this->mImageWidget != nullptr){
         reinterpret_cast< ImageWidgetType *>(this->mImageWidget)->Initialize();
     }
-    this->manager->Initialize();
+    std::dynamic_pointer_cast< ManagerType >(this->manager)->Initialize();
 }
 
 void Plugin_framegrabber::SetDefaultArguments(){
@@ -40,12 +44,12 @@ void Plugin_framegrabber::SetDefaultArguments(){
     mArguments.push_back({"studioswing", "<val>",
                           QString( Plugin::ArgumentType[0] ),
                           "Correct for studio swing (1) or not (0).",
-                          QString::number(manager->params.correct_studio_swing)});
+                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing)});
 
     mArguments.push_back({"resolution", "<val>",
                           QString( Plugin::ArgumentType[2] ),
                           "Value, in mm, of the pixel size (isotropic).",
-                          QString::number(manager->params.pixel_size[0])});
+                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0])});
 
 }
 
@@ -55,22 +59,22 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
 
     {const std::string &argument = input.getCmdOption("studioswing");
         if (!argument.empty()){
-            manager->params.correct_studio_swing= atoi(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing= atoi(argument.c_str());
         }}
     {const std::string &argument = input.getCmdOption("resolution");
         if (!argument.empty()){
-            manager->params.pixel_size[0]= atof(argument.c_str());
-            manager->params.pixel_size[1]= atof(argument.c_str());
-            manager->params.pixel_size[0]= 1.0;
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= atof(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[1]= atof(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= 1.0;
         }}
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");
         if (!argument.empty()){
-            manager->params.CaptureFrameRate = atof(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate = atof(argument.c_str());
         }}
     {const std::string &argument = input.getCmdOption("verbose");
         if (!argument.empty()){
-            manager->params.verbose= atoi(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.verbose= atoi(argument.c_str());
         }}
 }
 
