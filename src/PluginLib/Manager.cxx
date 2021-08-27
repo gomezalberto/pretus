@@ -10,7 +10,13 @@ Manager::Manager(QObject* parent){
     this->Active = false;
     this->CurrentId = 0;
     this->verbose = false;
-    this->mTransmitedFramesCount =0;
+    this->mTransmitedFramesCount = 0;
+    this->mTransmitedStreamType = "";
+}
+
+void Manager::setTransmitedStreamType(const ifind::Image::StreamType &transmitedStreamType)
+{
+    mTransmitedStreamType = transmitedStreamType;
 }
 
 

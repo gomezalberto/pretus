@@ -40,6 +40,8 @@ void Widget_PythonAlgorithm::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "==" << std::endl;
+    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     if (image->HasKey("PythonAlgorithm_sigma")){
         stream << "Sigma: "<< image->GetMetaData<std::string>("PythonAlgorithm_sigma") << std::endl;

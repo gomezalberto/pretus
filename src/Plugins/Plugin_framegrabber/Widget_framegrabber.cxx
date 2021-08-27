@@ -34,6 +34,7 @@ void Widget_framegrabber::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<< std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     if (image->HasKey("StreamTime")){
         stream << "Stream time: "<<image->GetMetaData<std::string>("StreamTime") << std::endl;

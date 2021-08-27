@@ -4,6 +4,7 @@
 #include <QString>
 #include "ifindImage.h"
 #include <mutex>
+#include <memory>
 
 class iFIND2COMMON_EXPORT Manager : public QObject {
 
@@ -11,14 +12,9 @@ class iFIND2COMMON_EXPORT Manager : public QObject {
 
 public:
 
-    /*
+
     typedef Manager            Self;
     typedef std::shared_ptr<Self>       Pointer;
-
-    static Pointer New(QObject *parent = 0) {
-        return Pointer(new Manager(parent));
-    }
-    */
 
     /**
      * @brief Access the list of image files
@@ -51,6 +47,8 @@ public:
     void EnableCommandLineExitLoop();
 
     bool verbose;
+
+    void setTransmitedStreamType(const ifind::Image::StreamType &transmitedStreamType);
 
 public Q_SLOTS:
 
@@ -131,6 +129,7 @@ protected:
     Manager(QObject* parent = 0);
     QStringList DataBase;
     int mTransmitedFramesCount;
+    ifind::Image::StreamType mTransmitedStreamType;
 
 
 private:

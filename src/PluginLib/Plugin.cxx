@@ -22,6 +22,8 @@ Plugin::Plugin(QObject *parent)
     this->isTimed = true;
     this->mWidget = nullptr;
     this->mImageWidget = nullptr;
+    this->mIsInput = false;
+    this->mTransmittedStreamType = "Input"; // by default this is input
 
     this->SetDefaultArguments();
 
@@ -37,6 +39,7 @@ void Plugin::Initialize(void){
 
     if (this->mWidget != nullptr){
         this->mWidget->setPluginName(this->GetCompactPluginName());
+        this->mWidget->SetInputStreamTypes(this->mStreamTypes);
 
         /// Need to connect the plugin signal, instead of the worker signal, because
         /// the plugin will beforehand add the stream type.
@@ -119,6 +122,11 @@ bool Plugin::IsActive() const
     return this->Active;
 }
 
+bool Plugin::IsInput() const
+{
+    return this->mIsInput;
+}
+
 double Plugin::getFrameRate() const
 {
     return this->FrameRate;
@@ -155,13 +163,24 @@ void Plugin::setTimerInterval(unsigned int value)
 }
 
 void Plugin::slot_imageProcessed(ifind::Image::Pointer image){
-    image->SetStreamType(this->GetCompactPluginName().toStdString());
+    //std::cout << "[verbose] Plugin::slot_imageProcessed - in plugin "<<this->GetCompactPluginName().toStdString()<< ",  "<< ifind::StreamTypeSetToString(mStreamTypes)<<std::endl;
+    if (this->IsInput()){
+        //std::cout << "[verbose] Plugin::slot_imageProcessed - in plugin "<<this->GetCompactPluginName().toStdString()<< ",  "<< ifind::StreamTypeSetToString(mStreamTypes)<<std::endl;
+
+        image->SetStreamType(this->mTransmittedStreamType);
+    } else {
+        image->SetStreamType(this->GetCompactPluginName().toStdString());
+    }
     Q_EMIT this->ImageGenerated(image);
 }
 
 void Plugin::slot_imageReceived(ifind::Image::Pointer image){
     /// Send the image for processing. This image may or may not
     /// be processed depending on the timer's frame rate
+
+    //std::string streamname = image->GetStreamType();
+    //std::cout << "[verbose] Plugin::slot_imageReceived - image received from "<<streamname<< ", and can do streams of type "<< ifind::StreamTypeSetToString(mStreamTypes)<<std::endl;
+
 
     if (ifind::IsImageOfStreamTypeSet(image, mStreamTypes)){
         if (this->isTimed){
@@ -241,6 +260,26 @@ void Plugin::SetDefaultArguments(){
                                  QString( ArgumentType[1] ),
                                  "Whether to display widget with plugin information (1-4) or not (0). Location is 1- top left, 2- top right, 3-bottom left, 4-bottom right.",
                                  "visible, default location depends on widget."});
+}
+
+ifind::Image::StreamType Plugin::getTransmittedStreamType() const
+{
+    return mTransmittedStreamType;
+}
+
+void Plugin::setTransmittedStreamType(const ifind::Image::StreamType &transmittedStreamType)
+{
+    //std::cout << "[verbose] Plugin::setTransmittedStreamType - "<<this->GetCompactPluginName().toStdString() <<": set transmitted type to "<< transmittedStreamType << " ( was "<< mTransmittedStreamType<<")"<<std::endl;
+    mTransmittedStreamType = transmittedStreamType;
+    if (this->manager != nullptr){
+        this->manager->setTransmitedStreamType(this->mTransmittedStreamType);
+    }
+    if (this->mWidget != nullptr){
+        this->mWidget->SetStreamTypes(ifind::InitialiseStreamTypeSetFromString(this->mTransmittedStreamType));
+    }
+    if (this->mImageWidget != nullptr){
+        this->mImageWidget->SetStreamTypes(ifind::InitialiseStreamTypeSetFromString(this->mTransmittedStreamType));
+    }
 }
 
 void Plugin::SetCommandLineArguments(int argc, char* argv[]){   

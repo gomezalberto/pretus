@@ -119,6 +119,9 @@ void FrameGrabberManager::Send(void){
             Y->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
         }
         Y->SetSpacing(params.pixel_size);
+        if (this->mTransmitedStreamType.size()>0){
+            Y->SetStreamType(this->mTransmitedStreamType);
+        }
         Q_EMIT this->ImageGenerated(Y);
     }
 }

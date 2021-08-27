@@ -27,12 +27,14 @@ Widget_filemanager::Widget_filemanager(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
+    this->AddImageViewCheckboxToLayout(vLayout);
 }
 
 void Widget_filemanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<< std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     if (image->HasKey("TransmitedFrameCount")){
         stream << "Image "<<image->GetMetaData<std::string>("TransmitedFrameCount") << "/" << image->GetMetaData<std::string>("FrameCountTotal")<< std::endl;

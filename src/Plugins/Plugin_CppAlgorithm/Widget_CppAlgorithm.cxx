@@ -40,6 +40,8 @@ void Widget_CppAlgorithm::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "==" << std::endl;
+    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     if (image->HasKey("CppAlgorithm_threshold")){
         stream << "Threshold: "<< image->GetMetaData<std::string>("CppAlgorithm_threshold") << std::endl;

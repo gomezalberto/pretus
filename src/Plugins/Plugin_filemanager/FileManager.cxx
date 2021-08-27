@@ -97,6 +97,14 @@ void FileManager::Send(void)
     }
     framerate = (framerate > 0) && (framerate < 200)? framerate : 20;
     image->SetMetaData<>("AcquisitionFrameRate", QString::number(framerate).toStdString() );
+    if (this->mTransmitedStreamType.size()>0){
+        image->SetStreamType(this->mTransmitedStreamType);
+    }
+
+    if (this->params.verbose == true){
+        /// TODO: the stream name here should not be that!
+        std::cout << "[verbose] FileManager::Send (Image Generated) - send image "<<this->mTransmitedFramesCount<<" of Stream "<< image->GetStreamType()<<std::endl;
+    }
 
     Q_EMIT ImageGenerated(image);
 

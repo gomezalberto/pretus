@@ -9,6 +9,7 @@ class Plugin_VideoManager : public Plugin {
 	Q_OBJECT
 
 public:
+    typedef VideoManager ManagerType;
     typedef Widget_videomanager WidgetType;
     typedef QtVTKVisualization ImageWidgetType;
     Plugin_VideoManager(QObject* parent = 0);
@@ -25,6 +26,5 @@ public:
     }
 
 private:
-    VideoManager::Pointer manager;
     virtual void SetDefaultArguments();
 };

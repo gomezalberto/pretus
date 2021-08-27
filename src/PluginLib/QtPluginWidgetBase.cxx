@@ -31,6 +31,16 @@ void QtPluginWidgetBase::SetStreamTypes(const ifind::StreamTypeSet &streamTypesI
     mStreamTypes = streamTypesIn;
 }
 
+const ifind::StreamTypeSet &QtPluginWidgetBase::InputStreamTypes() const
+{
+    return mInputStreamTypes;
+}
+
+void QtPluginWidgetBase::SetInputStreamTypes(const ifind::StreamTypeSet &streamTypesIn)
+{
+    mInputStreamTypes = streamTypesIn;
+}
+
 void QtPluginWidgetBase::AddImageViewCheckboxToLayout(QBoxLayout *vLayout){
 
     mViewImageCheckbox = new QCheckBox("View image",this);
@@ -43,6 +53,12 @@ void QtPluginWidgetBase::SetStreamTypesFromStr(const std::string &streamTypesStr
 {
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString(streamTypesStr);
 }
+
+void QtPluginWidgetBase::SetInputStreamTypesFromStr(const std::string &streamTypesStr)
+{
+    mInputStreamTypes = ifind::InitialiseStreamTypeSetFromString(streamTypesStr);
+}
+
 
 void QtPluginWidgetBase::SendImageToWidget(ifind::Image::Pointer image)
 {

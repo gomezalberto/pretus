@@ -99,6 +99,8 @@ int main (int argc, char* argv[])
     QList<QtPluginWidgetBase *> widgets;
     QList<QtPluginWidgetBase *> imageWidgets;
 
+    int n_input_plugins = 0;
+
     QListIterator<std::shared_ptr<Plugin>> plugin_iter(ordered_plugins);
     while (plugin_iter.hasNext())
     {
@@ -118,17 +120,26 @@ int main (int argc, char* argv[])
                         current_plugin.get(), SIGNAL(ImageGenerated(ifind::Image::Pointer)),
                         next_plugin.get(), SLOT(slot_imageReceived(ifind::Image::Pointer)),
                         Qt::DirectConnection);
-
-            // if this plug-in has a widget, add it
-            if (current_plugin->GetWidget() != nullptr){
-                widgets.append(current_plugin->GetWidget());
-            }
-
-            // if this plugin has a renderer (to display images), add it.
-            if (current_plugin->GetImageWidget() != nullptr){
-                imageWidgets.append(current_plugin->GetImageWidget());
-            }
         }
+
+        if (current_plugin->IsInput() == true){
+            if (n_input_plugins > 0){
+                ifind::Image::StreamType new_transmitted_type = "Input" + QString::number(n_input_plugins).toStdString();
+                current_plugin->setTransmittedStreamType(new_transmitted_type);
+            }
+            n_input_plugins++;
+        }
+
+        // if this plug-in has a widget, add it
+        if (current_plugin->GetWidget() != nullptr){
+            widgets.append(current_plugin->GetWidget());
+        }
+
+        // if this plugin has a renderer (to display images), add it.
+        if (current_plugin->GetImageWidget() != nullptr){
+            imageWidgets.append(current_plugin->GetImageWidget());
+        }
+
     }
 
     /// Check if a plug-in takes widgets, and if so, pass the widget list to it.

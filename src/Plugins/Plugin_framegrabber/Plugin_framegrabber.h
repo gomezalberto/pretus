@@ -9,6 +9,8 @@ class Plugin_framegrabber : public Plugin {
     Q_OBJECT
 
 public:
+
+    typedef FrameGrabberManager ManagerType;
     typedef Widget_framegrabber WidgetType;
     typedef QtVTKVisualization ImageWidgetType;
     Plugin_framegrabber(QObject* parent = 0);
@@ -27,6 +29,4 @@ public:
 protected:
     virtual void SetDefaultArguments();
 
-private:
-    FrameGrabberManager::Pointer manager;
 };

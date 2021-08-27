@@ -9,6 +9,7 @@ class Plugin_filemanager : public Plugin {
 	Q_OBJECT
 
 public:
+    typedef FileManager ManagerType;
     typedef Widget_filemanager WidgetType;
     typedef QtVTKVisualization ImageWidgetType;
     Plugin_filemanager(QObject* parent = 0);
@@ -26,6 +27,5 @@ public:
     }
 
 private:
-    FileManager::Pointer manager;
     virtual void SetDefaultArguments();
 };

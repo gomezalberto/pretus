@@ -35,6 +35,7 @@ target_link_libraries(Plugin
   Qt5::Core # need this for QT signal/slot system
   Qt5::Widgets
   ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
   )
 
 file(GLOB HEADERS "*.h")

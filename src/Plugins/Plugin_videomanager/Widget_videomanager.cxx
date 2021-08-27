@@ -40,6 +40,7 @@ void Widget_videomanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<< std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     if (image->HasKey("VideoTime")){
         stream << "Play time: "<<image->GetMetaData<std::string>("VideoTime") << std::endl;

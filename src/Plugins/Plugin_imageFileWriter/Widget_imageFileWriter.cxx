@@ -42,6 +42,8 @@ void Widget_imageFileWriter::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<< std::endl;
+    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
 
     stream << "Saving the \""<< ifind::StreamTypeSetToString(mStreamTypes)<< "\" stream(s)"<< std::endl;
     stream << "Saved "<< this->n_images_written<< " images"<< std::endl;
