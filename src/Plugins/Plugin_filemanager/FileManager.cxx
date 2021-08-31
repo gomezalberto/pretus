@@ -10,11 +10,15 @@ FileManager::FileManager(QObject *parent) : Manager(parent){
 
 }
 
+void FileManager::SetExtension(const QString &extension){
+    this->params.extension = extension.toStdString();
+}
+
 void FileManager::SetInputFolder(const QString &inputFolder){
 
     this->DataBase.clear();
     if (inputFolder.size()>0){
-        this->FindFiles(inputFolder, "mhd");
+        this->FindFiles(inputFolder, QString::fromStdString(this->params.extension));
     }
     /// Now that we have the files, sort them
     this->SetDataBase(this->DataBase);

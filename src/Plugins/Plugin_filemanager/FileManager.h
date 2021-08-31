@@ -22,17 +22,20 @@ public:
             AsRaw = false;
             verbose = false;
             checkMhdConsistency = true;
+            extension = "mhd";
         }
         int FrameRate;
         bool LoopAround;
         bool AsRaw;
         bool verbose;
         bool checkMhdConsistency;
+        std::string extension;
     };
 
     Parameters params;
 
     void SetInputFolder(const QString &inputFolder);
+    void SetExtension(const QString &extension);
     /**
      * @brief Check that files are not corrupt and that they contain images
      */

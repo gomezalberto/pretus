@@ -63,11 +63,18 @@ void Plugin_filemanager::SetDefaultArguments(){
                             QString( ArgumentType[3] ),
                             "Take images from a folder.",
                             "Currentfolder"});
+    mArguments.push_back({"extension", "<file extension for images>",
+                            QString( ArgumentType[3] ),
+                            "Extension (usually three letters) determining the image type.",
+                            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.extension.c_str()});
 }
 
 void Plugin_filemanager::SetCommandLineArguments(int argc, char* argv[]){
     Plugin::SetCommandLineArguments(argc, argv);
     InputParser input(argc, argv, this->GetCompactPluginName().toLower().toStdString());
+
+    std::string folder(""), extension("");
+
     {const std::string &argument = input.getCmdOption("loop");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.LoopAround = atoi(argument.c_str());
@@ -82,8 +89,15 @@ void Plugin_filemanager::SetCommandLineArguments(int argc, char* argv[]){
         }}
     {const std::string &argument = input.getCmdOption("input");
         if (!argument.empty()){
+            folder = argument;
             std::dynamic_pointer_cast< ManagerType >(this->manager)->SetInputFolder(argument.c_str());
         }}
+    {const std::string &argument = input.getCmdOption("extension");
+        if (!argument.empty()){
+            extension = argument;
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->SetExtension(argument.c_str());
+        }
+    }
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");
         if (!argument.empty()){
@@ -93,6 +107,11 @@ void Plugin_filemanager::SetCommandLineArguments(int argc, char* argv[]){
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.verbose= atof(argument.c_str());
         }}
+
+
+    if (extension.size()>0){
+        std::dynamic_pointer_cast< ManagerType >(this->manager)->SetInputFolder(folder.c_str());
+    }
 
 }
 

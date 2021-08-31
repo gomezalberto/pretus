@@ -78,6 +78,177 @@ void Worker::slot_Work(ifind::Image::Pointer image){
     Q_EMIT this->WorkFinished();
 }
 
+ifind::Image::Pointer Worker::CropImageToFixedAspectRatio(ifind::Image::Pointer image, float *aratio, int *cropbounds){
+    const int NDIMS = 2;
+    this->params.origin = WorkerParameters::OriginPolicy::Centre;
+    //std::cout << "Worker::CropImageToFixedAspectRatio"<<std::endl;
+    // Adjust size, taking the dim 0 as a constant
+    for (int i=0; i<NDIMS; i++){
+        this->params.out_spacing[i] = image->GetSpacing()[i];
+        this->params.crop_origin[i] = cropbounds[i];
+    }
+    this->params.out_size[0] = cropbounds[NDIMS];
+    for (int i=1; i<NDIMS; i++){
+
+       // std::cout <<"if ("<<cropbounds[NDIMS + i - 1 ] <<"<"<< cropbounds[NDIMS + i] <<" * "<<aratio[i - 1] <<"/"<< aratio[i]<<")"<<std::endl;
+        if (cropbounds[NDIMS + i - 1 ] < cropbounds[NDIMS + i] * aratio[i - 1] / aratio[i]){
+            int diff = int(cropbounds[NDIMS + i] * aratio[i - 1] / aratio[i]) - cropbounds[NDIMS + i - 1];
+            int dif_l = int(diff / 2.0);
+            int dif_r = diff - dif_l;
+            // bounds = (bounds[0], bounds[1]+dif_l , bounds[2], bounds[3]-(dif_l + dif_r) )
+            this->params.out_size[i] = cropbounds[NDIMS + i] - (dif_l + dif_r);
+            cropbounds[NDIMS + i] = this->params.out_size[i];
+            this->params.crop_origin[i]+=dif_l;
+            cropbounds[i] = this->params.crop_origin[i];
+            std::cout <<"this->params.out_size["<<i<<"] = "<<cropbounds[NDIMS + i]<<" - ("<<dif_l<<" + "<<dif_r<<")"<<std::endl;
+        } else {
+            this->params.out_size[i] = cropbounds[NDIMS + i];
+        }
+    }
+
+    //std::cout << "Out size = "<<this->params.out_size[0]<< " x "<< this->params.out_size[1] << std::endl;
+    //std::cout << "Out spacing = "<<this->params.out_spacing[0]<< " x "<< this->params.out_spacing[1] << std::endl;
+    //std::cout << "Crop origin = "<<this->params.crop_origin[0]<< " x "<< this->params.crop_origin[1] << std::endl;
+
+
+    // First crop
+    ifind::Image::RegionType extractRegion;
+    //ifind::Image::SizeType final_size(this->params.out_size);
+    extractRegion.SetSize(0, this->params.out_size[0]);
+    extractRegion.SetSize(1, this->params.out_size[1]);
+    extractRegion.SetSize(2,1);
+    extractRegion.SetIndex(0,this->params.crop_origin[0]);
+    extractRegion.SetIndex(1,this->params.crop_origin[1]);
+    extractRegion.SetIndex(2,0);
+
+    using CropImageType = itk::RegionOfInterestImageFilter<ifind::Image,ifind::Image>;
+    //using CropImageType = itk::ExtractImageFilter<ifind::Image,ifind::Image>;
+    CropImageType::Pointer cropper = CropImageType::New();
+    cropper->SetInput(image);
+    cropper->SetRegionOfInterest(extractRegion);
+    //cropper->SetExtractionRegion(extractRegion);
+    cropper->Update();
+
+    ifind::Image::Pointer cp = cropper->GetOutput();
+    return cp;
+}
+
+ifind::Image::Pointer Worker::ResampleToFixedSize(ifind::Image::Pointer image, int *desired_size){
+    const int NDIMS = 2;
+    using ImageResampleType = itk::ResampleImageFilter<ifind::Image,ifind::Image>;
+    using TransformPrecisionType = double;
+    using TransformType = itk::IdentityTransform< TransformPrecisionType, NDIMS+1 >;
+
+    ifind::Image::SizeType in_size, out_size;
+    ifind::Image::SpacingType in_spacing, out_spacing;
+
+    in_size = image->GetLargestPossibleRegion().GetSize();
+    in_spacing = image->GetSpacing();
+    out_size[NDIMS] = 1;
+    out_spacing[NDIMS] = 1.0;
+    for (int i=0; i<NDIMS; i++){
+        out_size[i] = desired_size[i];
+        out_spacing[i] =  (in_size[i] - 1) * in_spacing[i] / (out_size[i] - 1);
+    }
+
+    ImageResampleType::Pointer resampler = ImageResampleType::New();
+    resampler->SetInput(image);
+    resampler->SetOutputSpacing(out_spacing);
+    resampler->SetOutputOrigin(image->GetOrigin());
+    resampler->SetSize(out_size);
+    resampler->SetTransform( TransformType::New() );
+    resampler->Update();
+    ifind::Image::Pointer upsampledImage = resampler->GetOutput();
+    return upsampledImage;
+}
+
+Worker::GrayImageType::Pointer Worker::UndoCropImageToFixedAspectRatio(GrayImageType::Pointer image, ifind::Image::Pointer reference, int *cropbounds){
+
+    const int NDIMS = 2;
+    /// pad
+
+    GrayImageType::SizeType pixels_to_add_left, pixels_to_add_right;
+    auto in_size =image->GetLargestPossibleRegion().GetSize();
+    auto out_size = reference->GetLargestPossibleRegion().GetSize();
+
+    pixels_to_add_left.Fill(0);
+    pixels_to_add_right.Fill(0);
+
+    for (int i=0; i< NDIMS; i++){
+        pixels_to_add_left[i] = cropbounds[i];
+        pixels_to_add_right[i] = out_size[i] - (cropbounds[i] + in_size[i]);
+    }
+    using ImagePadType = itk::ConstantPadImageFilter<GrayImageType,GrayImageType>;
+    ImagePadType::Pointer padder = ImagePadType::New();
+
+    padder->SetInput(image);
+    padder->SetConstant(0);
+    padder->SetPadLowerBound(pixels_to_add_left);
+    padder->SetPadUpperBound(pixels_to_add_right);
+    padder->Update();
+
+    //copy buffer to a new image
+    GrayImageType::Pointer output;
+    output = padder->GetOutput();
+    output->SetOrigin(reference->GetOrigin());
+
+
+//    /// Copy/*
+
+    GrayImageType::RegionType output_region;
+    GrayImageType::RegionType::SizeType out_reg_size;
+    GrayImageType::RegionType::IndexType out_reg_index;
+
+    for (int i=0; i< NDIMS+1; i++){
+        out_reg_size[i] = reference->GetLargestPossibleRegion().GetSize(i);
+        out_reg_index[i] = reference->GetLargestPossibleRegion().GetIndex(i);
+    }
+
+    output_region.SetIndex(out_reg_index);
+    output_region.SetSize(out_reg_size);
+
+    output->SetRegions(output_region);
+
+    return padder->GetOutput();
+}
+
+Worker::GrayImageType::Pointer Worker::UndoResampleToFixedSize(GrayImageType::Pointer image, ifind::Image::Pointer reference, int *cropbounds){
+
+    // First, resample to the intermediate size
+    const int NDIMS = 2;
+    using ImageResampleType = itk::ResampleImageFilter<GrayImageType,ifind::Image>;
+    using TransformPrecisionType = double;
+    using TransformType = itk::IdentityTransform< TransformPrecisionType, NDIMS+1 >;
+
+    GrayImageType::SizeType in_size;
+    ifind::Image::SizeType out_size;
+    GrayImageType::SpacingType in_spacing;
+    ifind::Image::SpacingType out_spacing;
+
+    in_size = image->GetLargestPossibleRegion().GetSize();
+    in_spacing = image->GetSpacing();
+    out_spacing = reference->GetSpacing();
+    out_size[NDIMS] = 1;
+    out_spacing[NDIMS] = 1.0;
+
+    for (int i=0; i<NDIMS; i++){
+        out_size[i] = cropbounds[NDIMS+i];
+        out_spacing[i] =  (in_size[i] - 1) * in_spacing[i] / (out_size[i] - 1);
+    }
+
+    ImageResampleType::Pointer resampler = ImageResampleType::New();
+    resampler->SetInput(image);
+    resampler->SetOutputSpacing(out_spacing);
+    resampler->SetOutputOrigin(image->GetOrigin());
+    resampler->SetSize(out_size);
+    resampler->SetTransform( TransformType::New() );
+    resampler->Update();
+    ifind::Image::Pointer upsampledImage = resampler->GetOutput();
+
+
+    return upsampledImage;
+}
+
 ifind::Image::Pointer Worker::AdjustImageSize(ifind::Image::Pointer image){
     const int NDIMS = 2;
     using ImageResampleType = itk::ResampleImageFilter<ifind::Image,ifind::Image>;

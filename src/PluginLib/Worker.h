@@ -64,11 +64,15 @@ public:
 
     struct WorkerParameters
     {
-        enum OriginPolicy : int {Centre=0, Top=1};
+        enum OriginPolicy : int {Centre=0, Top=1, Custom=2};
         WorkerParameters() {
             out_spacing[0]=0.5;
             out_spacing[1]=0.5;
             out_spacing[2]=1.0;
+
+            crop_origin[0] = 0.0;
+            crop_origin[1] = 0.0;
+            crop_origin[2] = 0.0;
 
             out_size[0]=256;
             out_size[1]=256;
@@ -82,6 +86,10 @@ public:
 
         double out_spacing[3];
         int out_size[3];
+        /**
+         * @brief crop_origin, if origin policy is custom, then this will set the origin (index 0 0 ) of the cropping
+         */
+        int crop_origin[3];
         OriginPolicy origin;
         bool verbose;
         bool measureTime;
@@ -149,6 +157,21 @@ protected:
     bool PythonInitialized ;
 
     QString mPluginName;
+
+    /**
+     * @brief Adjust Image Size by first cropping to the indices
+     * indicated by the crop bounds (x0, y0, ..., width, heigh, ...). The
+     * bounds may be altered around the central pixel to match the
+     * aspect ratio indicated by aratio (width, height, ...).
+     * @param image
+     * @param aratio floats (width, height) indicating the aspect ratio
+     * @param cropbounds (x0, y0, ..., width, heigh, ...)
+     * @return
+     */
+    ifind::Image::Pointer CropImageToFixedAspectRatio(ifind::Image::Pointer image, float *aratio, int *cropbounds);
+    GrayImageType::Pointer UndoCropImageToFixedAspectRatio(GrayImageType::Pointer image, ifind::Image::Pointer reference, int *cropbounds);
+    ifind::Image::Pointer ResampleToFixedSize(ifind::Image::Pointer image, int *desired_size);
+    GrayImageType::Pointer UndoResampleToFixedSize(GrayImageType::Pointer image, ifind::Image::Pointer reference, int *cropbounds);
 
     ifind::Image::Pointer AdjustImageSize(ifind::Image::Pointer image);
     GrayImageType::Pointer UnAdjustImageSize(GrayImageType::Pointer image, ifind::Image::Pointer reference);
