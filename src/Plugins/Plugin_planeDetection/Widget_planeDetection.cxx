@@ -21,8 +21,9 @@ Widget_planeDetection::Widget_planeDetection(
     mSlider = new QSlider(Qt::Orientation::Horizontal);
     mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
 
-    mSlider->setMaximum(101);
+    mSlider->setMaximum(100);
     mSlider->setMinimum(0);
+    mSlider->setValue(100);
     mSlider->setAutoFillBackground(true);
 
     //

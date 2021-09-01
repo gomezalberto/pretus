@@ -10,7 +10,7 @@ Worker_planeDetection::Worker_planeDetection(QObject *parent) : Worker(parent){
     this->confidences.clear();
     this->python_folder = "";
     this->temporalAverage = 0;
-    this->background_threshold = -1;
+    this->background_threshold = 1;
     this->modelname = "ifind2_net_Jan15.pth";
     this->m_write_background = false;
 }
@@ -183,24 +183,28 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         confidences_average[i]= (confidences_average[i]-min_confidence) /(max_confidence-min_confidence);
     }
 
-    if (this->background_threshold > 0){
-        const int BACKGROUND_IDX = 3;
+    const int BACKGROUND_IDX = 3;
+     //std::cout << "max_confidence_id "<<max_confidence_id<<std::endl;
+    if (max_confidence_id == BACKGROUND_IDX){
+        // see if the second best is greater than the background threshold
         double max_confidence_av = -10000,  min_confidence_av = 10000;
         /// recompute max_confidence ID
         max_confidence_id = -1; // by default, background
         for (int i=0; i<confidences_average.size(); i++){
-            if (i == BACKGROUND_IDX) {
-                if (confidences_average[i] < this->background_threshold){
-                    confidences_average[i] = 0;
+            if (i != BACKGROUND_IDX) {
+                //std::cout << "confidences_average["<<i<<"] "<< confidences_average[i]<< " this->background_threshold "<< this->background_threshold<<std::endl;
+                if (confidences_average[i] >= this->background_threshold){
+                    confidences_average[BACKGROUND_IDX] = 0;
                 }
-            }
-            if (confidences_average[i]>max_confidence_av){
 
-                max_confidence_av  = confidences_average[i];
-                max_confidence_id = i;
-            }
-            if (confidences_average[i]<min_confidence_av){
-                min_confidence_av  = confidences_average[i];
+                if (confidences_average[i]>max_confidence_av){
+
+                    max_confidence_av  = confidences_average[i];
+                    max_confidence_id = i;
+                }
+                if (confidences_average[i]<min_confidence_av){
+                    min_confidence_av  = confidences_average[i];
+                }
             }
         }
         /// Now renormalize to [0, 1] confidence
