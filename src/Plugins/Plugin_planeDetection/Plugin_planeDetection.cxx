@@ -79,7 +79,7 @@ mArguments.push_back({"modelname", "<*.pth>",
 
 mArguments.push_back({"bckth", "<val>",
                      QString( Plugin::ArgumentType[2] ),
-                     "Min value for background to be considered; below this value, background will be ignored and second best picked. Range is [0.0, 1.0] If -1, ths flag is not used.",
+                     "Min value for second-to-background to be considered as prediction; below this value, background (if higher) will be selected. Range is [0.0, 1.0].",
                      QString::number(std::dynamic_pointer_cast< WorkerType >(this->worker)->background_threshold)});
 
 mArguments.push_back({"savebck", "<0/1>",
