@@ -3,6 +3,7 @@
 #include <ifindImagePeriodicTimer.h>
 #include <QObject>
 #include <QDebug>
+#include <QSlider>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_GUI::Plugin_GUI(QObject *parent)
@@ -15,7 +16,15 @@ Plugin_GUI::Plugin_GUI(QObject *parent)
     this->setFrameRate(25);
     //this->Timer->SetDropFrames(true);
 
-    mVisualizer = std::make_shared<QtVisualizationMainWindow>();
+    //mVisualizer = std::make_shared<QtVisualizationMainWindow>();
+
+    {
+        // create widget
+        WidgetType * mWidget_ = new WidgetType;
+        this->mWidget = mWidget_;
+    }
+
+
     this->SetDefaultArguments();
 }
 
@@ -38,6 +47,13 @@ void Plugin_GUI::Initialize()
     // make sure thatwhen the webcam generates an image, this plugin emits that image
     QObject::connect(this->Timer, &ifindImagePeriodicTimer::ImageReceived,
                      mVisualizer.get(), &QtVisualizationMainWindow::SendImageToWidget, Qt::DirectConnection); //, Qt::QueuedConnection) like this also blocks; // Qt::DirectConnection) -> like this blocks;
+
+    // Connect widget and worker here
+    WidgetType* ww = reinterpret_cast<WidgetType*>(mWidget);
+    QObject::connect(ww->mSlider,
+            &QSlider::valueChanged, mVisualizer.get(),
+            &QtVisualizationMainWindow::SetViewScale);
+
     mVisualizer->Initialize();
     this->Timer->Start(this->TimerInterval);
 }

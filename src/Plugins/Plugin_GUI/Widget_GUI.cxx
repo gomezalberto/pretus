@@ -1,17 +1,17 @@
-#include "Widget_CppAlgorithm.h"
+#include "Widget_GUI.h"
 #include <QSlider>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QtInfoPanelTrafficLightBase.h>
 
-Widget_CppAlgorithm::Widget_CppAlgorithm(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(parent, f)
+Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(parent, f)
 {
-    this->SetWidgetLocation(WidgetLocation::top_right);
-    mStreamTypes = ifind::InitialiseStreamTypeSetFromString("CppAlgorithm");
+    this->SetWidgetLocation(WidgetLocation::bottom_left);
+    mStreamTypes = ifind::InitialiseStreamTypeSetFromString("GUI");
 
     //------ define gui ----------
-    mLabel = new QLabel("Text not set", this);
-    mLabel->setStyleSheet("QLabel { background-color : black; color : white; }");
+    mLabel = new QLabel("==GUI==", this);
+    mLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
 
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
@@ -21,9 +21,19 @@ Widget_CppAlgorithm::Widget_CppAlgorithm(QWidget *parent, Qt::WindowFlags f): Qt
     mSlider = new QSlider(Qt::Orientation::Horizontal);
     mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
 
-    mSlider->setMaximum(255);
-    mSlider->setMinimum(1);
+    mSlider->setMaximum(200);
+    mSlider->setMinimum(30);
+    mSlider->setValue(50);
     mSlider->setAutoFillBackground(true);
+
+    auto sliderWidget = new QWidget();
+    auto hLayout = new QHBoxLayout(this);
+    auto slLabel = new QLabel("Scale: ");
+    slLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
+    hLayout->addWidget(slLabel);
+    hLayout->addWidget(mSlider);
+    sliderWidget->setLayout(hLayout);
+
 
     auto vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0, 0, 0, 0);
@@ -31,20 +41,15 @@ Widget_CppAlgorithm::Widget_CppAlgorithm(QWidget *parent, Qt::WindowFlags f): Qt
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
-    vLayout->addWidget(mSlider);
-    this->AddImageViewCheckboxToLayout(vLayout);
+    vLayout->addWidget(sliderWidget);
 }
 
-void Widget_CppAlgorithm::SendImageToWidgetImpl(ifind::Image::Pointer image){
+void Widget_GUI::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "==" << std::endl;
     stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
     stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
-
-    if (image->HasKey("CppAlgorithm_threshold")){
-        stream << "Threshold: "<< image->GetMetaData<std::string>("CppAlgorithm_threshold") << std::endl;
-    }
 
     mLabel->setText(stream.str().c_str());
 
