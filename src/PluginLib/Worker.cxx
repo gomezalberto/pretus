@@ -216,7 +216,7 @@ Worker::GrayImageType::Pointer Worker::UndoResampleToFixedSize(GrayImageType::Po
 
     // First, resample to the intermediate size
     const int NDIMS = 2;
-    using ImageResampleType = itk::ResampleImageFilter<GrayImageType,ifind::Image>;
+    using ImageResampleType = itk::ResampleImageFilter<GrayImageType, GrayImageType>;
     using TransformPrecisionType = double;
     using TransformType = itk::IdentityTransform< TransformPrecisionType, NDIMS+1 >;
 
@@ -243,7 +243,7 @@ Worker::GrayImageType::Pointer Worker::UndoResampleToFixedSize(GrayImageType::Po
     resampler->SetSize(out_size);
     resampler->SetTransform( TransformType::New() );
     resampler->Update();
-    ifind::Image::Pointer upsampledImage = resampler->GetOutput();
+    GrayImageType::Pointer upsampledImage = resampler->GetOutput();
 
 
     return upsampledImage;
