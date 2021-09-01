@@ -24,10 +24,12 @@ public Q_SLOTS:
     virtual void SendImageToWidget(ifind::Image::Pointer image);
     virtual void Initialize();
     virtual void InitializeCentralPanel();
+    virtual void SetViewScale(int viewScaleInt);
 
 Q_SIGNALS:
 
     void SignalSendImageToWidget(ifind::Image::Pointer image);
+    void SignalSetViewScale(float scale);
 
 protected:
 

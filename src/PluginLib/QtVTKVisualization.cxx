@@ -126,10 +126,12 @@ QtVTKVisualization::QtVTKVisualization(QWidget *parent)
       colorBar(nullptr),
       latestTimeStamp(std::numeric_limits<uint64_t>::digits10 + 1),
       zSlice(0)
+
 {
     this->vtkWidget = new QVTKWidget(this);
     vtkWidget->resize(256, 256);
     this->renderWindow = this->vtkWidget->GetRenderWindow();
+    this->mViewScale = 0.5;
 }
 
 void QtVTKVisualization::Initialize()
@@ -298,7 +300,6 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
     if (nullptr == this->imageActor)
     {
         /// Make sure the image fills the screen
-        this->renderWindow->SetSize(this->renderWindow->GetScreenSize()); // set to full screen
         /// first render, add the vtkImageActor in the renderer
         vtkNew<vtkImageSliceMapper> mapper;
         mapper->SetInputData(blendedImage);
@@ -346,6 +347,11 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
 
     /// render the scene
     this->renderWindow->Render();
+}
+
+void QtVTKVisualization::SetViewScale(float viewScale){
+
+    mViewScale = viewScale;
 }
 
 void QtVTKVisualization::SetZSlice(int newZSlice)
@@ -514,15 +520,22 @@ void QtVTKVisualization::SetViewToImageSize()
 
     const double xc = origin[0] + 0.5*(extent[0] + extent[1])*spacing[0];
     const double yc = origin[1] + 0.5*(extent[2] + extent[3])*spacing[1];
-    //  float xd = (extent[1] - extent[0] + 1)*spacing[0]; // not used
+    //const  float xd = (extent[1] - extent[0] + 1)*spacing[0]; // not used
     const double yd = (extent[3] - extent[2] + 1)*spacing[1];
 
     const double d = camera->GetDistance();
 
-    camera->SetParallelScale(0.5 * static_cast<double>(yd));
+    camera->SetParallelScale(mViewScale * static_cast<double>(yd));
+    //camera->SetParallelScale(0.5 * static_cast<double>(xd));
     camera->SetFocalPoint(xc, yc, 0.0);
     camera->SetPosition(xc, yc, -d);
     camera->SetViewUp(0.0, -1.0, 0.0);
+
+    //int *screensize = this->renderWindow->GetScreenSize();
+    //this->renderWindow->SetSize(this->renderWindow->GetScreenSize()); // set to full screen
+    //this->renderWindow->SetSize(600, 400);
+    //this->renderWindow->SetSize(screensize[0]/2, screensize[1]/2);
+    //this->renderWindow->SetSize(screensize[0], screensize[1]);
 }
 
 

@@ -9,7 +9,7 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QStackedLayout>
-
+#include <QSizePolicy>
 #include <ifindStreamTypeHelper.h>
 #include <QVTKWidget.h>
 
@@ -22,64 +22,56 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
     // create a widget to contain the left and right hand bars and the render
     // create the render widget
 
-    // create a widget to contain the left and right hand bars and the render
-    auto horizontalWidget = new QWidget(this);
-    auto horizontalLayout = new QHBoxLayout(horizontalWidget);
-    horizontalLayout->setContentsMargins(0, 0, 0, 0);
-    horizontalLayout->setSpacing(0);
-    horizontalWidget->setLayout(horizontalLayout);
-
-    {
-        // there is something to render
-        auto panelWidget = new QWidget(this);
-        panelWidget->move(0, 0); // move within the parent (will be the horizontal layout)
-        panelWidget->show();
-        mCentralPanelWidget = panelWidget;
-
-        auto gLayout = new QGridLayout (panelWidget);
-        gLayout->setContentsMargins(0, 0, 0, 0);
-        gLayout->setSpacing(0);
-        panelWidget->setLayout(gLayout);
-
-    }
-
     // set up the left panel
     {
-        auto panelWidget = new QWidget(this);
+        auto panelWidget = new QWidget();
         panelWidget->move(0, 0);
-        panelWidget->show();
-        mLeftPanelWidget = panelWidget;
+        //panelWidget->show();
 
-        auto vLayout = new QVBoxLayout(panelWidget);
+        auto vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(0);
         panelWidget->setLayout(vLayout);
+        mLeftPanelWidget = panelWidget;
+    }
+
+    // set the central panel
+    {
+        // there is something to render
+        auto panelWidget = new QWidget();
+        panelWidget->move(0, 0); // move within the parent (will be the horizontal layout)
+
+        auto gLayout = new QGridLayout ();
+        gLayout->setContentsMargins(0, 0, 0, 0);
+        gLayout->setSpacing(0);
+        panelWidget->setLayout(gLayout);
+        mCentralPanelWidget = panelWidget;
     }
 
     // set up the right panel
     {
-        auto panelWidget = new QWidget(this);
+        auto panelWidget = new QWidget();
         panelWidget->move(0, 0);
-        panelWidget->show();
-        mRightPanelWidget = panelWidget;
 
         auto vLayout = new QVBoxLayout(panelWidget);
         vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(0);
         panelWidget->setLayout(vLayout);
+        mRightPanelWidget = panelWidget;
     }
 
+    // create a widget to contain the left and right hand bars and the render
+    auto horizontalWidget = new QWidget(this);
+    auto horizontalLayout = new QHBoxLayout();
+    horizontalLayout->setContentsMargins(0, 0, 0, 0);
+    //horizontalLayout->setSpacing(0);
 
-    // *Seems to work well without this*
-    // then create the central widget as one which will fix its aspect ratio
-    //    auto centralFixedAspect = new QtFixedAspectRatio(
-    //                mCentralPanelWidget,
-    //                VisualizationConsts::TargetWindowWidth(),
-    //                VisualizationConsts::TargetWindowHeight(),
-    //                this);
-    //    setCentralWidget(centralFixedAspect);
+    horizontalLayout->addWidget(mLeftPanelWidget);
+    horizontalLayout->addWidget(mCentralPanelWidget);
+    horizontalLayout->addWidget(mRightPanelWidget);
+    horizontalWidget->setLayout(horizontalLayout);
 
-    setCentralWidget(mCentralPanelWidget);
+    setCentralWidget(horizontalWidget);
 
     // this may not be needed - try removing it
 #ifndef WIN32
@@ -120,6 +112,13 @@ void QtVisualizationMainWindow::SetCommandLineArguments(const std::vector<std::s
 void QtVisualizationMainWindow::Initialize()
 {
 
+    // See hopw many widgets need to be visualized
+    this->setStyleSheet("QWidget { background-color : black}");
+    mCentralPanelWidget->setStyleSheet("QWidget { background-color : black}");
+    mLeftPanelWidget->setStyleSheet("QWidget { background-color : black}");
+    mRightPanelWidget->setStyleSheet("QWidget { background-color : black}");
+
+
     QVBoxLayout *vLayoutL = dynamic_cast<QVBoxLayout*>(mLeftPanelWidget->layout());
     QVBoxLayout *vLayoutR = dynamic_cast<QVBoxLayout*>(mRightPanelWidget->layout());
     for (int i=0; i< mWidgets.size(); i++){
@@ -145,19 +144,30 @@ void QtVisualizationMainWindow::Initialize()
         }
     }
 
+    this->InitializeCentralPanel();
+
     //QObject::connect(mWidgets[i], &QtPluginWidgetBase::ImageVisibilityChanged,
     //                 this, [=]{qDebug() << "[QtVisualizationMainWindow::Initialize] Signal: Image visibility changed";});
 
 
-    // See hopw many widgets need to be visualized
-    this->InitializeCentralPanel();
+
+}
+
+void QtVisualizationMainWindow::SetViewScale(int viewScaleInt){
+
+    float maxViewScale = 100;
+    float viewScale = float(viewScaleInt)/maxViewScale;
+
+    Q_EMIT SignalSetViewScale(viewScale);
+
 }
 
 void QtVisualizationMainWindow::InitializeCentralPanel(){
 
 
-    this->setStyleSheet("QWidget { background-color : black}");
-    QGridLayout *centralLayout = static_cast<QGridLayout *>(this->centralWidget()->layout());
+
+    //QGridLayout *centralLayout = static_cast<QGridLayout *>(this->centralWidget()->layout());
+    QGridLayout *centralLayout = static_cast<QGridLayout *>(this->mCentralPanelWidget->layout());
 
     int N = 0;
     for (int i=0; i< mImageWidgets.size(); i++){
@@ -201,8 +211,14 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             int r = std::floor(nvisibles/mNc);
             int c = nvisibles % mNc;
 
+            QtVTKVisualization *ww = reinterpret_cast<QtVTKVisualization*>(w);
+
+            QObject::connect(this, &QtVisualizationMainWindow::SignalSetViewScale, ww,
+                             &QtVTKVisualization::SetViewScale);
+
             nvisibles++;
             centralLayout->addWidget(w,r,c);
+            w->show();
             break;
         }
         case QtPluginWidgetBase::WidgetLocation::hidden:
@@ -214,8 +230,6 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             /// @todo implement solution
             break;
         }
-
-
     }
 }
 
@@ -232,25 +246,15 @@ void QtVisualizationMainWindow::SendImageToWidget(ifind::Image::Pointer image)
 void QtVisualizationMainWindow::resizeEvent(QResizeEvent *event)
 {
 
+    int width = this->width();
+    mLeftPanelWidget->setMaximumWidth(0.12*width);
+    mRightPanelWidget->setMaximumWidth(0.12*width);
+    mCentralPanelWidget->setMaximumWidth(0.75*width);
+
     const int widgetWidth(mCentralPanelWidget->width());
     if (widgetWidth < 1) {
         return;
     }
-
-    const int panelWidth(VisualizationConsts::InformationPanelWidth() *
-                         (static_cast<double>(widgetWidth) / VisualizationConsts::TargetWindowWidth()));
-
-    const int panelHeight(mCentralPanelWidget->height());
-
-    //std::cout << "[QtVisualizationMainWindow::resizeEvent] panelWidth: " << panelWidth << std::endl;
-
-    const int rightPanelXPosition(mCentralPanelWidget->width() - panelWidth);
-
-    mLeftPanelWidget->resize(panelWidth, panelHeight);
-
-    mRightPanelWidget->move(rightPanelXPosition, 0);
-    mRightPanelWidget->resize(panelWidth, panelHeight);
-
 }
 
 void QtVisualizationMainWindow::keyPressEvent(QKeyEvent *event)

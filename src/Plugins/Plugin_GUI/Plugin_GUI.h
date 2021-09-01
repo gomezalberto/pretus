@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Plugin.h"
+#include "Widget_GUI.h"
 
 class QtVisualizationMainWindow;
 
@@ -8,6 +9,9 @@ class Plugin_GUI : public Plugin {
     Q_OBJECT
 
 public:
+
+    typedef Widget_GUI WidgetType;
+
     Plugin_GUI(QObject* parent = 0);
 
     QString GetPluginName(void){ return "GUI";}

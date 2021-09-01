@@ -88,6 +88,7 @@ public Q_SLOTS:
      * When the input image is 3D, the argument is used to select which slice to be displayed.
      */
     virtual void SetZSlice(int newZSlice);
+    virtual void SetViewScale(float viewScale);
 
 Q_SIGNALS:
     void ZSliceChanged(int arg);
@@ -97,6 +98,7 @@ protected:
 
     // override, in order to be able to reize the vtk rendering
     virtual void resizeEvent(QResizeEvent *event);
+    float mViewScale;
 
 private:
 
