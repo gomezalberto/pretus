@@ -106,6 +106,24 @@ ifind::Image::Pointer Worker::CropImageToFixedAspectRatio(ifind::Image::Pointer 
         }
     }
 
+//    if (this->params.verbose){
+//        std::cout << "Worker::CropImageToFixedAspectRatio()"<<std::endl;
+
+//        std::cout << "\tcrop bounds: ";
+//        for (int i=0; i<NDIMS*2; i++) std::cout << cropbounds[i]<<" ";
+//        std::cout << std::endl;
+
+//        std::cout << "\tout spacing: ";
+//        for (int i=0; i<NDIMS; i++) std::cout << params.out_spacing[i]<<" ";
+//        std::cout << std::endl;
+//        std::cout << "\tout size: ";
+//        for (int i=0; i<NDIMS; i++) std::cout << params.out_size[i]<<" ";
+//        std::cout << std::endl;
+//        std::cout << "\tcrop origin: ";
+//        for (int i=0; i<NDIMS; i++) std::cout << params.crop_origin[i]<<" ";
+//        std::cout << std::endl;
+//    }
+
     //std::cout << "Out size = "<<this->params.out_size[0]<< " x "<< this->params.out_size[1] << std::endl;
     //std::cout << "Out spacing = "<<this->params.out_spacing[0]<< " x "<< this->params.out_spacing[1] << std::endl;
     //std::cout << "Crop origin = "<<this->params.crop_origin[0]<< " x "<< this->params.crop_origin[1] << std::endl;
