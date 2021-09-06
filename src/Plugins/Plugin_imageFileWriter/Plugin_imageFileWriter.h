@@ -46,6 +46,8 @@ public Q_SLOTS:
      */
     virtual void slot_imageReceived(ifind::Image::Pointer image);
 
+    virtual void slot_toggleSaveImages(bool b);
+
 Q_SIGNALS:
 
     void ImageToBeSaved(ifind::Image::Pointer image);
@@ -69,4 +71,5 @@ private:
     void Write(ifind::Image::Pointer arg, bool headerOnly = false);
     std::mutex m_Mutex;
 
+    bool mSaveImages;
 };

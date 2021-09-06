@@ -1,6 +1,7 @@
 #include "Widget_imageFileWriter.h"
 
 #include <QLabel>
+#include <QCheckBox>
 #include <QVBoxLayout>
 
 Widget_imageFileWriter::Widget_imageFileWriter(
@@ -13,7 +14,11 @@ Widget_imageFileWriter::Widget_imageFileWriter(
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Input");
     this->n_images_written = 0;
     mLabel = new QLabel("Text not set", this);
-    mLabel->setStyleSheet("QLabel { background-color : black; color : white; }");
+    mLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
+
+    mCheckBoxSaveFiles = new QCheckBox("Save to disk", this);
+    mCheckBoxSaveFiles->setStyleSheet(QtPluginWidgetBase::sQCheckBoxStyle);
+    mCheckBoxSaveFiles->setChecked(true);
 
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
@@ -25,11 +30,13 @@ Widget_imageFileWriter::Widget_imageFileWriter(
     vLayout->setSpacing(0);
     this->setLayout(vLayout);
 
+    vLayout->addWidget(mCheckBoxSaveFiles);
     vLayout->addWidget(mLabel);
 }
 
 void Widget_imageFileWriter::slot_imageWritten(ifind::Image::Pointer image){
-    if (image->HasKey("DO_NOT_WRITE")){
+    if (image->HasKey("DO_NOT_WRITE") ||
+            mCheckBoxSaveFiles->isChecked()==false){
         // image should not be written.
         //std::cout << "do not write"<<std::endl;
     } else {

@@ -15,6 +15,7 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
     this->m_folder_policy = 0; /// folder by organ
     this->subdivide_folders = 0;
     this->first_subdivision = 0;
+    this->mSaveImages = true;
 
     {
         // create widget
@@ -22,6 +23,8 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
 
         QObject::connect(this, &Plugin_imageFileWriter::ImageToBeSaved,
                          mWidget_, &WidgetType::slot_imageWritten);
+        QObject::connect(mWidget_->mCheckBoxSaveFiles, &QCheckBox::stateChanged,
+                    this, &Plugin_imageFileWriter::slot_toggleSaveImages);
 
         this->mWidget = mWidget_;
     }
@@ -37,6 +40,11 @@ void Plugin_imageFileWriter::Initialize(void){
     Q_EMIT this->ConfigurationGenerated(configuration);
 }
 
+void Plugin_imageFileWriter::slot_toggleSaveImages(bool b){
+    //std::cout << "Plugin_imageFileWriter::slot_toggleSaveImages(bool b) "<< b <<std::endl;
+    this->mSaveImages=b;
+}
+
 void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
     //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : write image "<< image->GetMetaData<std::string>("DNLTimestamp") << std::endl;
@@ -45,8 +53,9 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
     if (ifind::IsImageOfStreamTypeSet(image, m_streamtype_to_write))
     {
-        if (image->HasKey("DO_NOT_WRITE")){
+        if (image->HasKey("DO_NOT_WRITE") || this->mSaveImages==false){
             // image should not be written.
+            //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : Do not save"<<std::endl;
 
         } else {
             std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
