@@ -24,7 +24,7 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
         QObject::connect(this, &Plugin_imageFileWriter::ImageToBeSaved,
                          mWidget_, &WidgetType::slot_imageWritten);
         QObject::connect(mWidget_->mCheckBoxSaveFiles, &QCheckBox::stateChanged,
-                    this, &Plugin_imageFileWriter::slot_toggleSaveImages);
+                         this, &Plugin_imageFileWriter::slot_toggleSaveImages);
 
         this->mWidget = mWidget_;
     }
@@ -169,7 +169,7 @@ void Plugin_imageFileWriter::Write(ifind::Image::Pointer arg, bool headerOnly)
     QString dirname = sessiondirectory.filePath(streamfolder + QDir::separator() + subfolder);
     if (!sessiondirectory.mkpath(dirname))
     {
-        qWarning() << "Cannot create dir " << dirname;
+        qWarning() << "Plugin_imageFileWriter::Write() - Cannot create dir " << dirname;
         return;
     }
 
@@ -183,16 +183,28 @@ void Plugin_imageFileWriter::Write(ifind::Image::Pointer arg, bool headerOnly)
         std::string filename = dirname.toStdString() + std::string("/") + fname;
         //this->m_FileNames.push_back(filename);
         /// convert layer into ITK format
-        ConverterType::Pointer converter = ConverterType::New();
-        converter->SetInput(arg->GetVTKImage(l));
-        converter->Update();
-        ifind::Image::Pointer layer = converter->GetOutput();
-        layer->SetMetaDataDictionary(arg->GetMetaDataDictionary());
-        /// write the image
-        WriterType::Pointer writer = WriterType::New();
-        writer->SetFileName(filename);
-        writer->SetInput(layer);
-        writer->Update();
+        ConverterType::Pointer converter;
+        try {
+            converter = ConverterType::New();
+            converter->SetInput(arg->GetVTKImage(l));
+            converter->Update();
+        } catch( itk::ExceptionObject& ex ) {
+            qDebug() << "Plugin_imageFileWriter::Write() - exception captured when converting formats";
+            qDebug() << ex.what();
+        }
+
+        try {
+            ifind::Image::Pointer layer = converter->GetOutput();
+            layer->SetMetaDataDictionary(arg->GetMetaDataDictionary());
+            /// write the image
+            WriterType::Pointer writer = WriterType::New();
+            writer->SetFileName(filename);
+            writer->SetInput(layer);
+            writer->Update();
+        } catch( itk::ExceptionObject& ex ) {
+            qDebug() << "Plugin_imageFileWriter::Write() - exception captured when writing to "<< filename.c_str();
+            qDebug() << ex.what();
+        }
     }
 
     this->m_Mutex.unlock();
