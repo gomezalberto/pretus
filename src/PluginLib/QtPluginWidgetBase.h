@@ -2,9 +2,10 @@
 #include <QWidget>
 #include <ifindImage.h>
 #include <ifindStreamTypeHelper.h>
-#include <QCheckBox>
 #include <QBoxLayout>
 
+class QCheckBox;
+class QComboBox;
 
 class QtPluginWidgetBase : public QWidget
 {
@@ -14,6 +15,7 @@ public:
 
     static const QString sQSliderStyle;
     static const QString sQCheckBoxStyle ;
+    static const QString sQComboBoxStyle ;
     static const QString sQLabelStyle;
 
     enum class WidgetLocation  { visible, visible_overlay, hidden, // for images
@@ -36,6 +38,8 @@ public:
     virtual void SetWidgetLocation(WidgetLocation location);
 
     QCheckBox *mViewImageCheckbox;
+    QComboBox *mInputStreamComboBox;
+    QComboBox *mInputLayerComboBox;
 
 public Q_SLOTS:
     void SendImageToWidget(ifind::Image::Pointer image);
@@ -52,6 +56,8 @@ protected:
 
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image) = 0;
     virtual void AddImageViewCheckboxToLayout(QBoxLayout *vLayout);
+    virtual void AddInputStreamComboboxToLayout(QBoxLayout *vLayout);
+
     ifind::StreamTypeSet mStreamTypes;
     ifind::StreamTypeSet mInputStreamTypes;
     QString mPluginName;

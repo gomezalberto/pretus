@@ -1,4 +1,8 @@
 #include "QtPluginWidgetBase.h"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
 
 static const std::string sDefaultStreamTypesStr("Input");
 const QString QtPluginWidgetBase::sQSliderStyle = "QSlider::groove:horizontal { background-color: none; border: 1px solid #828282;  height: 2px;  border-radius: 2px; }"
@@ -9,6 +13,10 @@ const QString QtPluginWidgetBase::sQCheckBoxStyle = "QCheckBox { background-colo
     "QCheckBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
     "QCheckBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
 
+const QString QtPluginWidgetBase::sQComboBoxStyle = "QComboBox { background-color : black; color : white} "
+    "QComboBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
+    "QComboBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
+
 const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : black; color : white; }";
 
 QtPluginWidgetBase::QtPluginWidgetBase(
@@ -17,6 +25,8 @@ QtPluginWidgetBase::QtPluginWidgetBase(
     , mStreamTypes(ifind::InitialiseStreamTypeSetFromString(sDefaultStreamTypesStr))
     , mPluginName("N/A")
     , mViewImageCheckbox(nullptr)
+    , mInputStreamComboBox(nullptr)
+    , mInputLayerComboBox(nullptr)
 {
     this->mWidgetLocation = WidgetLocation::visible;
 }
@@ -39,6 +49,25 @@ const ifind::StreamTypeSet &QtPluginWidgetBase::InputStreamTypes() const
 void QtPluginWidgetBase::SetInputStreamTypes(const ifind::StreamTypeSet &streamTypesIn)
 {
     mInputStreamTypes = streamTypesIn;
+}
+
+void QtPluginWidgetBase::AddInputStreamComboboxToLayout(QBoxLayout *vLayout){
+
+    QWidget *placeholder = new QWidget();
+    QHBoxLayout *layout = new QHBoxLayout();
+
+    QLabel *label = new QLabel("Input: ");
+    label->setStyleSheet(sQLabelStyle);
+    mInputStreamComboBox = new QComboBox(this);
+    mInputStreamComboBox->setStyleSheet(sQComboBoxStyle);
+    mInputLayerComboBox = new QComboBox(this);
+    mInputLayerComboBox->setStyleSheet(sQComboBoxStyle);
+    mInputLayerComboBox->addItem("Layer 0");
+    layout->addWidget(label);
+    layout->addWidget(mInputStreamComboBox);
+    layout->addWidget(mInputLayerComboBox);
+    placeholder->setLayout(layout);
+    vLayout->addWidget(placeholder);
 }
 
 void QtPluginWidgetBase::AddImageViewCheckboxToLayout(QBoxLayout *vLayout){

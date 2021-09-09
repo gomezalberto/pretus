@@ -59,13 +59,11 @@ void Plugin_GUI::Initialize()
 }
 
 void Plugin_GUI::slot_configurationReceived(ifind::Image::Pointer image){
+    Plugin::slot_configurationReceived(image);
     /// Check if there is any need to update the gui
     if (image->HasKey("UpdateGUI")){
         this->mVisualizer->InitializeCentralPanel();
     }
-
-    /// Pass on the message in case we need to "jump" over plug-ins
-    Q_EMIT this->ConfigurationGenerated(image);
 }
 
 bool Plugin_GUI::IntegratesWidgets(){

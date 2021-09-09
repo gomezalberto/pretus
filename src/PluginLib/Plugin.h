@@ -17,6 +17,7 @@
 #include "QtPluginWidgetBase.h"
 #include <vector>
 #include <InputParser.h>
+#include <mutex>
 class QSettings;
 class ifindImagePeriodicTimer;
 
@@ -180,6 +181,9 @@ public Q_SLOTS:
    */
   virtual void slot_updateGUI();
 
+  virtual void slot_updateInputStream(int idx);
+  virtual void slot_updateInputLayer(int idx);
+
   void RemoveArgument(const QString &name);
 
 Q_SIGNALS:
@@ -220,6 +224,11 @@ protected:
     QThread workerThread;
 
     ifind::StreamTypeSet mStreamTypes;
+    /**
+     * @brief the stream types that are available from previous plugins.
+     */
+    ifind::StreamTypeSet mAvailableStreamTypes;
+    ifind::StreamLayersTypeSet mAvailableLayersForAvailableStream;
 
     ifind::Image::StreamType mTransmittedStreamType;
 
@@ -257,6 +266,8 @@ protected:
     bool mVerbose;
 
     bool mIsInput;
+
+    std::mutex m_mutex_inputStreamTypes;
 
 private:
 

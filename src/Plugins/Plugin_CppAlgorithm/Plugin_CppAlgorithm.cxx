@@ -58,12 +58,6 @@ void Plugin_CppAlgorithm::Initialize(void){
     this->Timer->Start(this->TimerInterval);
 }
 
-void Plugin_CppAlgorithm::slot_configurationReceived(ifind::Image::Pointer image){
-
-    /// Pass on the message in case we need to "jump" over plug-ins
-    Q_EMIT this->ConfigurationGenerated(image);
-}
-
 void Plugin_CppAlgorithm::SetDefaultArguments(){
 
     // arguments are defined with: name, placeholder for value, argument type,  description, default value

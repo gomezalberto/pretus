@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QObject>
+#include <QCheckBox>
 
 static const std::string sDefaultStreamTypeToWrite("Input");
 
@@ -48,6 +49,16 @@ void Plugin_imageFileWriter::slot_toggleSaveImages(bool b){
 void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
     //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : write image "<< image->GetMetaData<std::string>("DNLTimestamp") << std::endl;
+
+    /// check the stream of the new image that just arrived. If not in the list of available streams, then add it and transmit a config message.
+
+    bool is_accounted = this->mAvailableStreamTypes.find(image->GetStreamType()) != this->mAvailableStreamTypes.end();
+    if (is_accounted == false){
+        this->mAvailableStreamTypes.insert(image->GetStreamType());
+        ifind::Image::Pointer config= ifind::Image::New();
+        config->SetMetaData<std::string>("AvailableStreams",ifind::StreamTypeSetToString(this->mAvailableStreamTypes));
+        Q_EMIT this->ConfigurationGenerated(config);
+    }
 
     /// Send the image through the pipeline
 
