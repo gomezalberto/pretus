@@ -58,10 +58,11 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
             //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : Do not save"<<std::endl;
 
         } else {
-            std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
-            writerthread->detach();
 
             Q_EMIT this->ImageToBeSaved(image);
+
+            std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
+            writerthread->detach();
         }
     }
 
@@ -134,44 +135,54 @@ std::string Plugin_imageFileWriter::CreateFileName(ifind::Image::Pointer arg, un
     return filename.str();
 }
 
-void Plugin_imageFileWriter::Write(ifind::Image::Pointer arg, bool headerOnly)
+void Plugin_imageFileWriter::Write(const ifind::Image::Pointer arg, bool headerOnly)
 {
 
-    /// TODO: make sure you don't save images from this plugin.
-    QString streamfolder = QString::fromStdString(arg->GetMetaData<std::string>("StreamType"));
-    QString subfolder;
-    QString subfolder_("");
-    if (arg->HasKey("Label")){
-        subfolder_ = QString::fromStdString( arg->GetMetaData<std::string>("Label") );
-    }
+    QString dirname;
 
-    if (this->subdivide_folders >0){
-        if (this->write_count.find(subfolder_.toStdString())==this->write_count.end()){
-            // first timer-
-            std::array<int, 2> counts;
-            counts.fill(0);
-            counts[1] = this->first_subdivision;
+    try {
+        arg->DisconnectPipeline();
+
+        /// TODO: make sure you don't save images from this plugin.
+        QString streamfolder = QString::fromStdString(arg->GetMetaData<std::string>("StreamType"));
+        QString subfolder;
+        QString subfolder_("");
+        if (arg->HasKey("Label")){
+            subfolder_ = QString::fromStdString( arg->GetMetaData<std::string>("Label") );
+        }
+
+        if (this->subdivide_folders >0){
+            if (this->write_count.find(subfolder_.toStdString())==this->write_count.end()){
+                // first timer-
+                std::array<int, 2> counts;
+                counts.fill(0);
+                counts[1] = this->first_subdivision;
+                this->write_count[subfolder_.toStdString()] = counts;
+            }
+            auto counts = this->write_count[subfolder_.toStdString()];
+            if (counts[0]++ > this->subdivide_folders){
+                counts[0]=0; // number of frame
+                counts[1]++; // number of subdivision"
+            }
+
+            subfolder  = subfolder_ + QString::number(counts[1]);
             this->write_count[subfolder_.toStdString()] = counts;
-        }
-        auto counts = this->write_count[subfolder_.toStdString()];
-        if (counts[0]++ > this->subdivide_folders){
-            counts[0]=0; // number of frame
-            counts[1]++; // number of subdivision"
+        } else {
+            subfolder = subfolder_;
         }
 
-        subfolder  = subfolder_ + QString::number(counts[1]);
-        this->write_count[subfolder_.toStdString()] = counts;
-    } else {
-        subfolder = subfolder_;
+        QDir sessiondirectory(QString::fromStdString(this->OutputFolder));
+        dirname = sessiondirectory.filePath(streamfolder + QDir::separator() + subfolder);
+        if (!sessiondirectory.mkpath(dirname))
+        {
+            qWarning() << "Plugin_imageFileWriter::Write() - Cannot create dir " << dirname;
+            return;
+        }
+    } catch( itk::ExceptionObject& ex ) {
+        qDebug() << "Plugin_imageFileWriter::Write() - exception captured when preparing";
+        qDebug() << ex.what();
     }
 
-    QDir sessiondirectory(QString::fromStdString(this->OutputFolder));
-    QString dirname = sessiondirectory.filePath(streamfolder + QDir::separator() + subfolder);
-    if (!sessiondirectory.mkpath(dirname))
-    {
-        qWarning() << "Plugin_imageFileWriter::Write() - Cannot create dir " << dirname;
-        return;
-    }
 
     this->m_Mutex.lock();
 

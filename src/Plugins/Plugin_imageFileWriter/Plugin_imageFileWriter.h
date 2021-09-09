@@ -68,7 +68,7 @@ private:
 
 
     std::string CreateFileName(ifind::Image::Pointer arg, unsigned int layer = 0, bool withextension = false);
-    void Write(ifind::Image::Pointer arg, bool headerOnly = false);
+    void Write(const ifind::Image::Pointer arg, bool headerOnly = false);
     std::mutex m_Mutex;
 
     bool mSaveImages;
