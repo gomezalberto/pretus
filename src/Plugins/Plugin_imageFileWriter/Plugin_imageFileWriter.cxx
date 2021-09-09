@@ -58,10 +58,11 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
             //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : Do not save"<<std::endl;
 
         } else {
-            std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
-            writerthread->detach();
 
             Q_EMIT this->ImageToBeSaved(image);
+
+            std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
+            writerthread->detach();
         }
     }
 
@@ -134,7 +135,7 @@ std::string Plugin_imageFileWriter::CreateFileName(ifind::Image::Pointer arg, un
     return filename.str();
 }
 
-void Plugin_imageFileWriter::Write(ifind::Image::Pointer arg, bool headerOnly)
+void Plugin_imageFileWriter::Write(const ifind::Image::Pointer arg, bool headerOnly)
 {
 
     QString dirname;
