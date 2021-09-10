@@ -3,11 +3,12 @@
 #include <ifindImage.h>
 #include <ifindStreamTypeHelper.h>
 #include <QBoxLayout>
+#include <QFrame>
 
 class QCheckBox;
 class QComboBox;
 
-class QtPluginWidgetBase : public QWidget
+class QtPluginWidgetBase : public QFrame
 {
     Q_OBJECT
 

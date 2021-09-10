@@ -131,14 +131,14 @@ int main (int argc, char* argv[])
         }
 
         // if this plug-in has a widget, add it
-        if (current_plugin->GetWidget() != nullptr){
-            widgets.append(current_plugin->GetWidget());
-        }
+        //if (current_plugin->GetWidget() != nullptr){
+        widgets.append(current_plugin->GetWidget());
+        //}
 
         // if this plugin has a renderer (to display images), add it.
-        if (current_plugin->GetImageWidget() != nullptr){
-            imageWidgets.append(current_plugin->GetImageWidget());
-        }
+        //if (current_plugin->GetImageWidget() != nullptr){
+        imageWidgets.append(current_plugin->GetImageWidget());
+        //}
 
     }
 

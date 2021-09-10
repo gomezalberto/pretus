@@ -14,6 +14,7 @@
 #include <vtkNew.h>
 
 #include <QVTKWidget.h>
+#include <QPainter>
 
 #include <QResizeEvent>
 
@@ -128,10 +129,17 @@ QtVTKVisualization::QtVTKVisualization(QWidget *parent)
       zSlice(0)
 
 {
-    this->vtkWidget = new QVTKWidget(this);
+    QGridLayout *l = new QGridLayout(this);
+    this->vtkWidget = new QVTKWidget();
+    l->addWidget(this->vtkWidget, 0, 0, 1, 1);
+
     vtkWidget->resize(256, 256);
     this->renderWindow = this->vtkWidget->GetRenderWindow();
     this->mViewScale = 0.5;
+
+    //If it is needed, then the below code will hide the green color in the border.
+    l->setMargin(1);
+
 }
 
 void QtVTKVisualization::Initialize()

@@ -49,6 +49,8 @@ protected:
     QList<QtPluginWidgetBase *> mWidgets;
     QList<QtPluginWidgetBase *> mImageWidgets;
 
+    QStringList mWidgetColors;
+
 
 
 };

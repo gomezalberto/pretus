@@ -21,7 +21,7 @@ const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : bl
 
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f)
+    : QFrame(parent, f)
     , mStreamTypes(ifind::InitialiseStreamTypeSetFromString(sDefaultStreamTypesStr))
     , mPluginName("N/A")
     , mViewImageCheckbox(nullptr)
