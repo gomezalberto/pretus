@@ -19,6 +19,9 @@ public:
     void SetWidgets(QList<QtPluginWidgetBase *> &widgets);
     void SetImageWidgets(QList<QtPluginWidgetBase *> &imageWidgets);
 
+    bool useColors() const;
+    void setUseColors(bool useColors);
+
 public Q_SLOTS:
     virtual void slot_Terminate(void);
     virtual void SendImageToWidget(ifind::Image::Pointer image);
@@ -48,6 +51,9 @@ protected:
     // Location is defined in the plugin class
     QList<QtPluginWidgetBase *> mWidgets;
     QList<QtPluginWidgetBase *> mImageWidgets;
+
+    QStringList mWidgetColors;
+    bool mUseColors;
 
 
 

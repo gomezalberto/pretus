@@ -31,7 +31,8 @@ Widget_CppAlgorithm::Widget_CppAlgorithm(QWidget *parent, Qt::WindowFlags f): Qt
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
-    vLayout->addWidget(mSlider);
+    this->AddInputStreamComboboxToLayout(vLayout);
+    vLayout->addWidget(mSlider);        
     this->AddImageViewCheckboxToLayout(vLayout);
 }
 
@@ -39,12 +40,12 @@ void Widget_CppAlgorithm::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "==" << std::endl;
-    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
-    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes) << std::endl;
-
     if (image->HasKey("CppAlgorithm_threshold")){
         stream << "Threshold: "<< image->GetMetaData<std::string>("CppAlgorithm_threshold") << std::endl;
     }
+    //stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes);
+
 
     mLabel->setText(stream.str().c_str());
 

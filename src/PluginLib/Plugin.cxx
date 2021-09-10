@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <QCheckBox>
+#include <QStringList>
+#include <QComboBox>
 
 /// Declare the ifind::Image::Pointer as metatype so that it can be sent via signal / slot.
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
@@ -19,6 +21,8 @@ Plugin::Plugin(QObject *parent)
     this->setFrameRate(20); // method also sets timer interval
     this->Timer = new ifindImagePeriodicTimer(this); // as a child of this, automatic cleanup
     this->mStreamTypes = ifind::InitialiseStreamTypeSetFromString("-"); // by default, all streams
+    this->mAvailableStreamTypes = ifind::InitialiseStreamTypeSetFromString(""); // by default, all streams
+    this->mAvailableLayersForAvailableStream.clear();
     this->isTimed = true;
     this->mWidget = nullptr;
     this->mImageWidget = nullptr;
@@ -46,6 +50,13 @@ void Plugin::Initialize(void){
         QObject::connect(this, &Plugin::ImageGenerated,
                          this->mWidget, &QtPluginWidgetBase::SendImageToWidget);
 
+        // connect the input checkbox
+        if (this->mWidget->mInputStreamComboBox != nullptr){
+            QObject::connect(this->mWidget->mInputStreamComboBox, SIGNAL(activated(int)),
+                             this, SLOT(slot_updateInputStream(int)));
+            QObject::connect(this->mWidget->mInputLayerComboBox, SIGNAL(activated(int)),
+                             this, SLOT(slot_updateInputLayer(int)));
+        }
     }
 
 
@@ -117,6 +128,25 @@ void Plugin::slot_updateGUI(){
     Q_EMIT this->ConfigurationGenerated(config);
 }
 
+void Plugin::slot_updateInputStream(int idx){
+    //std::cout << "Plugin::slot_updateInputStream "<< this->GetCompactPluginName().toStdString() << " set input "<< idx<<std::endl;
+    std::string selected_stream = this->mWidget->mInputStreamComboBox->currentText().toStdString();
+    ifind::StreamTypeSet stream =  ifind::InitialiseStreamTypeSetFromString(selected_stream.c_str());
+    this->SetInputStream(stream);
+
+    // update the layers
+    this->mWidget->mInputLayerComboBox->clear();
+
+    for (int l=0; l < mAvailableLayersForAvailableStream[selected_stream]; l++){
+        this->mWidget->mInputLayerComboBox->addItem("Layer " + QString::number(l));
+    }
+}
+
+void Plugin::slot_updateInputLayer(int idx){
+    //std::cout << "Plugin::slot_updateInputLayer "<< this->GetCompactPluginName().toStdString() << " set layer "<< idx<<std::endl;
+    this->worker->params.inputLayer = idx;
+}
+
 bool Plugin::IsActive() const
 {
     return this->Active;
@@ -178,9 +208,28 @@ void Plugin::slot_imageReceived(ifind::Image::Pointer image){
     /// Send the image for processing. This image may or may not
     /// be processed depending on the timer's frame rate
 
-    //std::string streamname = image->GetStreamType();
-    //std::cout << "[verbose] Plugin::slot_imageReceived - image received from "<<streamname<< ", and can do streams of type "<< ifind::StreamTypeSetToString(mStreamTypes)<<std::endl;
-
+    /// check the stream of the new image that just arrived. If not in the list of available streams, then add it and transmit a config message.
+    m_mutex_inputStreamTypes.lock();
+    bool is_accounted = this->mAvailableStreamTypes.find(image->GetStreamType()) != this->mAvailableStreamTypes.end();
+    //std::cout << "Plugin::slot_imageReceived  at "<< this->GetCompactPluginName().toStdString()<<"  of type "<< image->GetStreamType()<< "  " << is_accounted << std::endl;
+    if (is_accounted == false){
+        if (this->mWidget != nullptr && this->mWidget->mInputStreamComboBox!=nullptr){
+            this->mAvailableStreamTypes.insert(image->GetStreamType());
+            int nlayers = image->GetNumberOfLayers();
+            this->mAvailableLayersForAvailableStream[image->GetStreamType()] = nlayers;
+            // now update the widget
+            //std::cout << "\tPlugin::slot_imageReceived  at "<< this->GetCompactPluginName().toStdString() << " the streams so far are "<< ifind::StreamTypeSetToString(this->mAvailableStreamTypes)<<std::endl;
+            this->mWidget->mInputStreamComboBox->clear();
+            QString qstreams(ifind::StreamTypeSetToString(this->mAvailableStreamTypes).c_str());
+            QStringList stream_list = qstreams.split(",");
+            for (QString stream_name : stream_list){
+                if (stream_name.isEmpty()==false){
+                    this->mWidget->mInputStreamComboBox->addItem(stream_name);
+                }
+            }
+        }
+    }
+    m_mutex_inputStreamTypes.unlock();
 
     if (ifind::IsImageOfStreamTypeSet(image, mStreamTypes)){
         if (this->isTimed){
@@ -357,12 +406,12 @@ void Plugin::Usage(void){
         std::cout << "   Plugin-specific arguments:"<<std::endl;
         for (int i=0; i<mArguments.size(); i++){
 
-        std::stringstream argname;
-        argname << "\t"<< ("--" + this->GetCompactPluginName().toLower() + "_" + mArguments[i][0]).toStdString() << " "
+            std::stringstream argname;
+            argname << "\t"<< ("--" + this->GetCompactPluginName().toLower() + "_" + mArguments[i][0]).toStdString() << " "
         << mArguments[i][1].toStdString() << " [ type: "<< mArguments[i][2].toStdString() <<"]";
-        std::stringstream argdescription;
-        argdescription << "\t" << mArguments[i][3].toStdString() << " (Default: "<< mArguments[i][4].toStdString()<<")"<<std::endl;
-        this->printIndented(argname, argdescription, 80);
+            std::stringstream argdescription;
+            argdescription << "\t" << mArguments[i][3].toStdString() << " (Default: "<< mArguments[i][4].toStdString()<<")"<<std::endl;
+            this->printIndented(argname, argdescription, 80);
         }
     }
 }

@@ -59,6 +59,7 @@ void Plugin_PythonAlgorithm::Initialize(void){
 }
 
 void Plugin_PythonAlgorithm::slot_configurationReceived(ifind::Image::Pointer image){
+    Plugin::slot_configurationReceived(image);
     if (image->HasKey("PythonInitialized")){
         std::string whoInitialisedThePythonInterpreter = image->GetMetaData<std::string>("PythonInitialized");
         std::cout << "[WARNING from "<< this->GetPluginName().toStdString() << "] Python interpreter already initialized by \""<< whoInitialisedThePythonInterpreter <<"\", no initialization required."<<std::endl;
@@ -69,8 +70,6 @@ void Plugin_PythonAlgorithm::slot_configurationReceived(ifind::Image::Pointer im
         std::cout << "[WARNING from "<< this->GetPluginName().toStdString() << "] Python Global Interpreter Lock already set by a previous plug-in."<<std::endl;
         this->worker->set_gil_init(1);
     }
-    /// Pass on the message in case we need to "jump" over plug-ins
-    Q_EMIT this->ConfigurationGenerated(image);
 }
 
 void Plugin_PythonAlgorithm::SetDefaultArguments(){

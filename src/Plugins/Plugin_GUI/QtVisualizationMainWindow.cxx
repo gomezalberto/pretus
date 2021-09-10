@@ -22,6 +22,13 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
     // create a widget to contain the left and right hand bars and the render
     // create the render widget
 
+    mUseColors = true;
+    // define the colors
+    mWidgetColors = QStringList({"red", "green", "blue", "cyan", "magenta", "yellow",
+                                 "gray", "darkRed", "darkGreen", "darkBlue", "darkCyan",
+                                 "darkMagenta", "darkYellow", "darkGray", "lightGray",
+                                 "color0", "color1", "white", "black"});
+
     // set up the left panel
     {
         auto panelWidget = new QWidget();
@@ -42,7 +49,7 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
         panelWidget->move(0, 0); // move within the parent (will be the horizontal layout)
 
         auto gLayout = new QGridLayout ();
-        gLayout->setContentsMargins(0, 0, 0, 0);
+        gLayout->setContentsMargins(1, 1, 1, 1); /// leave some margin to see the border color
         gLayout->setSpacing(0);
         panelWidget->setLayout(gLayout);
         mCentralPanelWidget = panelWidget;
@@ -122,7 +129,14 @@ void QtVisualizationMainWindow::Initialize()
     QVBoxLayout *vLayoutL = dynamic_cast<QVBoxLayout*>(mLeftPanelWidget->layout());
     QVBoxLayout *vLayoutR = dynamic_cast<QVBoxLayout*>(mRightPanelWidget->layout());
     for (int i=0; i< mWidgets.size(); i++){
+        if (mWidgets[i] == nullptr){
+            continue;
+        }
         QtPluginWidgetBase *w = mWidgets[i];
+        //w->setStyleSheet("QtPluginWidgetBase { border: 1px solid green }");
+        if (this->mUseColors){
+            w->setStyleSheet(QString("QtPluginWidgetBase {border: 1px solid ") + mWidgetColors[i]+ "}" );
+        }
         switch (mWidgets[i]->GetWidgetLocation()){
         case QtPluginWidgetBase::WidgetLocation::top_left:
             vLayoutL->addWidget(w, 1, Qt::AlignTop);
@@ -171,6 +185,9 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
 
     int N = 0;
     for (int i=0; i< mImageWidgets.size(); i++){
+        if (mImageWidgets[i] == nullptr){
+            continue;
+        }
         if  (mImageWidgets[i]->GetWidgetLocation() == QtPluginWidgetBase::WidgetLocation::visible){
             N++;
         }
@@ -203,7 +220,9 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
 
     int nvisibles = 0;
     for (int i=0; i< mImageWidgets.size(); i++){
-
+        if (mImageWidgets[i] == nullptr){
+            continue;
+        }
         switch (mImageWidgets[i]->GetWidgetLocation()){
         case QtPluginWidgetBase::WidgetLocation::visible:
         {
@@ -212,13 +231,16 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             int c = nvisibles % mNc;
 
             QtVTKVisualization *ww = reinterpret_cast<QtVTKVisualization*>(w);
+            if (this->mUseColors){
+                ww->setStyleSheet(QString("QFrame {border: 1px solid ") + mWidgetColors[i]+ "}" );
+            }
 
             QObject::connect(this, &QtVisualizationMainWindow::SignalSetViewScale, ww,
                              &QtVTKVisualization::SetViewScale);
 
             nvisibles++;
             centralLayout->addWidget(w,r,c);
-            w->show();
+            w->show();            
             break;
         }
         case QtPluginWidgetBase::WidgetLocation::hidden:
@@ -271,4 +293,14 @@ void QtVisualizationMainWindow::keyPressEvent(QKeyEvent *event)
             showFullScreen();
         }
     }
+}
+
+bool QtVisualizationMainWindow::useColors() const
+{
+    return mUseColors;
+}
+
+void QtVisualizationMainWindow::setUseColors(bool useColors)
+{
+    mUseColors = useColors;
 }

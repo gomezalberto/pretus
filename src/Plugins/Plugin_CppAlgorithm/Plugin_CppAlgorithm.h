@@ -28,13 +28,6 @@ public:
     */
     void Initialize(void);
 
-
-public Q_SLOTS:
-    /**
-     * Receive configuration information from upstream plug-ins
-     */
-    virtual void slot_configurationReceived(ifind::Image::Pointer image);
-
 protected:
     virtual void SetDefaultArguments();
 };

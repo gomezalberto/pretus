@@ -2,7 +2,7 @@
 #include <QWidget>
 #include "QtPluginWidgetBase.h"
 #include <ifindImage.h>
-
+#include <QPaintEvent>
 #include <vtkSmartPointer.h>
 #include <vtkImageActor.h>
 #include <vtkLookupTable.h>
@@ -99,6 +99,7 @@ protected:
     // override, in order to be able to reize the vtk rendering
     virtual void resizeEvent(QResizeEvent *event);
     float mViewScale;
+
 
 private:
 

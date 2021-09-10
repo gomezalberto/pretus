@@ -24,7 +24,7 @@ Plugin_GUI::Plugin_GUI(QObject *parent)
         this->mWidget = mWidget_;
     }
 
-
+    mVisualizer = std::make_shared<QtVisualizationMainWindow>();
     this->SetDefaultArguments();
 }
 
@@ -38,7 +38,7 @@ void Plugin_GUI::SetActivate(bool arg)
 void Plugin_GUI::Initialize()
 {
     // chances are the visualiser would not have been created when the args were set
-    mVisualizer = std::make_shared<QtVisualizationMainWindow>();
+    //mVisualizer = std::make_shared<QtVisualizationMainWindow>();
     mVisualizer->SetCommandLineArguments(mArgs);
 
     mVisualizer->SetWidgets(mWidgets);
@@ -59,13 +59,11 @@ void Plugin_GUI::Initialize()
 }
 
 void Plugin_GUI::slot_configurationReceived(ifind::Image::Pointer image){
+    Plugin::slot_configurationReceived(image);
     /// Check if there is any need to update the gui
     if (image->HasKey("UpdateGUI")){
         this->mVisualizer->InitializeCentralPanel();
     }
-
-    /// Pass on the message in case we need to "jump" over plug-ins
-    Q_EMIT this->ConfigurationGenerated(image);
 }
 
 bool Plugin_GUI::IntegratesWidgets(){
@@ -84,7 +82,11 @@ void Plugin_GUI::SetDefaultArguments(){
     this->RemoveArgument("stream");
     this->RemoveArgument("layer");
     this->RemoveArgument("showimage");
-    this->RemoveArgument("showwidget");
+
+    mArguments.push_back({"usecolors", "<val>",
+                            QString( ArgumentType[0] ),
+                            "Wether use colours for widgets or not.",
+                            QString::number(this->mVisualizer->useColors())});
 }
 
 
@@ -93,6 +95,11 @@ void Plugin_GUI::SetCommandLineArguments(int argc, char* argv[])
 {
     Plugin::SetCommandLineArguments(argc, argv);
     InputParser input(argc, argv, this->GetCompactPluginName().toLower().toStdString());
+
+    {const std::string &argument = input.getCmdOption("usecolors");
+        if (!argument.empty()){
+            this->mVisualizer->setUseColors( atoi(argument.c_str()));
+        }}
 
     mArgs = std::vector<std::string>(argv, argv + argc);
 

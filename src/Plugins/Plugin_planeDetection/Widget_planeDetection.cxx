@@ -17,6 +17,7 @@ Widget_planeDetection::Widget_planeDetection(
 
     mLabel = new QLabel("Text not set", this);
     mLabel->setStyleSheet(sQLabelStyle);
+
     //
     mSlider = new QSlider(Qt::Orientation::Horizontal);
     mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
@@ -33,17 +34,25 @@ Widget_planeDetection::Widget_planeDetection(
     mSliderTA->setMaximum(100);
     mSliderTA->setMinimum(0);
     mSliderTA->setAutoFillBackground(true);
+
+    auto vLayout = new QVBoxLayout(this);
+    vLayout->setContentsMargins(0, 0, 0, 0);
+    vLayout->setSpacing(0);
+    this->setLayout(vLayout);
+
+    vLayout->addWidget(mLabel);
+    this->AddInputStreamComboboxToLayout(vLayout);
+    vLayout->addWidget(mSlider);
+    vLayout->addWidget(mSliderTA);
+
+
 }
 
 void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
 
-    auto labelFont = mLabel->font();
-    labelFont.setPixelSize(15);
-    labelFont.setBold(true);
-    mLabel->setFont(labelFont);
-
-    QVBoxLayout * outmost_layout = new QVBoxLayout(this);
-    outmost_layout->addWidget(mLabel, 1, Qt::AlignTop);
+    //QVBoxLayout * outmost_layout = new QVBoxLayout(this);
+    QVBoxLayout * outmost_layout = reinterpret_cast<QVBoxLayout*>(this->layout());
+    /*outmost_layout->addWidget(mLabel, 1, Qt::AlignTop);
     {
         QHBoxLayout * slider_layout = new QHBoxLayout();
         QLabel *sliderLabel = new QLabel("(1)",this);
@@ -60,7 +69,8 @@ void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
         slider_layout->addWidget(mSliderTA);
         outmost_layout->addLayout(slider_layout);
     }
-
+    this->AddInputStreamComboboxToLayout(outmost_layout);
+    */
     if (mWidgetOptions.show_bars == true) {
         //QVBoxLayout *vLayout = dynamic_cast<QVBoxLayout*>(outmost_layout);
         /// This will have bar graphs of the live scan plane values
@@ -154,14 +164,12 @@ void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
 
     std::stringstream stream;
     stream << "==" << this->mPluginName.toStdString() << "=="<<std::endl;
-    stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
-    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes);
-
-
     if (image->HasKey("Standardplanedetection_bckth")){
-        stream << std::endl<< "(1) Background threshold: "<< image->GetMetaData<std::string>("Standardplanedetection_bckth");
-        stream << std::endl<< "(2) Averaged frames: "<< image->GetMetaData<std::string>("Standardplanedetection_tempAvg");
+        stream << "(1) Background threshold: "<< image->GetMetaData<std::string>("Standardplanedetection_bckth")<< std::endl;
+        stream << "(2) Averaged frames: "<< image->GetMetaData<std::string>("Standardplanedetection_tempAvg")<< std::endl;
     }
+    //stream << "Receiving " << ifind::StreamTypeSetToString(this->mInputStreamTypes) << std::endl;
+    stream << "Sending " << ifind::StreamTypeSetToString(this->mStreamTypes);
 
     mLabel->setText(stream.str().c_str());
 
