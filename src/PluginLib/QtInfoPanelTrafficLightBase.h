@@ -49,12 +49,17 @@ public:
         QWidget *parent = nullptr,
         Qt::WindowFlags f = Qt::WindowFlags() );
 
+    bool colorWithLevel() const;
+    void setColorWithLevel(bool colorWithLevel);
+
 public Q_SLOTS:
 
     void ResetTrafficLights();
 
 protected:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
+    bool mColorWithLevel;
+
 
 private:
 

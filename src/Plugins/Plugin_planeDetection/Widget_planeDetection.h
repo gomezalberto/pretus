@@ -31,10 +31,14 @@ public:
 
     QSlider *mSlider;
     QSlider *mSliderTA;
+    bool colorWithLevel() const;
+    void setColorWithLevel(bool colorWithLevel);
+
 private:
     // raw pointer to new object which will be deleted by QT hierarchy
     QLabel *mLabel;
     bool mIsBuilt;
+    bool mColorWithLevel;
 
     /**
      * @brief Build the widget

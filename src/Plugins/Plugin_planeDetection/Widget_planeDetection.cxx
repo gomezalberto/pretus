@@ -10,7 +10,7 @@ Widget_planeDetection::Widget_planeDetection(
         QWidget *parent, Qt::WindowFlags f)
     : QtPluginWidgetBase(parent, f)
 {
-
+    mColorWithLevel = true;
     this->mWidgetLocation = WidgetLocation::top_right;
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Standardplanedetection");
     mIsBuilt = false;
@@ -50,27 +50,7 @@ Widget_planeDetection::Widget_planeDetection(
 
 void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
 
-    //QVBoxLayout * outmost_layout = new QVBoxLayout(this);
     QVBoxLayout * outmost_layout = reinterpret_cast<QVBoxLayout*>(this->layout());
-    /*outmost_layout->addWidget(mLabel, 1, Qt::AlignTop);
-    {
-        QHBoxLayout * slider_layout = new QHBoxLayout();
-        QLabel *sliderLabel = new QLabel("(1)",this);
-        sliderLabel->setStyleSheet(sQLabelStyle);
-        slider_layout->addWidget(sliderLabel);
-        slider_layout->addWidget(mSlider);
-        outmost_layout->addLayout(slider_layout);
-    }
-    {
-        QHBoxLayout * slider_layout = new QHBoxLayout();
-        QLabel *sliderLabel = new QLabel("(2)",this);
-        sliderLabel->setStyleSheet(sQLabelStyle);
-        slider_layout->addWidget(sliderLabel);
-        slider_layout->addWidget(mSliderTA);
-        outmost_layout->addLayout(slider_layout);
-    }
-    this->AddInputStreamComboboxToLayout(outmost_layout);
-    */
     if (mWidgetOptions.show_bars == true) {
         //QVBoxLayout *vLayout = dynamic_cast<QVBoxLayout*>(outmost_layout);
         /// This will have bar graphs of the live scan plane values
@@ -134,6 +114,7 @@ void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
 
             auto infoPanel = new QtInfoPanelTrafficLightBase(
                         standardPlaneTrafficLightConfig, this);
+            infoPanel->setColorWithLevel(mColorWithLevel);
             infoPanel->SetStreamTypesFromStr("AutoReport");
             outmost_layout->addWidget(infoPanel, 1, Qt::AlignTop);
 
@@ -156,9 +137,6 @@ void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
         BOOST_FOREACH (const std::string& t, tokens) {
                 labelnames.push_back(t);
             }
-//        std::vector<std::string> labelnames = { "3VV","4CH","Abdominal",
-//                                                "Background","Brain (Cb.)","Brain (Tv.)", "Femur","Kidneys","Lips","LVOT",
-//                                                "Profile","RVOT","Spine (cor.)","Spine (sag.)" };
         this->Build(labelnames);
     }
 
@@ -174,4 +152,14 @@ void Widget_planeDetection::SendImageToWidgetImpl(ifind::Image::Pointer image){
     mLabel->setText(stream.str().c_str());
 
     Q_EMIT this->ImageAvailable(image);
+}
+
+bool Widget_planeDetection::colorWithLevel() const
+{
+    return mColorWithLevel;
+}
+
+void Widget_planeDetection::setColorWithLevel(bool colorWithLevel)
+{
+    mColorWithLevel = colorWithLevel;
 }
