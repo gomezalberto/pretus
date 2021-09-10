@@ -72,6 +72,9 @@ public:
 
     void setLevelColor(const Qt::GlobalColor &levelColor);
 
+    bool colorWithLevel() const;
+    void setColorWithLevel(bool colorWithLevel);
+
 private Q_SLOTS:
     void redrawTimerExpired();
 
@@ -84,6 +87,7 @@ private:
     double mLevel;
 
     Qt::GlobalColor mLevelColor;
+    bool mColorWithLevel;
 
     QTimer *m_redrawTimer;
 };

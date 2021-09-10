@@ -51,7 +51,7 @@
 // https://doc-snapshots.qt.io/qt5-5.9/qtmultimedia-multimedia-spectrum-app-levelmeter-cpp.html
 
 #include "QtLevelMeter.h"
-
+#include <iostream>
 #include <math.h>
 
 #include <QPainter>
@@ -71,6 +71,7 @@ QtLevelMeter::QtLevelMeter(QWidget *parent)
     connect(m_redrawTimer, &QTimer::timeout,
             this, &QtLevelMeter::redrawTimerExpired);
     m_redrawTimer->start(RedrawInterval);
+    mColorWithLevel = true;
 }
 
 QtLevelMeter::~QtLevelMeter()
@@ -88,14 +89,31 @@ void QtLevelMeter::paintEvent(QPaintEvent *event)
     QRect bar = rect();
 
     bar.setRight(rect().left() + (mLevel * rect().width()));
-    painter.fillRect(bar, mLevelColor);
+    QColor currentColor = mLevelColor;
+    if (mColorWithLevel == true){
+        double H, S, V;
+        currentColor.getHsvF(&H, &S, &V);
+        S = mLevel;
+        V = mLevel;
+        currentColor.setHsvF(H, S, V);
+    }
+    painter.fillRect(bar, currentColor);
 }
 
 void QtLevelMeter::LevelChanged(double level)
 {
     mLevel = level;
-
     update();
+}
+
+bool QtLevelMeter::colorWithLevel() const
+{
+    return mColorWithLevel;
+}
+
+void QtLevelMeter::setColorWithLevel(bool colorWithLevel)
+{
+    mColorWithLevel = colorWithLevel;
 }
 
 void QtLevelMeter::setLevelColor(const Qt::GlobalColor &levelColor)

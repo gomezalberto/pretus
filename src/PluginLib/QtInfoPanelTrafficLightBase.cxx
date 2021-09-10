@@ -12,15 +12,16 @@
 
 
 QtInfoPanelTrafficLightBase::QtInfoPanelTrafficLightBase(
-    Configuration configuration,
-    QWidget *parent, 
-    Qt::WindowFlags f)
+        Configuration configuration,
+        QWidget *parent,
+        Qt::WindowFlags f)
     :
-    QtInfoPanelBase(parent, f),
-    mConfiguration(configuration)
+      QtInfoPanelBase(parent, f),
+      mConfiguration(configuration)
 {
     // Initialise the labels and coloursd to a test set
 
+    mColorWithLevel = true;
     // Create the panel of traffic lights based upon the label names
     auto labelsGrid = new QGridLayout(this);
     this->setLayout(labelsGrid);
@@ -59,6 +60,9 @@ QtInfoPanelTrafficLightBase::QtInfoPanelTrafficLightBase(
         if (Modes::ImmediateBarNormalised == mConfiguration.Mode)
         {
             auto levelWidget = new QtLevelMeter(this);
+            if (mColorWithLevel==true){
+                levelWidget->setColorWithLevel(true);
+            }
             labelsGrid->addWidget(levelWidget, gridRow, gridColumn);
 
             mLevelMeters.insert(std::make_pair(labelName, levelWidget));
@@ -83,8 +87,8 @@ QtInfoPanelTrafficLightBase::QtInfoPanelTrafficLightBase(
         resetButton->setFont(labelFont);
 
         QObject::connect(
-            resetButton, &QPushButton::pressed, 
-            this, &QtInfoPanelTrafficLightBase::ResetTrafficLights);
+                    resetButton, &QPushButton::pressed,
+                    this, &QtInfoPanelTrafficLightBase::ResetTrafficLights);
 
         labelsGrid->addWidget(resetButton, ++gridRow, 0, 1, mConfiguration.NGridColumns);
     }
@@ -103,17 +107,17 @@ void QtInfoPanelTrafficLightBase::ResetTrafficLights()
 void QtInfoPanelTrafficLightBase::SendImageToWidgetImpl(ifind::Image::Pointer image)
 {
     const std::string tempMetadataLabels(
-        image->GetMetaData<std::string>(mConfiguration.MetadataLabelsKey.c_str()));
+                image->GetMetaData<std::string>(mConfiguration.MetadataLabelsKey.c_str()));
     const std::string tempMetadataValues(
-        image->GetMetaData<std::string>(mConfiguration.MetadataValuesKey.c_str()));
+                image->GetMetaData<std::string>(mConfiguration.MetadataValuesKey.c_str()));
 
     QStringList metadataLabels(
-        QString(image->GetMetaData<std::string>( 
-            mConfiguration.MetadataLabelsKey.c_str() ).c_str()).split(mConfiguration.MetadataSplitCharacter));
+                QString(image->GetMetaData<std::string>(
+                            mConfiguration.MetadataLabelsKey.c_str() ).c_str()).split(mConfiguration.MetadataSplitCharacter));
 
     QStringList metadataValues(
-        QString(image->GetMetaData<std::string>( 
-            mConfiguration.MetadataValuesKey.c_str() ).c_str()).split(mConfiguration.MetadataSplitCharacter));
+                QString(image->GetMetaData<std::string>(
+                            mConfiguration.MetadataValuesKey.c_str() ).c_str()).split(mConfiguration.MetadataSplitCharacter));
 
     if (metadataLabels.size() != metadataValues.size())
     {
@@ -180,15 +184,22 @@ void QtInfoPanelTrafficLightBase::SendImageToWidgetImpl(ifind::Image::Pointer im
     {
         for (auto pairLabelValue : pairedLabelsValues)
         {
-             UpdateTrafficLight(
-                 pairLabelValue.first, 
-                 (pairLabelValue.second - minLabelValue.second)/ (maxLabelValue.second - minLabelValue.second));
+            UpdateTrafficLight(
+                        pairLabelValue.first,
+                        (pairLabelValue.second - minLabelValue.second)/ (maxLabelValue.second - minLabelValue.second));
         }
     }
     else if (Modes::ImmediateBarNormalised == mConfiguration.Mode)
     {
         for (auto pairLabelValue : pairedLabelsValues)
         {
+            if (mColorWithLevel==true){
+
+                UpdateTrafficLight(
+                            pairLabelValue.first,
+                            (pairLabelValue.second - minLabelValue.second)/ (maxLabelValue.second - minLabelValue.second));
+            }
+
             // find the traffic light which matches the metadata label
             auto levelMeterIter = mLevelMeters.find(pairLabelValue.first);
 
@@ -196,16 +207,26 @@ void QtInfoPanelTrafficLightBase::SendImageToWidgetImpl(ifind::Image::Pointer im
             {
                 // then set its colours according to the metadata value
                 levelMeterIter->second->LevelChanged(
-                    (pairLabelValue.second - minLabelValue.second) / (maxLabelValue.second - minLabelValue.second));
+                            (pairLabelValue.second - minLabelValue.second) / (maxLabelValue.second - minLabelValue.second));
             }
         }
     }
-   
+
+}
+
+bool QtInfoPanelTrafficLightBase::colorWithLevel() const
+{
+    return mColorWithLevel;
+}
+
+void QtInfoPanelTrafficLightBase::setColorWithLevel(bool colorWithLevel)
+{
+    mColorWithLevel = colorWithLevel;
 }
 
 void QtInfoPanelTrafficLightBase::UpdateTrafficLight(
-    const std::string &metadataLabel, 
-    const double metadataValue)
+        const std::string &metadataLabel,
+        const double metadataValue)
 {
     // find the traffic light which matches the metadata label
     auto trafficLightIter = mTrafficLights.find(metadataLabel);
@@ -223,10 +244,22 @@ void QtInfoPanelTrafficLightBase::UpdateLabelColors(QLabel *label, const double 
     // so 'auto for' won't work - boost to the rescue
     for (auto valueColor : boost::adaptors::reverse(mConfiguration.ValueColorsVector))
     {
-        if (value >= valueColor.Value)
-        {
-            SetLabelColors(label, valueColor);
-            break;
+
+        if (mColorWithLevel==true){
+            ValueColors currentColor = mConfiguration.ValueColorsVector[0];
+
+            double H, S, V;
+            currentColor.TextColor.getHsvF(&H, &S, &V);
+            S = value;
+            V = value;
+            currentColor.TextColor.setHsvF(H, S, V);
+            SetLabelColors(label, currentColor);
+        } else {
+            if (value >= valueColor.Value)
+            {
+                SetLabelColors(label, valueColor);
+                break;
+            }
         }
     }
 }

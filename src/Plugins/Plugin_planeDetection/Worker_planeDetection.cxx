@@ -183,7 +183,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         confidences_average[i]= (confidences_average[i]-min_confidence) /(max_confidence-min_confidence);
     }
 
-    const int BACKGROUND_IDX = 3;
+    const int BACKGROUND_IDX = 13; // because we have reordered @todo find in the list
      //std::cout << "max_confidence_id "<<max_confidence_id<<std::endl;
     if (max_confidence_id == BACKGROUND_IDX){
         // see if the second best is greater than the background threshold

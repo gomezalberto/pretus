@@ -22,7 +22,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #label_names = ['3VV', '4CH', 'ABDOMINAL', 'BACKGROUND', 'BRAIN-CB', 'BRAIN-TV', 'FEMUR', 'KIDNEYS', 'LIPS', 'LVOT','PROFILE', 'RVOT', 'SPINE-CORONAL', 'SPINE-SAGITTAL']
 #label_names = ['3VV', '4CH', 'Abdominal', 'Brain (Cb.)', 'Brain (Tv.)', 'Femur', 'Kidneys', 'Lips', 'LVOT', 'Profile', 'RVOT',  'Spine (cor.)',  'Spine (sag.)', 'Background']
 #label_names = ['3VV', '4CH', 'Abdominal', 'Background', 'Brain (Cb.)', 'Brain (Tv.)', 'Femur', 'Kidneys', 'Lips', 'LVOT', 'Profile', 'RVOT', 'Spine (cor.)', 'Spine (sag.)']
+
 label_names = ['3VV', '4CH', 'Abdominal', 'Background', 'Brain (Cb.)', 'Brain (Tv.)', 'Femur', 'Kidneys', 'LVOT', 'Lips', 'Profile', 'RVOT', 'Spine (cor.)', 'Spine (sag.)']
+label_reordering = [4, 5, 6, 2,   7,    0, 1, 8, 11,     9, 10, 12, 13,    3]
 
 class HiddenPrints:
     def __enter__(self):
@@ -33,19 +35,22 @@ class HiddenPrints:
         sys.stdout = self._original_stdout
 
 def getlabels():
-    return label_names
+    # Order the labels with the label_reodering
+    labels_reordered = [label_names[i] for i in label_reordering]
+    return labels_reordered
+    #return label_names
 
-def image_loader(image_name, image_size):
-    """load image, returns cuda tensor"""
-    image = cv2.imread(image_name)
-    image= cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    im_array = resize(image, (int(image_size[0]), int(image_size[1] )), preserve_range=True)
-    image_T = torch.from_numpy(im_array)
-    image_T = image_T.type(torch.FloatTensor)
-    image_T = image_T.unsqueeze(0)
-    image_T = image_T.unsqueeze(0)
-    image_T_norm = image_T.sub(image_T.mean()).div(image_T.std())
-    return image_T_norm.cuda()
+#def image_loader(image_name, image_size):
+#    """load image, returns cuda tensor"""
+#    image = cv2.imread(image_name)
+#    image= cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+#    im_array = resize(image, (int(image_size[0]), int(image_size[1] )), preserve_range=True)
+#    image_T = torch.from_numpy(im_array)
+#    image_T = image_T.type(torch.FloatTensor)
+#    image_T = image_T.unsqueeze(0)
+#    image_T = image_T.unsqueeze(0)
+#    image_T_norm = image_T.sub(image_T.mean()).div(image_T.std())
+#    return image_T_norm.cuda()
 
 
 def initialize( python_path, modelname):
@@ -148,7 +153,10 @@ def dowork(image_cpp, move_threshold=True, verbose=False):
         prediction = model.prediction[0].cpu().numpy()
         ##model.pred = model.logits.data.max(1)
         ##pr_lbls = model.pred[1].item()
-        output = tuple(i for i in prediction)
+
+        output = [prediction[i] for i in label_reordering]
+
+        #output = tuple(i for i in prediction)
         return output
 
     except Exception as inst:
