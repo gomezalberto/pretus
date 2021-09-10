@@ -22,6 +22,7 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
     // create a widget to contain the left and right hand bars and the render
     // create the render widget
 
+    mUseColors = true;
     // define the colors
     mWidgetColors = QStringList({"red", "green", "blue", "cyan", "magenta", "yellow",
                                  "gray", "darkRed", "darkGreen", "darkBlue", "darkCyan",
@@ -133,7 +134,9 @@ void QtVisualizationMainWindow::Initialize()
         }
         QtPluginWidgetBase *w = mWidgets[i];
         //w->setStyleSheet("QtPluginWidgetBase { border: 1px solid green }");
-        w->setStyleSheet(QString("QtPluginWidgetBase {border: 1px solid ") + mWidgetColors[i]+ "}" );
+        if (this->mUseColors){
+            w->setStyleSheet(QString("QtPluginWidgetBase {border: 1px solid ") + mWidgetColors[i]+ "}" );
+        }
         switch (mWidgets[i]->GetWidgetLocation()){
         case QtPluginWidgetBase::WidgetLocation::top_left:
             vLayoutL->addWidget(w, 1, Qt::AlignTop);
@@ -228,7 +231,9 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             int c = nvisibles % mNc;
 
             QtVTKVisualization *ww = reinterpret_cast<QtVTKVisualization*>(w);
-            ww->setStyleSheet(QString("QFrame {border: 1px solid ") + mWidgetColors[i]+ "}" );
+            if (this->mUseColors){
+                ww->setStyleSheet(QString("QFrame {border: 1px solid ") + mWidgetColors[i]+ "}" );
+            }
 
             QObject::connect(this, &QtVisualizationMainWindow::SignalSetViewScale, ww,
                              &QtVTKVisualization::SetViewScale);
@@ -288,4 +293,14 @@ void QtVisualizationMainWindow::keyPressEvent(QKeyEvent *event)
             showFullScreen();
         }
     }
+}
+
+bool QtVisualizationMainWindow::useColors() const
+{
+    return mUseColors;
+}
+
+void QtVisualizationMainWindow::setUseColors(bool useColors)
+{
+    mUseColors = useColors;
 }
