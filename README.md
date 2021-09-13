@@ -4,7 +4,7 @@
 ---
 
 
-This is a plug-in based, lightweight softwarefor real time image analysis, data collection, and operator guidance, developed within the [iFIND project](www.ifindproject.com).
+This is a plug-in based, lightweight software for real time image analysis, data collection, and operator guidance, developed within the [iFIND project](www.ifindproject.com).
 
 ## Contact
 * Alberto Gomez (alberto.gomez@kcl.ac.uk)
@@ -19,7 +19,7 @@ This is a plug-in based, lightweight softwarefor real time image analysis, data 
 
 PRETUS is a lightweight software that creates, at run-time, a real-time imaging pipeline. The program itself does not do much on its own: most functionality is brought in through [plug-ins](src/Plugins) that are conected in sequence in the user-defined pipeline. Configuration information as well as data is passed from a plug-in to the next embedded in an object of the `the ifind::Image` class. This class, together with convenience readers and writers make up the [Common](src/Common) tools.
 
-The software will load all plug-ins found in the plug-in folder (which can be defined through CMake with the variable ```PLUGIN_FOLDER```). Then, it will do the following operations in order:
+The software will load all plug-ins found in the plug-in folder. Such folder can be given a default value at build time (defined through CMake with the variable ```PLUGIN_FOLDER```), or can be set at any time in the config file ```<$HOME>/.config/iFIND/PRETUS.conf``` (if multiple folders, they can be colon-separated). Then, it will do the following operations in order:
 
 1. Read from the command line the user-defined pipeline and re-order the plug-ins that will be used accordingly.
 2. Connect each plug-in to the next. For each pair of connected plug-ins, two connections are made: first the configuration connection ( a plug-in can pass configuration parameters to the next); second, the real-time imaging connection (a plug-in will pass a processed image to the next, as they are processed).
@@ -247,7 +247,7 @@ The minimum requirements are:
     * OpenCV (needed for ITK - build with opencv contrib as decribed above)
     * Boost
 At this stage you can enable and disable what plug-ins will be built. See plug-in specific instructions on how to configure CMake options for them.
-2. [Optional] If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. These can be more than one folder, separated by `;`.
+2. [Optional] If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. These can be more than one folder, separated by `;`. These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```).
 3. Set your install path using the `CMAKE_INSTALL_PREFIX` variable. We recommend a path within `<HOME>/local/`.
 4. Select the plug-ins to build with `BUILD_PLUGIN_XXX`. We recommend to initially build with the default enabled plug-ins, and gradually build the rest.
 **Each plug-in has different dependencies, so please do check the README in each Plug-in folder for specific build instructions.**

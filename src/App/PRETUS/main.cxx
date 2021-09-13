@@ -71,7 +71,7 @@ int main (int argc, char* argv[])
 
 
     QString plugin_folder = getPluginFolder();
-    QSettings settings("King's College London", "PRETUS");
+    QSettings settings("iFIND", "PRETUS");
     if (QFile(settings.fileName()).exists() == false ) {
         // create the config file.
         settings.beginGroup("MainApp");
