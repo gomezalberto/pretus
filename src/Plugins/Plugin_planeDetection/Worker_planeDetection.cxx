@@ -10,7 +10,7 @@ Worker_planeDetection::Worker_planeDetection(QObject *parent) : Worker(parent){
     this->confidences.clear();
     this->python_folder = "";
     this->temporalAverage = 0;
-    this->background_threshold = 1;
+    this->background_threshold = 1000000; // a very big number
     this->modelname = "ifind2_net_Jan15.pth";
     this->m_write_background = false;
 }
@@ -65,14 +65,14 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
 
     if (!this->PythonInitialized){
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - python not initialised" <<std::endl;
+            std::cout << "[WARNING] Worker_planeDetection::doWork() - python not initialised" <<std::endl;
         }
         return;
     }
 
     if (!Worker::gil_init) {
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - init GIL" <<std::endl;
+            std::cout << "[VERBOSE] Worker_planeDetection::doWork() - init GIL" <<std::endl;
         }
         Worker::gil_init = 1;
         PyEval_InitThreads();
@@ -85,9 +85,13 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
 
     if (image == nullptr){
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - input image was null" <<std::endl;
+            std::cout << "[WARNING] Worker_planeDetection::doWork() - input image was null" <<std::endl;
         }
         return;
+    }
+
+    if (this->params.verbose){
+        std::cout << "[VERBOSE] Worker_planeDetection::doWork() - start processing" <<std::endl;
     }
 
     /// Extract central slice and crop
@@ -108,7 +112,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     GrayImageType2D::Pointer image_2d_cropped = this->crop_ifind_2D_image_data(image_2d);
 
     if (this->params.verbose){
-        std::cout << "Worker_planeDetection::doWork() - 2D image extracted" <<std::endl;
+        std::cout << "\tWorker_planeDetection::doWork() - 2D image extracted" <<std::endl;
     }
 
     /// Detect the plane
@@ -125,20 +129,20 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     PyGILState_STATE gstate = PyGILState_Ensure();
     {
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - within PyGILState_Ensure;" <<std::endl;
+            std::cout << "\tWorker_planeDetection::doWork() - within PyGILState_Ensure;" <<std::endl;
         }
         py::array numpyarray(dims, static_cast<GrayImageType2D::PixelType*>(image_2d_cropped->GetBufferPointer()));
         py::object _function = this->PyImageProcessingFunction;
 
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - within PyGILState_Ensure - call predict;" <<std::endl;
+            std::cout << "\tWorker_planeDetection::doWork() - within PyGILState_Ensure - call predict;" <<std::endl;
         }
         /// predict standard plane
         py::tuple predictions = py::tuple(_function(numpyarray, false, this->params.verbose));
         //py::array predictions = py::tuple(_function(numpyarray));
 
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - within PyGILState_Ensure - process predictions;" <<std::endl;
+            std::cout << "\t[VERBOSE] Worker_planeDetection::doWork() - within PyGILState_Ensure - process predictions;" <<std::endl;
         }
         /// Extract network output confidences (list of floating points)
         for (auto l : predictions){
@@ -151,7 +155,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
             this->confidences.dequeue();
         }
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - release PyGILState;" <<std::endl;
+            std::cout << "\t[VERBOSE] Worker_planeDetection::doWork() - release PyGILState;" <<std::endl;
         }
     }
     PyGILState_Release(gstate);
@@ -167,7 +171,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     /// Now divide by the temporal average,
     double max_confidence = -10000, min_confidence = 10000;
     int max_confidence_id = -1; // by default, background
-    for (int i=0; i<confidences_average.size(); i++){
+    for (unsigned int i=0; i < confidences_average.size(); i++){
         confidences_average[i]/=(this->temporalAverage+1.0);
         if (confidences_average[i]>max_confidence){
             max_confidence  = confidences_average[i];
@@ -179,50 +183,68 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     }
 
     /// Now normalize to [0, 1] confidence
-    for (int i=0; i<confidences_average.size(); i++){
+    for (unsigned int i=0; i < confidences_average.size(); i++){
         confidences_average[i]= (confidences_average[i]-min_confidence) /(max_confidence-min_confidence);
     }
 
+    if (this->params.verbose){
+        std::cout << "\t[VERBOSE] Worker_planeDetection::doWork() - prediction: ("<< max_confidence_id <<")";
+        for (unsigned int i=0; i < confidences_average.size(); i++){
+            std::cout << confidences_average[i] <<", ";
+        }
+        std::cout << std::endl;
+    }
+
+    // se if the threshold is such that background goes
     const int BACKGROUND_IDX = 13; // because we have reordered @todo find in the list
-     //std::cout << "max_confidence_id "<<max_confidence_id<<std::endl;
     if (max_confidence_id == BACKGROUND_IDX){
-        // see if the second best is greater than the background threshold
-        double max_confidence_av = -10000,  min_confidence_av = 10000;
+        for (unsigned int i=0; i < confidences_average.size() ; i++){
+            if (i != BACKGROUND_IDX && confidences_average[i] >= this->background_threshold){
+                confidences_average[BACKGROUND_IDX] = 0;
+            }
+        }
+
         /// recompute max_confidence ID
-        max_confidence_id = -1; // by default, background
-        for (int i=0; i<confidences_average.size(); i++){
-            if (i != BACKGROUND_IDX) {
-                //std::cout << "confidences_average["<<i<<"] "<< confidences_average[i]<< " this->background_threshold "<< this->background_threshold<<std::endl;
-                if (confidences_average[i] >= this->background_threshold){
-                    confidences_average[BACKGROUND_IDX] = 0;
-                }
+        double max_confidence_av = -10000,  min_confidence_av = 10000;
+        max_confidence_id = -1;
+        for (unsigned int i=0; i < confidences_average.size() ; i++){
+            //if (this->params.verbose){
+            //    std::cout << "\t\t[VERBOSE] class "<< i<< " - prediction: "<< confidences_average[i] << "(> "<< this->background_threshold<<")"<<std::endl;
+            //}
 
-                if (confidences_average[i]>max_confidence_av){
+            if (confidences_average[i]>max_confidence_av){
 
-                    max_confidence_av  = confidences_average[i];
-                    max_confidence_id = i;
-                }
-                if (confidences_average[i]<min_confidence_av){
-                    min_confidence_av  = confidences_average[i];
-                }
+                max_confidence_av  = confidences_average[i];
+                max_confidence_id = i;
+            }
+            if (confidences_average[i]<min_confidence_av){
+                min_confidence_av  = confidences_average[i];
             }
         }
         /// Now renormalize to [0, 1] confidence
-        for (int i=0; i<confidences_average.size(); i++){
+        for (unsigned int i=0; i < confidences_average.size(); i++){
             confidences_average[i]= (confidences_average[i]-min_confidence_av) /(max_confidence_av-min_confidence_av);
         }
     }
 
+    if (this->params.verbose){
+        std::cout << "\t[VERBOSE] Worker_planeDetection::doWork() - prediction: ";
+        for (unsigned int i=0; i < confidences_average.size(); i++){
+            std::cout << confidences_average[i] <<", ";
+        }
+        std::cout << std::endl;
+    }
+
     // convert to a string
     QStringList confidences_str;
-    for (int i=0; i<confidences_average.size(); i++){
+    for (unsigned int i=0; i<confidences_average.size(); i++){
         confidences_str.append(QString::number(confidences_average[i]));
     }
 
     if (max_confidence_id <0){
         /// This can occur if confidences are NaN
         if (this->params.verbose){
-            std::cout << "Worker_planeDetection::doWork() - image processed, but could not find any class -> confidence values were NaN : "<< max_confidence_id <<std::endl;
+            std::cout << "\t[WARNING] Worker_planeDetection::doWork() - image processed, but could not find any class -> confidence values were NaN : "<< max_confidence_id <<std::endl;
         }
         return;
     }
@@ -245,7 +267,7 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
     Q_EMIT this->ImageProcessed(image);
 
     if (this->params.verbose){
-        std::cout << "Worker_planeDetection::doWork() - image processed, class: "<< this->labels[max_confidence_id].toStdString() <<std::endl;
+        std::cout << "\t[VERBOSE]Worker_planeDetection::doWork() - image processed, class: "<< this->labels[max_confidence_id].toStdString() <<std::endl;
     }
 
 }

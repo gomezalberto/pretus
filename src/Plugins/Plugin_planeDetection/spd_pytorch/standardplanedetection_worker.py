@@ -109,8 +109,8 @@ def dowork(image_cpp, move_threshold=True, verbose=False):
 
         labels = getlabels()
         if verbose:
-            print("worker.py: planedetect - dowork() - getprediction: labels")
-            print(labels)
+            print("\t[VERBOSE] worker.py: planedetect - dowork() - getprediction: labels")
+            print('\t[VERBOSE]{}'.format(labels))
 
         defaultret = np.array([0.0] * len(labels))
 
@@ -129,13 +129,13 @@ def dowork(image_cpp, move_threshold=True, verbose=False):
         # AG: begin of problem: worstation freezes process when requesting to move to GPU
         a = torch.from_numpy(im_resized).type(torch.FloatTensor).unsqueeze(0).unsqueeze(0)
         if verbose:
-            print("worker.py: planedetect - dowork() - getprediction: 9")
+            print("\t[VERBOSE] worker.py: planedetect - dowork() - getprediction: move to GPU")
         #print(a.device)
         #print(device)
         # this is a problem in the workstation
         im_data = a.to(device)
         if verbose:
-            print("worker.py: planedetect - dowork() - getprediction: 10")
+            print("\t[VERBOSE] worker.py: planedetect - dowork() - getprediction: successfully moved to GPU")
         #im_data = torch.from_numpy(im_resized).type(torch.FloatTensor).unsqueeze(0).unsqueeze(0).to(device)
         #---------------------------------------
 
