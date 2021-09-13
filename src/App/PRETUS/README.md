@@ -1,10 +1,10 @@
-# Standalone iFIND2 software
+# PRETUS executable
 
 Author: Alberto Gomez (alberto.gomez@kcl.ac.uk)
 
 # Summary
 
-This program does nearly nothing on its own. Basically, it will load all plug-ins found in the plug-in folder (which can be defined through CMake with the variable ```PLUGIN_FOLDER```). Then, it will do the following operations in order:
+This program does nearly nothing on its own. Basically, it will load all plug-ins found in the plug-in folder (which can be defined through CMake with the variable ```PLUGIN_FOLDER```, or with the config file that will be created under ```$HOME/.iFIND/PRETUS.conf```). Then, it will do the following operations in order:
 
 1. Read from the command line the user-defined pipeline and re-order the plug-ins that will be used accordingly.
 2. Connect each plug-in to the next. For each pair of connected plug-ins, two connections are made: first the configuration connection ( a plug-in can pass configuration parameters to the next); second, the real-time imaging connection (a plug-in will pass a processed image to the next, as they are processed).

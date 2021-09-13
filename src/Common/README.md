@@ -9,5 +9,5 @@ The common lib supports generic functionality used accross plug-ins and the main
 * ifindImage support classes for writing, reading, metadata management
 * `ifindImagePeriodicTimer` serves as a means to transmit data at a certain frame rate. This in turn can be used to ensure that plug-ins work at a certain frame rate too.
 * `ifindStreamTypeHelper` is a class to manage, read, set and print stream information.
-* `inputParser` is a class to manage comand line arguments. It is inspured by the work from [Iain](https://stackoverflow.com/questions/865668/parsing-command-line-arguments-in-c).
+* `inputParser` is a class to manage comand line arguments. It is inspired by the work from [Iain](https://stackoverflow.com/questions/865668/parsing-command-line-arguments-in-c).
 
