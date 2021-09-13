@@ -6,7 +6,7 @@
 
 Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(parent, f)
 {
-    this->SetWidgetLocation(WidgetLocation::bottom_left);
+    this->SetWidgetLocation(WidgetLocation::top_left);
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("GUI");
 
     //------ define gui ----------

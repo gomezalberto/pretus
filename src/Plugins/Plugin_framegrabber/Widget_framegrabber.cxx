@@ -8,9 +8,7 @@ Widget_framegrabber::Widget_framegrabber(
     : QtPluginWidgetBase(parent, f)
 {
 
-    this->mWidgetLocation = WidgetLocation::bottom_left;
-
-    //mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Videomanager");
+    this->mWidgetLocation = WidgetLocation::top_left;
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Input");
 
     mLabel = new QLabel("Text not set", this);

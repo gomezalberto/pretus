@@ -2,10 +2,11 @@
 #include <QKeyEvent>
 #include <QDir>
 #include <QDirIterator>
+#include <QFile>
 #include <QSharedPointer>
 #include <QtWidgets/QApplication>
 #include <QCheckBox>
-
+#include <QSettings>
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -29,8 +30,7 @@ const static QString sPluginLibExtension("LibPlugin_*.so");
 
 typedef QList<std::shared_ptr<Plugin>> PluginQList;
 
-PluginQList LoadPlugins(int argc, char* argv[]);
-
+PluginQList LoadPlugins(int argc, char* argv[], const QString &plugin_folder);
 PluginQList ParsePipeline(const QString &pipeline, const PluginQList &plugin_list);
 
 /**
@@ -67,11 +67,29 @@ int main (int argc, char* argv[])
 {
 
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts); /// Needed to open other QWindows in plug-ins
-
     QApplication application(argc, argv);
+
+
+    QString plugin_folder = getPluginFolder();
+    QSettings settings("iFIND", "PRETUS");
+    if (QFile(settings.fileName()).exists() == false ) {
+        // create the config file.
+        settings.beginGroup("MainApp");
+        settings.setValue("plugin_folder", plugin_folder);
+        //settings.setValue("pos", pos());
+        settings.endGroup();
+        std::cout << "Configuration file created in "<< settings.fileName().toStdString() <<std::endl;
+    } else {
+         settings.beginGroup("MainApp");
+         plugin_folder = settings.value("plugin_folder").toString();
+         //settings.setValue("pos", pos());
+         settings.endGroup();
+         std::cout << "Reading configuration from "<< settings.fileName().toStdString() <<std::endl;
+    }
+
     const QStringList arguments = QCoreApplication::arguments();
 
-    PluginQList plugin_list = LoadPlugins(argc, argv);
+    PluginQList plugin_list = LoadPlugins(argc, argv, plugin_folder);
 
     const int i_pipeline_str = arguments.indexOf("-pipeline");
 
@@ -92,7 +110,7 @@ int main (int argc, char* argv[])
     PluginQList ordered_plugins = ParsePipeline(pipeline, plugin_list);
     if (ordered_plugins.empty())
     {
-        std::cerr << "Plugin order invalid" << std::endl;
+        std::cerr << "Plugin order invalid or misspelled plug-in name" << std::endl;
         return 0;
     }
 
@@ -166,11 +184,11 @@ int main (int argc, char* argv[])
 }
 
 
-PluginQList LoadPlugins(int argc, char* argv[])
+PluginQList LoadPlugins(int argc, char* argv[], const QString &plugin_folder)
 {
     // Check if there are plug-ins available
     PluginQList plugin_list;
-    QStringList pluginsdirlist(QString(getPluginFolder()).split(";"));
+    QStringList pluginsdirlist(QString(plugin_folder).split(";"));
 
     int total_plugin_count = 0;
 
