@@ -2,7 +2,7 @@
 #include <QDebug>
 #include "QtFixedAspectRatio.h"
 #include "QtVTKVisualization.h"
-
+#include <QScrollArea>
 #include "VisualizationConsts.h"
 #include <cmath>
 #include <QHBoxLayout>
@@ -25,13 +25,14 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
     mUseColors = true;
     // define the colors
     mWidgetColors = QStringList({"red", "green", "blue", "cyan", "magenta", "yellow",
-                                 "gray", "darkRed", "darkGreen", "darkBlue", "darkCyan",
-                                 "darkMagenta", "darkYellow", "darkGray", "lightGray",
+                                 "darkRed", "darkGreen", "darkBlue", "darkCyan",
+                                 "darkMagenta", "darkYellow", "darkGray", "gray", "lightGray",
                                  "color0", "color1", "white", "black"});
 
     // set up the left panel
     {
-        auto panelWidget = new QWidget();
+        //auto panelWidget = new QWidget();
+        auto panelWidget = new QScrollArea();
         panelWidget->move(0, 0);
         //panelWidget->show();
 
@@ -57,7 +58,8 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
 
     // set up the right panel
     {
-        auto panelWidget = new QWidget();
+        //auto panelWidget = new QWidget();
+        auto panelWidget = new QScrollArea();
         panelWidget->move(0, 0);
 
         auto vLayout = new QVBoxLayout(panelWidget);

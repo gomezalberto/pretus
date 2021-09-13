@@ -9,8 +9,7 @@ Widget_imageFileWriter::Widget_imageFileWriter(
     : QtPluginWidgetBase(parent, f)
 {
 
-    this->mWidgetLocation = WidgetLocation::bottom_left;
-    //mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Videomanager");
+    this->mWidgetLocation = WidgetLocation::top_left;
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Input");
     this->n_images_written = 0;
     mLabel = new QLabel("Text not set", this);

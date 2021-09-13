@@ -8,13 +8,12 @@ Widget_filemanager::Widget_filemanager(
     : QtPluginWidgetBase(parent, f)
 {
 
-    this->mWidgetLocation = WidgetLocation::bottom_left;
+    this->mWidgetLocation = WidgetLocation::top_left;
 
-    //mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Videomanager");
     mStreamTypes = ifind::InitialiseStreamTypeSetFromString("Input");
 
     mLabel = new QLabel("Text not set", this);
-    mLabel->setStyleSheet("QLabel { background-color : black; color : white; }");
+    mLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
 
     auto labelFont = mLabel->font();
     labelFont.setPixelSize(15);
