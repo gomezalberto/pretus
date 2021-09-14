@@ -1,4 +1,6 @@
 #include "Plugin_filemanager.h"
+#include <QSlider>
+#include <QPushButton>
 #include <QObject>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
@@ -15,6 +17,21 @@ Plugin_filemanager::Plugin_filemanager(QObject *parent) : Plugin(parent)
         // create widget
         WidgetType * mWidget_ = new WidgetType;
         this->mWidget = mWidget_;
+
+        // Connect widget and worker here
+        ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
+        QObject::connect(mWidget_->mSlider,
+                &QSlider::valueChanged, w,
+                &ManagerType::slot_frameValueChanged);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, w,
+                &ManagerType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, mWidget_,
+                &WidgetType::slot_togglePlayPause);
+
     }
 
     {

@@ -33,7 +33,6 @@ Widget_videomanager::Widget_videomanager(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
-    //vLayout->addWidget(mSlider);
 
     // create a miniwidget for the play/pause/slider
     {

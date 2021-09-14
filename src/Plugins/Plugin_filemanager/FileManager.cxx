@@ -7,7 +7,20 @@
 #include <QFile>
 
 FileManager::FileManager(QObject *parent) : Manager(parent){
+    this->mIsPaused = false;
+}
 
+void FileManager::slot_frameValueChanged(int v){
+
+    /// Compute the stuff
+    int nframes = this->GetDataBase().size();
+    int requested_frame = double(v)/1000.0*nframes;
+
+    this->SetCurrentId( requested_frame );
+}
+
+void FileManager::slot_togglePlayPause(bool v){
+    this->mIsPaused  =v;
 }
 
 void FileManager::SetExtension(const QString &extension){
@@ -92,6 +105,7 @@ void FileManager::Send(void)
     }
     image->SetMetaData<std::string>("OriginalFilename", fname);
     image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+    image->SetMetaData<>("CurrentFrame", QString::number(this->GetCurrentId()).toStdString());
     image->SetMetaData<>("FrameCountTotal", QString::number(this->GetDataBase().size()).toStdString());
 
 
@@ -112,12 +126,14 @@ void FileManager::Send(void)
 
     Q_EMIT ImageGenerated(image);
 
-    if (!this->params.LoopAround && (this->GetCurrentId() == this->GetDataBase().size()-1)){
+    if (this->params.LoopAround == false && (this->GetCurrentId() == this->GetDataBase().size()-1)){
         std::cout << "[WARNING] FileManager::Send() - All "<< this->GetDataBase().size() <<" files sent, exiting"<<std::endl;
         this->SetActivate(false);
     }
 
-    this->SetCurrentId( (this->GetCurrentId() + 1) % this->GetDataBase().size() );
+    if (this->mIsPaused == false){
+        this->SetCurrentId( (this->GetCurrentId() + 1) % this->GetDataBase().size() );
+    }
 
     if (this->IsActive())
     {
