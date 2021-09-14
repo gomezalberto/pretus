@@ -136,9 +136,12 @@ void Plugin::slot_updateInputStream(int idx){
 
     // update the layers
     this->mWidget->mInputLayerComboBox->clear();
-
     for (int l=0; l < mAvailableLayersForAvailableStream[selected_stream]; l++){
         this->mWidget->mInputLayerComboBox->addItem("Layer " + QString::number(l));
+    }
+
+    if (this->worker->params.inputLayer >= mAvailableLayersForAvailableStream[selected_stream]){
+        this->worker->params.inputLayer = mAvailableLayersForAvailableStream[selected_stream]-1;
     }
 }
 
