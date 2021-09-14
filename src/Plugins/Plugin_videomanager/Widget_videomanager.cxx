@@ -1,10 +1,11 @@
 #include "Widget_videomanager.h"
 #include <QSlider>
+#include <QPushButton>
 #include <QLabel>
 #include <QVBoxLayout>
 
 Widget_videomanager::Widget_videomanager(
-    QWidget *parent, Qt::WindowFlags f)
+        QWidget *parent, Qt::WindowFlags f)
     : QtPluginWidgetBase(parent, f)
 {
     this->mWidgetLocation = WidgetLocation::top_left;
@@ -32,8 +33,31 @@ Widget_videomanager::Widget_videomanager(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
-    vLayout->addWidget(mSlider);
+
+    // create a miniwidget for the play/pause/slider
+    {
+        mPausePlayButton = new QPushButton("Pause");
+        mPausePlayButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
+        mPausePlayButton->setCheckable(true);
+        QWidget *placeholder = new QWidget();
+        QHBoxLayout *ph_layout = new QHBoxLayout();
+        ph_layout->addWidget(mSlider);
+        ph_layout->addWidget(mPausePlayButton);
+        placeholder->setLayout(ph_layout);
+        vLayout->addWidget(placeholder);
+    }
+
     this->AddImageViewCheckboxToLayout(vLayout);
+}
+
+void Widget_videomanager::slot_togglePlayPause(bool v){
+
+    if (v == true){
+        this->mPausePlayButton->setText("Play ");
+    } else {
+        this->mPausePlayButton->setText("Pause");
+    }
+
 }
 
 void Widget_videomanager::SendImageToWidgetImpl(ifind::Image::Pointer image){

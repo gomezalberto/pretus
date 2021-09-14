@@ -49,9 +49,14 @@ public Q_SLOTS:
    * This method has to be public so that it can be binded to the periodic callback
    */
     virtual void Send(void);
+    virtual void slot_frameValueChanged(int v);
+    virtual void slot_togglePlayPause(bool v);
 
 protected:
     FileManager(QObject *parent = 0);
+
+private:
+    bool mIsPaused;
 
 
 
