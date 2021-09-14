@@ -1,5 +1,6 @@
 #include "Plugin_videomanager.h"
 #include <QSlider>
+#include <QPushButton>
 #include <QObject>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
@@ -21,6 +22,16 @@ Plugin_VideoManager::Plugin_VideoManager(QObject *parent) : Plugin(parent)
         QObject::connect(mWidget_->mSlider,
                 &QSlider::valueChanged, w,
                 &VideoManager::slot_frameValueChanged);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, w,
+                &VideoManager::slot_togglePlayPause);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, mWidget_,
+                &WidgetType::slot_togglePlayPause);
+
+
     }
 
     {

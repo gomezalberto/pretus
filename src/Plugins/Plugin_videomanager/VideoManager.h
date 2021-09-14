@@ -44,6 +44,8 @@ public Q_SLOTS:
 
     virtual void slot_frameValueChanged(int v);
 
+    virtual void slot_togglePlayPause(bool v);
+
 Q_SIGNALS:
 
     void FileNumberChanged(int arg);
@@ -70,7 +72,7 @@ private:
     int initial_time_msec;
     std::chrono::steady_clock::time_point t_0;
     std::chrono::steady_clock::time_point last_transmit_t;
-
+    bool mIsPaused;
 
     cv::VideoCapture VideoSource;
 

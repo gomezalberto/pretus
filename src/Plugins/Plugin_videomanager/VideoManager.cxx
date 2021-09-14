@@ -17,6 +17,7 @@ VideoManager::VideoManager(QObject *parent) : Manager(parent){
     this->VideoFile = "";
     this->initial_time_msec = 0;
     this->FF_factor = 1.10; // This seems to be needed to compensate for the time during the frame processing. With this value, the playback seems real time. Might not be the case in a faster pc though.
+    this->mIsPaused = false;
 }
 
 void VideoManager::slot_frameValueChanged(int v){
@@ -25,6 +26,10 @@ void VideoManager::slot_frameValueChanged(int v){
     int nframes = this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT);
     int requested_frame = double(v)/1000.0*nframes;
     this->VideoSource.set(CV_CAP_PROP_POS_FRAMES, requested_frame);
+}
+
+void VideoManager::slot_togglePlayPause(bool v){
+    this->mIsPaused  =v;
 }
 
 void VideoManager::SetStringTime(std::string timeString){
@@ -74,11 +79,15 @@ void VideoManager::Send(void)
     // while (this->VideoSource.isOpened()){
     if (this->VideoSource.isOpened()){
         this->mutex_Frame.lock();
-        try {
-            this->VideoSource >> this->Frame; // get a new frame from camera
-        } catch (const cv::Exception& e) {
-            std::cerr << "[Error] VideoManager::Send() -  reading frame from file. Reason: " << e.msg << std::endl;
-            return;
+        if (mIsPaused == true){
+            // no need to do anything, we will still use the previous frame
+        } else {
+            try {
+                this->VideoSource >> this->Frame; // get a new frame from camera
+            } catch (const cv::Exception& e) {
+                std::cerr << "[Error] VideoManager::Send() -  reading frame from file. Reason: " << e.msg << std::endl;
+                return;
+            }
         }
     }
 

@@ -19,6 +19,9 @@ const QString QtPluginWidgetBase::sQComboBoxStyle = "QComboBox { background-colo
 
 const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : black; color : white; }";
 
+const QString QtPluginWidgetBase::sQPushButtonStyle = "QPushButton { border: 2px solid white; background-color : black; color : white; } "
+        "QPushButton::checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
+
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)
     : QFrame(parent, f)
