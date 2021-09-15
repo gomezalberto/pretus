@@ -48,6 +48,8 @@ public Q_SLOTS:
 
     virtual void slot_toggleSaveImages(bool b);
 
+    virtual void slot_Write(ifind::Image::Pointer arg);
+
 Q_SIGNALS:
 
     void ImageToBeSaved(ifind::Image::Pointer image);
@@ -68,8 +70,10 @@ private:
 
 
     std::string CreateFileName(ifind::Image::Pointer arg, unsigned int layer = 0, bool withextension = false);
-    void Write(const ifind::Image::Pointer arg, bool headerOnly = false);
+
+    void WriteLayer(const ifind::Image::Pointer layer, const  std::string &filename,  bool headerOnly = false);
     std::mutex m_Mutex;
 
     bool mSaveImages;
+    bool mVerbose;
 };

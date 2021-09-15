@@ -9,7 +9,7 @@ Worker_planeDetection::Worker_planeDetection(QObject *parent) : Worker(parent){
     this->labels.clear();
     this->confidences.clear();
     this->python_folder = "";
-    this->temporalAverage = 0;
+    this->temporalAverage = 20;
     this->background_threshold = 1000000; // a very big number
     this->modelname = "ifind2_net_Jan15.pth";
     this->m_write_background = false;
@@ -180,6 +180,10 @@ void Worker_planeDetection::doWork(ifind::Image::Pointer image){
         if (confidences_average[i]<min_confidence){
             min_confidence  = confidences_average[i];
         }
+    }
+
+    if (max_confidence == 0){
+        max_confidence = 1;
     }
 
     /// Now normalize to [0, 1] confidence

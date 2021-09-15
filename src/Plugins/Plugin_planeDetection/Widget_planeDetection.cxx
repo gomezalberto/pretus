@@ -33,6 +33,7 @@ Widget_planeDetection::Widget_planeDetection(
 
     mSliderTA->setMaximum(100);
     mSliderTA->setMinimum(0);
+    mSliderTA->setValue(20);
     mSliderTA->setAutoFillBackground(true);
 
     auto vLayout = new QVBoxLayout(this);
