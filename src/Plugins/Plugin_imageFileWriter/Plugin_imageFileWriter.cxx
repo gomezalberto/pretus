@@ -17,6 +17,7 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
     this->subdivide_folders = 0;
     this->first_subdivision = 0;
     this->mSaveImages = true;
+    mVerbose = false;
 
     {
         // create widget
@@ -24,6 +25,8 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
 
         QObject::connect(this, &Plugin_imageFileWriter::ImageToBeSaved,
                          mWidget_, &WidgetType::slot_imageWritten);
+        QObject::connect(this, &Plugin_imageFileWriter::ImageToBeSaved,
+                         this, &Plugin_imageFileWriter::slot_Write);
         QObject::connect(mWidget_->mCheckBoxSaveFiles, &QCheckBox::stateChanged,
                          this, &Plugin_imageFileWriter::slot_toggleSaveImages);
 
@@ -72,8 +75,7 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
             Q_EMIT this->ImageToBeSaved(image);
 
-            std::thread* writerthread = new std::thread(&Plugin_imageFileWriter::Write, this, image, false);
-            writerthread->detach();
+            //this->Write(image); // this is called by the signal/slot
         }
     }
 
@@ -124,6 +126,10 @@ void Plugin_imageFileWriter::SetCommandLineArguments(int argc, char* argv[]){
         if (!argument.empty()){
             this->first_subdivision= atoi(argument.c_str());
         }}
+    {const std::string &argument = input.getCmdOption("verbose");
+        if (!argument.empty()){
+            this->mVerbose= atoi(argument.c_str());
+        }}
 }
 
 
@@ -146,14 +152,15 @@ std::string Plugin_imageFileWriter::CreateFileName(ifind::Image::Pointer arg, un
     return filename.str();
 }
 
-void Plugin_imageFileWriter::Write(const ifind::Image::Pointer arg, bool headerOnly)
+void Plugin_imageFileWriter::slot_Write(ifind::Image::Pointer arg)
 {
+    if (this->mVerbose){
+        std::cout << "[VERBOSE] Plugin_imageFileWriter::Write() "<< std::endl;
+    }
 
     QString dirname;
 
     try {
-        arg->DisconnectPipeline();
-
         /// TODO: make sure you don't save images from this plugin.
         QString streamfolder = QString::fromStdString(arg->GetMetaData<std::string>("StreamType"));
         QString subfolder;
@@ -195,41 +202,79 @@ void Plugin_imageFileWriter::Write(const ifind::Image::Pointer arg, bool headerO
     }
 
 
-    this->m_Mutex.lock();
+    if (this->mVerbose){
+        std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() folders created. Lock mutex "<< std::endl;
+    }
+
 
     //this->m_FileNames.clear();
     for(unsigned int l = 0; l < arg->GetNumberOfLayers(); l++)
     {
+
+        if (this->mVerbose){
+            std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() trying to write layer "<< l <<  std::endl;
+        }
+
         /// extract name information
         std::string fname = this->CreateFileName(arg, l, true);
         std::string filename = dirname.toStdString() + std::string("/") + fname;
         //this->m_FileNames.push_back(filename);
         /// convert layer into ITK format
+        if (this->mVerbose){
+            std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() trying to convert layer "<< l <<  std::endl;
+        }
         ConverterType::Pointer converter;
+        vtkSmartPointer<vtkImageData> vtkim = arg->GetVTKImage(l);
+        //vtkSmartPointer<vtkImageData> vtkim = vtkSmartPointer<vtkImageData>::New();
+        //vtkim->DeepCopy(arg->GetVTKImage(l));
+        if (vtkim == nullptr){
+            continue;
+        }
+
         try {
             converter = ConverterType::New();
-            converter->SetInput(arg->GetVTKImage(l));
+            converter->SetInput(vtkim);
             converter->Update();
         } catch( itk::ExceptionObject& ex ) {
             qDebug() << "Plugin_imageFileWriter::Write() - exception captured when converting formats";
             qDebug() << ex.what();
         }
 
-        try {
-            ifind::Image::Pointer layer = converter->GetOutput();
-            layer->SetMetaDataDictionary(arg->GetMetaDataDictionary());
-            /// write the image
-            WriterType::Pointer writer = WriterType::New();
-            writer->SetFileName(filename);
-            writer->SetInput(layer);
-            writer->Update();
-        } catch( itk::ExceptionObject& ex ) {
-            qDebug() << "Plugin_imageFileWriter::Write() - exception captured when writing to "<< filename.c_str();
-            qDebug() << ex.what();
+        if (this->mVerbose){
+            std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() converted layer  "<< l <<  std::endl;
+        }
+
+        ifind::Image::Pointer layer = converter->GetOutput();
+        //layer->DisconnectPipeline();
+        layer->SetMetaDataDictionary(arg->GetMetaDataDictionary());
+
+        this->WriteLayer(layer, filename, false);
+
+
+        if (this->mVerbose){
+            std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() layer "<< l << " written"<< std::endl;
         }
     }
 
-    this->m_Mutex.unlock();
+    if (this->mVerbose){
+        std::cout << "\t[VERBOSE] Plugin_imageFileWriter::Write() mutex unlocked "<< std::endl;
+    }
+
+}
+
+
+void  Plugin_imageFileWriter::WriteLayer(const ifind::Image::Pointer layer, const  std::string &filename,  bool headerOnly){
+    try {
+        /// write the image
+        WriterType::Pointer writer = WriterType::New();
+        writer->SetFileName(filename);
+        writer->SetInput(layer);
+        //x1writer->Update();
+        writer->Write();
+    } catch( itk::ExceptionObject& ex ) {
+        qDebug() << "Plugin_imageFileWriter::Write() - exception captured when writing to "<< filename.c_str();
+        qDebug() << ex.what();
+    }
 }
 
 QtPluginWidgetBase *Plugin_imageFileWriter::GetWidget(){

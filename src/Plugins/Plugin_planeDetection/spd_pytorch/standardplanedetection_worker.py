@@ -151,10 +151,13 @@ def dowork(image_cpp, move_threshold=True, verbose=False):
         #prediction = model.net.apply_argmax_softmax(model.prediction).squeeze().cpu().numpy()
         #print (model.prediction)
         prediction = model.prediction[0].cpu().numpy()
+        prediction[prediction!=prediction]=0
         ##model.pred = model.logits.data.max(1)
         ##pr_lbls = model.pred[1].item()
 
         output = [prediction[i] for i in label_reordering]
+        if verbose:
+            print("\t[VERBOSE] worker.py: planedetect - dowork() - getprediction: output {}".format(output))
 
         #output = tuple(i for i in prediction)
         return output
