@@ -32,6 +32,41 @@ void VideoManager::slot_togglePlayPause(bool v){
     this->mIsPaused  =v;
 }
 
+void VideoManager::slot_next(){
+    double number_of_frame = this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT);
+    double current_frame = this->VideoSource.get(cv::CAP_PROP_POS_FRAMES);
+
+    if (current_frame >= number_of_frame-1){
+        this->VideoSource.set(cv::CAP_PROP_POS_FRAMES, 0);
+    }
+
+    try {
+        this->VideoSource >> this->Frame; // get a new frame from camera
+    } catch (const cv::Exception& e) {
+        std::cerr << "[Error] VideoManager::slot_next() -  reading frame from file. Reason: " << e.msg << std::endl;
+        return;
+    }
+}
+
+void VideoManager::slot_previous(){
+
+    double number_of_frame = this->VideoSource.get(CV_CAP_PROP_FRAME_COUNT);
+    double current_frame = this->VideoSource.get(cv::CAP_PROP_POS_FRAMES);
+    if (current_frame <= 1){
+        this->VideoSource.set(cv::CAP_PROP_POS_FRAMES, number_of_frame-2);
+    } else {
+        this->VideoSource.set(cv::CAP_PROP_POS_FRAMES, current_frame-2); // -2 because then we will go forward one frame in the loop
+    }
+
+    try {
+        this->VideoSource >> this->Frame; // get a new frame from camera
+    } catch (const cv::Exception& e) {
+        std::cerr << "[Error] VideoManager::slot_previous() -  reading frame from file. Reason: " << e.msg << std::endl;
+        return;
+    }
+
+}
+
 void VideoManager::SetStringTime(std::string timeString){
    int msec = 0;
 

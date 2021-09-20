@@ -17,6 +17,8 @@ public:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
     QSlider *mSlider;
     QPushButton *mPausePlayButton;
+    QPushButton *mNextButton;
+    QPushButton *mPreviousButton;
 
 public Q_SLOTS:
 

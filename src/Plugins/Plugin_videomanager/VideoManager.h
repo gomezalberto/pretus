@@ -46,6 +46,9 @@ public Q_SLOTS:
 
     virtual void slot_togglePlayPause(bool v);
 
+    virtual void slot_next();
+    virtual void slot_previous();
+
 Q_SIGNALS:
 
     void FileNumberChanged(int arg);
