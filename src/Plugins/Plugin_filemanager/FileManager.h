@@ -51,6 +51,8 @@ public Q_SLOTS:
     virtual void Send(void);
     virtual void slot_frameValueChanged(int v);
     virtual void slot_togglePlayPause(bool v);
+    virtual void slot_next();
+    virtual void slot_previous();
 
 protected:
     FileManager(QObject *parent = 0);

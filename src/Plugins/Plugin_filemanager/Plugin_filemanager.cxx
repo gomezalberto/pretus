@@ -28,6 +28,14 @@ Plugin_filemanager::Plugin_filemanager(QObject *parent) : Plugin(parent)
                 &QPushButton::toggled, w,
                 &ManagerType::slot_togglePlayPause);
 
+        QObject::connect(mWidget_->mPreviousButton,
+                &QPushButton::released, w,
+                &ManagerType::slot_previous);
+
+        QObject::connect(mWidget_->mNextButton,
+                &QPushButton::released, w,
+                &ManagerType::slot_next);
+
         QObject::connect(mWidget_->mPausePlayButton,
                 &QPushButton::toggled, mWidget_,
                 &WidgetType::slot_togglePlayPause);

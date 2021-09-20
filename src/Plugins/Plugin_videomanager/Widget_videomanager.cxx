@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QSignalBlocker>
 
 Widget_videomanager::Widget_videomanager(
         QWidget *parent, Qt::WindowFlags f)
@@ -39,10 +40,16 @@ Widget_videomanager::Widget_videomanager(
         mPausePlayButton = new QPushButton("Pause");
         mPausePlayButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
         mPausePlayButton->setCheckable(true);
+        mNextButton= new QPushButton(">");
+        mNextButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
+        mPreviousButton= new QPushButton("<");
+        mPreviousButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
         QWidget *placeholder = new QWidget();
         QHBoxLayout *ph_layout = new QHBoxLayout();
         ph_layout->addWidget(mSlider);
+        ph_layout->addWidget(mPreviousButton);
         ph_layout->addWidget(mPausePlayButton);
+        ph_layout->addWidget(mNextButton);
         placeholder->setLayout(ph_layout);
         vLayout->addWidget(placeholder);
     }
@@ -80,7 +87,11 @@ void Widget_videomanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
         int total_frames = stoi(image->GetMetaData<std::string>("TotalVideoFrames"));
 
         int current_slider_pos = (current_frame*100/total_frames)*10; // this convoluted *1000 in two steps is to only update every 1/100.
-        this->mSlider->setValue(current_slider_pos);
+        // prevent the callback
+        {
+            const QSignalBlocker blocker(this->mSlider);
+            this->mSlider->setValue(current_slider_pos);
+        }
 
     }
 

@@ -31,6 +31,13 @@ Plugin_VideoManager::Plugin_VideoManager(QObject *parent) : Plugin(parent)
                 &QPushButton::toggled, mWidget_,
                 &WidgetType::slot_togglePlayPause);
 
+        QObject::connect(mWidget_->mPreviousButton,
+                &QPushButton::released, w,
+                &VideoManager::slot_previous);
+
+        QObject::connect(mWidget_->mNextButton,
+                &QPushButton::released, w,
+                &VideoManager::slot_next);
 
     }
 

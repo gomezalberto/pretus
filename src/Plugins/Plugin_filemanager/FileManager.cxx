@@ -23,6 +23,14 @@ void FileManager::slot_togglePlayPause(bool v){
     this->mIsPaused  =v;
 }
 
+void FileManager::slot_next(){
+    this->SetCurrentId( (this->GetCurrentId() + 1) % this->GetDataBase().size() );
+}
+
+void FileManager::slot_previous(){
+    this->SetCurrentId( (this->GetCurrentId() - 1) % this->GetDataBase().size() );
+}
+
 void FileManager::SetExtension(const QString &extension){
     this->params.extension = extension.toStdString();
 }
@@ -50,7 +58,7 @@ void FileManager::CheckMhdConsistency(){
         QFile myfile_mhd(filename);
         QFile myfile_raw(rawfilename);
         if (myfile_mhd.size() >0 &&
-            myfile_raw.exists() && myfile_raw.size()>0){
+                myfile_raw.exists() && myfile_raw.size()>0){
             cleanedDataBase.push_back(filename);
         }
     }
