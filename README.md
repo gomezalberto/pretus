@@ -6,6 +6,10 @@
 
 This is a plug-in based, lightweight software for real time image analysis, data collection, and operator guidance, developed within the [iFIND project](www.ifindproject.com).
 
+If you use PRETUS please cite [our preprint](https://arxiv.org/abs/2109.06519):
+
+[Alberto Gomez, Veronika A. Zimmer, Gavin Wheeler, Nicolas Toussaint, Shujie Deng, Robert Wright, Emily Skelton, Jackie Matthew, Bernhard Kainz, Jo Hajnal, Julia Schnabel. "PRETUS: A plug-in based platform for real-time ultrasound imaging research", 2021 - arXiv:2109.0651](https://arxiv.org/abs/2109.06519)
+
 ## Contact
 * Alberto Gomez (alberto.gomez@kcl.ac.uk)
 
