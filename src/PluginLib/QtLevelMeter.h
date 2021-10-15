@@ -80,11 +80,13 @@ private Q_SLOTS:
 
 public Q_SLOTS:
     void LevelChanged(double level);
+    void LevelChanged(double level, double colorLevel);
 
 private:
 
     // Most recent level - Range 0.0 - 1.0.
     double mLevel;
+    double mColorLevel; // in case you want to decouple bar size and intensity
 
     Qt::GlobalColor mLevelColor;
     bool mColorWithLevel;
