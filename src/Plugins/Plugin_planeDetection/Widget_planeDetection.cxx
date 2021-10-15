@@ -59,7 +59,7 @@ void Widget_planeDetection::Build(std::vector<std::string> &labelnames){
             QtInfoPanelTrafficLightBase::Configuration standardPlaneTrafficLightConfig;
 
             standardPlaneTrafficLightConfig.Mode =
-                    QtInfoPanelTrafficLightBase::Modes::ImmediateBarNormalised;
+                    QtInfoPanelTrafficLightBase::Modes::ImmediateBarAbsolute;
             standardPlaneTrafficLightConfig.LabelNames = labelnames;
             standardPlaneTrafficLightConfig.NGridColumns = 2;
 

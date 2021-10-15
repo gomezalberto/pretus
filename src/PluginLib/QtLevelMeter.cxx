@@ -64,6 +64,7 @@ const int RedrawInterval = 100; // ms
 QtLevelMeter::QtLevelMeter(QWidget *parent)
     : QWidget(parent)
     , mLevel(0.0)
+    , mColorLevel(-1.0)
     , m_redrawTimer(new QTimer(this))
 {
     mLevelColor = Qt::green;
@@ -85,6 +86,7 @@ void QtLevelMeter::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
     painter.fillRect(rect(), Qt::darkGray);
+    //painter.fillRect(rect(), Qt::black);
 
     QRect bar = rect();
 
@@ -93,11 +95,25 @@ void QtLevelMeter::paintEvent(QPaintEvent *event)
     if (mColorWithLevel == true){
         double H, S, V;
         currentColor.getHsvF(&H, &S, &V);
-        S = mLevel;
-        V = mLevel;
+        if (mColorLevel>=0){
+            //double N = 0;
+            //H = H*(mColorLevel*mColorLevel+N)/(N+1);
+            S = mColorLevel;
+            V = mColorLevel;
+        } else {
+            S = mLevel;
+            V = mLevel;
+        }
         currentColor.setHsvF(H, S, V);
     }
     painter.fillRect(bar, currentColor);
+}
+
+void QtLevelMeter::LevelChanged(double level, double colorLevel)
+{
+    mLevel = level;
+    mColorLevel = colorLevel;
+    update();
 }
 
 void QtLevelMeter::LevelChanged(double level)

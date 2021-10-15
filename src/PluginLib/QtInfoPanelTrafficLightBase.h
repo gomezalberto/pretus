@@ -14,6 +14,7 @@ public:
         ImmediateLabelAbsolute = 0,
         ImmediateLabelNormalised,
         ImmediateBarNormalised,
+        ImmediateBarAbsolute,
         HoldLabelLargest
     };
 

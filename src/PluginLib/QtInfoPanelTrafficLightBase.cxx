@@ -57,7 +57,8 @@ QtInfoPanelTrafficLightBase::QtInfoPanelTrafficLightBase(
         }
 
         // add the level meters if we are in that mode
-        if (Modes::ImmediateBarNormalised == mConfiguration.Mode)
+        if (Modes::ImmediateBarNormalised == mConfiguration.Mode ||
+             Modes::ImmediateBarAbsolute == mConfiguration.Mode )
         {
             auto levelWidget = new QtLevelMeter(this);
             if (mColorWithLevel==true){
@@ -210,7 +211,28 @@ void QtInfoPanelTrafficLightBase::SendImageToWidgetImpl(ifind::Image::Pointer im
                             (pairLabelValue.second - minLabelValue.second) / (maxLabelValue.second - minLabelValue.second));
             }
         }
+    } else if (Modes::ImmediateBarAbsolute == mConfiguration.Mode)
+    {
+        for (auto pairLabelValue : pairedLabelsValues)
+        {
+            if (mColorWithLevel==true){
+
+                UpdateTrafficLight(
+                            pairLabelValue.first,
+                            (pairLabelValue.second - minLabelValue.second)/ (maxLabelValue.second - minLabelValue.second));
+            }
+
+            // find the traffic light which matches the metadata label
+            auto levelMeterIter = mLevelMeters.find(pairLabelValue.first);
+
+            if (levelMeterIter != mLevelMeters.end())
+            {
+                // then set its colours according to the metadata value
+                levelMeterIter->second->LevelChanged(pairLabelValue.second, (pairLabelValue.second - minLabelValue.second) / (maxLabelValue.second - minLabelValue.second));
+            }
+        }
     }
+
 
 }
 
