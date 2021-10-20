@@ -225,14 +225,14 @@ The minimum requirements are:
 * CMake 3.15
 * Qt 5 
     * tested with 5.12
-* VTK 
+* [VTK](https://gitlab.kitware.com/vtk/vtk)
     * Tested with 8.2.0 
     * Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Set `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
-* OpenCV and OpenCV contrib
+* [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib)
     * Tested with 3.4.4. We suggest following [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/) from stepo 4 (previous steps are for python).
-* ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
+* [ITK](https://github.com/InsightSoftwareConsortium/ITK) (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * Tested with 4.9.1
     * Enable `ITKVideoBridgeOpencv`
     * Enable `ITKVtkGlue`
