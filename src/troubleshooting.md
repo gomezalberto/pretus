@@ -11,8 +11,8 @@
         * sudo apt install cmake-gui
 * QT
     * Install the latest version of QT from download
-        * follow the instructions at https://wiki.qt.io/Install_Qt_5_on_Ubuntu
-        * look for the latest version of QT from http://download.qt.io/official_releases/qt
+        * https://www.qt.io/download-qt-installer?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4
+        * Install the required version of QT libraries (Android modules are not required)
         * tick `QT WebEngine` and `Sources`
     * To update QT using the maintenance tool a url for and update source needs to be set (durr). To user defined repositories add
         * http://download.qt-project.org/online/qtsdkrepository/linux_x64/desktop/tools_maintenance/
