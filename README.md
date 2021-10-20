@@ -231,7 +231,7 @@ The minimum requirements are:
     * Set `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
 * OpenCV and OpenCV contrib
-    * Tested with 3.4.4
+    * Tested with 3.4.4. We suggest following [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/) from stepo 4 (previous steps are for python).
 * ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * Tested with 4.9.1
     * HDF5 enabled (tip on this later)
@@ -242,8 +242,6 @@ The minimum requirements are:
 * Anaconda
     * Testing with 2020.02
 
-## Other dependencies (some plug-ins)
-* For the plug-ins that require OpenCV, you will need also Opencv_contrib. We suggest following [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/).
 
 ## Brief build and install
 
