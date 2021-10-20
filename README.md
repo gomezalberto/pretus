@@ -226,7 +226,10 @@ The minimum requirements are:
 * Qt 5 
     * tested with 5.12
 * VTK 
-    * Tested with 8.2.0 (Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`)
+    * Tested with 8.2.0 
+    * Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`
+    * Set `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
+    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
 * ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * Tested with 4.9.1
     * HDF5 enabled (tip on this later)
