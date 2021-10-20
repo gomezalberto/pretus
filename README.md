@@ -234,6 +234,8 @@ The minimum requirements are:
     * Tested with 3.4.4. We suggest following [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/) from stepo 4 (previous steps are for python).
 * ITK (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
     * Tested with 4.9.1
+    * Enable `ITKVideoBridgeOpencv`
+    * Enable `ITKVtkGlue`
     * HDF5 enabled (tip on this later)
 * Boost
     * Tested with 1.71.0
