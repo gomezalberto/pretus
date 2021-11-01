@@ -1,12 +1,12 @@
 ---
 name: "\U0001F41B Bug Report"
-about: If you are pretty sure you are getting a bug, please create a report to help us improve TorchIO
+about: If you are pretty sure you are getting a bug, please create a report to help
+  us improve PRETUS
 title: ''
 labels: bug
 assignees: ''
 
 ---
-
 
 ### 🐛Bug
 <!-- A clear and concise description of what the bug is. Please use a short, concise title for the bug and elaborate here -->

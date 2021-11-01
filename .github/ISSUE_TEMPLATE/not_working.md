@@ -1,12 +1,12 @@
 ---
-name: "\U00002757 Something is not working"
-about: If something is not working as expected but you're not sure if it's a bug, please follow the instructions in this template.
+name: "❗ Something is not working"
+about: If something is not working as expected but you're not sure if it's a bug,
+  please follow the instructions in this template.
 title: ''
 labels: ''
 assignees: ''
 
 ---
-
 
 ### Problem
 <!-- A clear and concise description of what the bug is. Please use a short, concise title for the bug and elaborate here -->
