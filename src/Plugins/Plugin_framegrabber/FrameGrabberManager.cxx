@@ -205,10 +205,9 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     Y->DisconnectPipeline();
     YUV[0] = Y;
 
-    buffer_idx+=numberOfPixels;
-
     /// now get the U and V components
     if (params.n_components ==3) {
+        buffer_idx+=numberOfPixels;
         // No longer ensuring integrity here - buffer not copied
         ImportFilterType::Pointer importFilter = ImportFilterType::New();
 

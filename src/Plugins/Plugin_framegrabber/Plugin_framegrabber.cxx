@@ -51,6 +51,11 @@ void Plugin_framegrabber::SetDefaultArguments(){
                           "Value, in mm, of the pixel size (isotropic).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0])});
 
+    mArguments.push_back({"color", "<0/1>",
+                          QString( Plugin::ArgumentType[0] ),
+                          "USe color images (1) or not (0).",
+                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components==3)});
+
 }
 
 void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
@@ -66,6 +71,15 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= atof(argument.c_str());
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[1]= atof(argument.c_str());
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= 1.0;
+        }}
+    {const std::string &argument = input.getCmdOption("color");
+        if (!argument.empty()){
+            if (atoi(argument.c_str()) == 1){
+                std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 3;
+            } else {
+                std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 1;
+            }
+
         }}
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");
