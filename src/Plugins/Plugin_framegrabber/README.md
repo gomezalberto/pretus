@@ -67,6 +67,16 @@ sudo dpkg -i vga2usb-3.33.0.15-ubuntu-5.4.0-70-generic-x86_64-52005-1829.deb
 
 Often there is no need to reboot, just unplug and re-plug the framegrabber again.
 
+### Linux users
+
+If you need to install a specific kernel in Ubuntu, you can do so by doing:
+
+```
+$ sudo apt-get install linux-headers-5.4.0-70-generic
+$ sudo apt-get install linux-image-5.4.0-70-generic
+```
+And then rebooting and selecting that kernel version using GRUB.
+
 
 # Troubleshooting:
 
