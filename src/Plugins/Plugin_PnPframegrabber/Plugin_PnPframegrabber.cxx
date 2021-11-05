@@ -1,8 +1,8 @@
-#include "Plugin_framegrabber.h"
+#include "Plugin_PnPframegrabber.h"
 #include <QObject>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
-Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
+Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
 {
     this->mIsInput = true;
     {
@@ -22,13 +22,13 @@ Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
     }
 
     QObject::connect(this->manager.get(), &ManagerType::ImageGenerated,
-                     this, &Plugin_framegrabber::slot_imageReceived, Qt::DirectConnection);
+                     this, &Plugin_PnPframegrabber::slot_imageReceived, Qt::DirectConnection);
 
     this->SetDefaultArguments();
 }
 
 
-void Plugin_framegrabber::Initialize(void){
+void Plugin_PnPframegrabber::Initialize(void){
     Plugin::Initialize();
     if (this->mImageWidget != nullptr){
         reinterpret_cast< ImageWidgetType *>(this->mImageWidget)->Initialize();
@@ -36,7 +36,7 @@ void Plugin_framegrabber::Initialize(void){
     std::dynamic_pointer_cast< ManagerType >(this->manager)->Initialize();
 }
 
-void Plugin_framegrabber::SetDefaultArguments(){
+void Plugin_PnPframegrabber::SetDefaultArguments(){
     this->RemoveArgument("stream");
     this->RemoveArgument("layer");
     this->RemoveArgument("time");
@@ -46,7 +46,12 @@ void Plugin_framegrabber::SetDefaultArguments(){
                           "Correct for studio swing (1) or not (0).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing)});
 
-    mArguments.push_back({"resolution", "<val>",
+    mArguments.push_back({"resolution", "width.height",
+                          QString( Plugin::ArgumentType[3] ),
+                          "Number of pixels of the video stream, separated by a dot. Accepted values are, in 16:9: 1920.1080, 1360.768, 1280.720; in 4:3: 1600.1200, 1280.960, 1024.786, 800.600, 640.480; and other: 1280.1024, 720.576, 720.480",
+                          std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution});
+
+    mArguments.push_back({"pixelsize", "<val>",
                           QString( Plugin::ArgumentType[2] ),
                           "Value, in mm, of the pixel size (isotropic).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0])});
@@ -58,7 +63,7 @@ void Plugin_framegrabber::SetDefaultArguments(){
 
 }
 
-void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
+void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
     Plugin::SetCommandLineArguments(argc, argv);
     InputParser input(argc, argv, this->GetCompactPluginName().toLower().toStdString());
 
@@ -66,11 +71,15 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing= atoi(argument.c_str());
         }}
-    {const std::string &argument = input.getCmdOption("resolution");
+    {const std::string &argument = input.getCmdOption("pixelsize");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= atof(argument.c_str());
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[1]= atof(argument.c_str());
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= 1.0;
+        }}
+    {const std::string &argument = input.getCmdOption("resolution");
+        if (!argument.empty()){
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution= QString(argument.c_str());
         }}
     {const std::string &argument = input.getCmdOption("color");
         if (!argument.empty()){
@@ -79,7 +88,6 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
             } else {
                 std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 1;
             }
-
         }}
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");
@@ -98,12 +106,12 @@ extern "C"
 /// Function to return an instance of a new LiveCompoundingFilter object
 __declspec(dllexport) Plugin* construct()
 {
-    return new Plugin_framegrabber();
+    return new Plugin_PnPframegrabber();
 }
 #else
 Plugin* construct()
 {
-    return new Plugin_framegrabber();
+    return new Plugin_PnPframegrabber();
 }
 #endif // WIN32
 }

@@ -33,6 +33,11 @@ if (BUILD_PLUGIN_FRAMEGRABBER)
   add_subdirectory(Plugin_framegrabber)
 endif()
 
+option(BUILD_PLUGIN_PNPFRAMEGRABBER "Build plugin to receive images from the a Plug & Play framegrabber (e.g. using v4l)" OFF)
+if (BUILD_PLUGIN_PNPFRAMEGRABBER)
+  add_subdirectory(Plugin_PnPframegrabber)
+endif()
+
 option(BUILD_PLUGIN_PLANEDETECTION "Build plugin to detect standard planes. Requires python bindings, and pytorch" OFF)
 if (BUILD_PLUGIN_PLANEDETECTION)
   add_subdirectory(Plugin_planeDetection)

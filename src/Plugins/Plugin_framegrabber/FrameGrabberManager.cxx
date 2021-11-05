@@ -18,10 +18,6 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    double elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->latestAcquisitionTime).count();
-    double currentFrameRate = 1000.0/elapsed_ms;
-
 }
 
 int FrameGrabberManager::Initialize(){
@@ -205,10 +201,9 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     Y->DisconnectPipeline();
     YUV[0] = Y;
 
-    buffer_idx+=numberOfPixels;
-
     /// now get the U and V components
     if (params.n_components ==3) {
+        buffer_idx+=numberOfPixels;
         // No longer ensuring integrity here - buffer not copied
         ImportFilterType::Pointer importFilter = ImportFilterType::New();
 

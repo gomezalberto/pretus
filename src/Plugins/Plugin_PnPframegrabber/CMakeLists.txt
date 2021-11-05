@@ -19,14 +19,12 @@ find_package(Qt5 REQUIRED X11Extras PrintSupport)
 endif()
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS) # needed because python has something called "slots" and may class with Qt definitions
 
-add_subdirectory(giftgrabapi)
-add_subdirectory(epiphansdk)
 
 file(GLOB SOURCES "*.h" "*.cxx" "*.md")
 
-add_library(Plugin_framegrabber "${PROJECT_BUILD_TYPE}" ${SOURCES})
+add_library(Plugin_PnPframegrabber "${PROJECT_BUILD_TYPE}" ${SOURCES})
 
-target_link_libraries(Plugin_framegrabber
+target_link_libraries(Plugin_PnPframegrabber
   Plugin
   ifind2_common
   Qt5::Widgets
@@ -35,21 +33,21 @@ target_link_libraries(Plugin_framegrabber
   ${Boost_LIBRARIES}
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
-  videograbber
+  #videograbber
   )
 
 
-option(BUILD_STANDALONE_FRAMEGRABBER "Build standalone version of the framegrabber plugin" OFF)
-if (BUILD_STANDALONE_FRAMEGRABBER)
+option(BUILD_STANDALONE_PNPFRAMEGRABBER "Build standalone version of the P&P framegrabber plugin" OFF)
+if (BUILD_STANDALONE_PNPFRAMEGRABBER)
 
     #set_property(SOURCE standalone_framegrabber.cxx PROPERTY SKIP_AUTOMOC ON)
 
-    add_executable(standalone_framegrabber
-      standalone_framegrabber.cxx
-      FGMiniworker.cxx
-      FrameGrabberManager.cxx
+    add_executable(standalone_PnPframegrabber
+      standalone_PnPframegrabber.cxx
+      #FGMiniworker.cxx
+      PnPFrameGrabberManager.cxx
       )
-    target_link_libraries(standalone_framegrabber
+    target_link_libraries(standalone_PnPframegrabber
       Plugin
       Qt5::Widgets
       Qt5::Core # need this for QT signal/slot system
@@ -57,13 +55,13 @@ if (BUILD_STANDALONE_FRAMEGRABBER)
       ${Boost_LIBRARIES}
       ${ITK_LIBRARIES}
       ${VTK_LIBRARIES}
-      videograbber
+      #videograbber
       )
-    set(EXTRA_TARGETS standalone_framegrabber)
+    set(EXTRA_TARGETS standalone_PnPframegrabber)
 
 endif() #BUILD_STANDALONE_FRAMEGRABBER
 
-install(TARGETS Plugin_framegrabber ${EXTRA_TARGETS}
+install(TARGETS Plugin_PnPframegrabber ${EXTRA_TARGETS}
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION pluginlib
   ARCHIVE DESTINATION pluginlib
