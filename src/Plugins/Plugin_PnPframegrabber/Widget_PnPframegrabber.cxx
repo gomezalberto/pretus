@@ -2,6 +2,8 @@
 
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QSpacerItem>
 
 Widget_PnPframegrabber::Widget_PnPframegrabber(
     QWidget *parent, Qt::WindowFlags f)
@@ -25,7 +27,31 @@ Widget_PnPframegrabber::Widget_PnPframegrabber(
     this->setLayout(vLayout);
 
     vLayout->addWidget(mLabel);
+    // create a miniwidget for the play/pause/slider
+    {
+        mPausePlayButton = new QPushButton("Pause");
+        mPausePlayButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
+        mPausePlayButton->setCheckable(true);
+
+        QWidget *placeholder = new QWidget();
+        QHBoxLayout *ph_layout = new QHBoxLayout();
+        ph_layout->addWidget(mPausePlayButton);
+        ph_layout->addStretch();
+
+        placeholder->setLayout(ph_layout);
+        vLayout->addWidget(placeholder);
+    }
     this->AddImageViewCheckboxToLayout(vLayout);
+}
+
+void Widget_PnPframegrabber::slot_togglePlayPause(bool v){
+
+    if (v == true){
+        this->mPausePlayButton->setText("Play ");
+    } else {
+        this->mPausePlayButton->setText("Pause");
+    }
+
 }
 
 void Widget_PnPframegrabber::SendImageToWidgetImpl(ifind::Image::Pointer image){

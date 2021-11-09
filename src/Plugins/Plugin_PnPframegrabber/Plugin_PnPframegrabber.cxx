@@ -1,5 +1,6 @@
 #include "Plugin_PnPframegrabber.h"
 #include <QObject>
+#include <QPushButton>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
@@ -13,12 +14,22 @@ Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
         // create widget
         WidgetType * mWidget_ = new WidgetType;
         this->mWidget = mWidget_;
+
+        ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, w,
+                &ManagerType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, mWidget_,
+                &WidgetType::slot_togglePlayPause);
     }
     {
         // create image widget
         ImageWidgetType * mWidget_ = new ImageWidgetType;
         this->mImageWidget = mWidget_;
         this->mImageWidget->SetWidgetLocation(ImageWidgetType::WidgetLocation::visible);
+
     }
 
     QObject::connect(this->manager.get(), &ManagerType::ImageGenerated,

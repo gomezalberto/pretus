@@ -12,6 +12,7 @@
 PnPFrameGrabberManager::PnPFrameGrabberManager(QObject *parent) : Manager(parent){
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
+    this->mIsPaused = false;
 }
 
 int PnPFrameGrabberManager::Initialize(){
@@ -47,6 +48,10 @@ int PnPFrameGrabberManager::Initialize(){
     return 0;
 }
 
+void PnPFrameGrabberManager::slot_togglePlayPause(bool v){
+    this->mIsPaused  =v;
+}
+
 
 
 /**
@@ -55,7 +60,7 @@ int PnPFrameGrabberManager::Initialize(){
 void PnPFrameGrabberManager::Send(void){
 
 
-    if (this->VideoSource.isOpened()){
+    if (this->VideoSource.isOpened() && mIsPaused==false){
         this->mutex_Frame.lock();
         try {
             this->VideoSource >> this->Frame; // get a new frame from camera

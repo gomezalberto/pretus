@@ -19,6 +19,7 @@ public:
     static const QString sQComboBoxStyle ;
     static const QString sQLabelStyle;
     static const QString sQPushButtonStyle;
+    static const QString sQGroupBoxStyle;
 
     enum class WidgetLocation  { visible, visible_overlay, hidden, // for images
                                top_left, top_right, bottom_left, bottom_right, overlaid}; // for other widgets

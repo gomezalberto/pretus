@@ -65,13 +65,15 @@ public Q_SLOTS:
    */
     virtual void Send(void);
 
+    virtual void slot_togglePlayPause(bool v);
+
 protected:
     PnPFrameGrabberManager(QObject *parent = 0);
 
 private:
 
     cv::VideoCapture VideoSource;
-
+    bool mIsPaused;
     std::mutex mutex_frame_buffer;
     std::mutex mutex_Frame;
     cv::Mat Frame;

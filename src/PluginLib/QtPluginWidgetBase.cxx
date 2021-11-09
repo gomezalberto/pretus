@@ -20,7 +20,11 @@ const QString QtPluginWidgetBase::sQComboBoxStyle = "QComboBox { background-colo
 const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : black; color : white; }";
 
 const QString QtPluginWidgetBase::sQPushButtonStyle = "QPushButton { border: 2px solid white; background-color : black; color : white; } "
+        "QPushButton::pressed {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}"
         "QPushButton::checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
+
+const QString QtPluginWidgetBase::sQGroupBoxStyle = "QGroupBox { border: 1px solid white; background-color : black; color : white; } "
+        "QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top center; top: -4px; color: #000000; background-color: rgb(255, 255, 255);}";
 
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)
