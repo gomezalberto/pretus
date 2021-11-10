@@ -117,7 +117,7 @@ void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
         }}
     {const std::string &argument = input.getCmdOption("camid");
         if (!argument.empty()){
-            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.camid= atoi(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.cam_id= atoi(argument.c_str());
         }}
 }
 
