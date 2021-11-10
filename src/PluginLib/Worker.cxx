@@ -100,7 +100,7 @@ ifind::Image::Pointer Worker::CropImageToFixedAspectRatio(ifind::Image::Pointer 
             cropbounds[NDIMS + i] = this->params.out_size[i];
             this->params.crop_origin[i]+=dif_l;
             cropbounds[i] = this->params.crop_origin[i];
-            std::cout <<"this->params.out_size["<<i<<"] = "<<cropbounds[NDIMS + i]<<" - ("<<dif_l<<" + "<<dif_r<<")"<<std::endl;
+            //std::cout <<"this->params.out_size["<<i<<"] = "<<cropbounds[NDIMS + i]<<" - ("<<dif_l<<" + "<<dif_r<<")"<<std::endl;
         } else {
             this->params.out_size[i] = cropbounds[NDIMS + i];
         }

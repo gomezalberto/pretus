@@ -39,7 +39,7 @@ void Plugin_planeDetection::Initialize(void){
     Plugin::Initialize();
     this->worker->Initialize();
     // Retrieve the list of classes and create a blank image with them as meta data.
-    QStringList labels = std::dynamic_pointer_cast< WorkerType >(this->worker)->getLabels();
+    //QStringList labels = std::dynamic_pointer_cast< WorkerType >(this->worker)->getLabels();
     ifind::Image::Pointer configuration = ifind::Image::New();
     //configuration->SetMetaData<QStringList>("StandardPlanes",labels);
     configuration->SetMetaData<std::string>("PythonInitialized",this->GetPluginName().toStdString());

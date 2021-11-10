@@ -1,5 +1,6 @@
 #include "Plugin_PnPframegrabber.h"
 #include <QObject>
+#include <QPushButton>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
@@ -13,12 +14,22 @@ Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
         // create widget
         WidgetType * mWidget_ = new WidgetType;
         this->mWidget = mWidget_;
+
+        ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, w,
+                &ManagerType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, mWidget_,
+                &WidgetType::slot_togglePlayPause);
     }
     {
         // create image widget
         ImageWidgetType * mWidget_ = new ImageWidgetType;
         this->mImageWidget = mWidget_;
         this->mImageWidget->SetWidgetLocation(ImageWidgetType::WidgetLocation::visible);
+
     }
 
     QObject::connect(this->manager.get(), &ManagerType::ImageGenerated,
@@ -61,6 +72,12 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
                           "USe color images (1) or not (0).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components==3)});
 
+    mArguments.push_back({"camid", "<val>",
+                          QString( Plugin::ArgumentType[1] ),
+                          "camera id.",
+                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.cam_id)});
+
+
 }
 
 void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
@@ -97,6 +114,10 @@ void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
     {const std::string &argument = input.getCmdOption("verbose");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.verbose= atoi(argument.c_str());
+        }}
+    {const std::string &argument = input.getCmdOption("camid");
+        if (!argument.empty()){
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.camid= atoi(argument.c_str());
         }}
 }
 
