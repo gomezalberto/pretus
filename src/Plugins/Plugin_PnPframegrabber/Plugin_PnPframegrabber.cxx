@@ -72,6 +72,12 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
                           "USe color images (1) or not (0).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components==3)});
 
+    mArguments.push_back({"camid", "<val>",
+                          QString( Plugin::ArgumentType[1] ),
+                          "camera id.",
+                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.cam_id)});
+
+
 }
 
 void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
@@ -108,6 +114,10 @@ void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
     {const std::string &argument = input.getCmdOption("verbose");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.verbose= atoi(argument.c_str());
+        }}
+    {const std::string &argument = input.getCmdOption("camid");
+        if (!argument.empty()){
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->params.camid= atoi(argument.c_str());
         }}
 }
 
