@@ -84,6 +84,7 @@ public:
    * typedefs and enums
    */
     typedef ifind::Image Self;
+    typedef itk::Image<itk::RGBPixel<uint8_t>, 3> ColorImageType;
     typedef itk::SmartPointer<Self> Pointer;
     typedef itk::SmartPointer<const Self> ConstPointer;
     typedef itk::Image<uint8_t, 3> Superclass;

@@ -57,7 +57,7 @@ set(PYTHON_FILES
     python/pythonalgorithm_worker.py
     )
 
-file(GLOB SOURCES "*.h" "*.cxx")
+file(GLOB SOURCES "*.h" "*.cxx" "*.md")
 
 add_library(Plugin_PythonAlgorithm "${PROJECT_BUILD_TYPE}"
     ${SOURCES}

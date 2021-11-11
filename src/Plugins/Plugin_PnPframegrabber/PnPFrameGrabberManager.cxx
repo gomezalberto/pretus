@@ -8,6 +8,7 @@
 #include <chrono>
 #include <itkShiftScaleImageFilter.h>
 #include <QApplication>
+#include <itkVectorIndexSelectionCastImageFilter.h>
 
 PnPFrameGrabberManager::PnPFrameGrabberManager(QObject *parent) : Manager(parent){
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
@@ -102,8 +103,37 @@ void PnPFrameGrabberManager::Send(void){
         ifind::Image::Pointer image = ifind::Image::New();
 
         typedef itk::OpenCVImageBridge BridgeType;
-        image->Graft(BridgeType::CVMatToITKImage<ifind::Image>(this->Frame));
+        // Convert to colour image
+        ifind::Image::ColorImageType::Pointer colourImage = ifind::Image::ColorImageType::New();
+        colourImage = BridgeType::CVMatToITKImage<ifind::Image::ColorImageType>(this->Frame);
+
+        // extract components
+        using IndexSelectionType = itk::VectorIndexSelectionCastImageFilter<ifind::Image::ColorImageType, ifind::Image>;
+        {             // First component (R) as base layer
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(0);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->Graft(indexSelectionFilter->GetOutput());
+
+        }
+        {             // G
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(1);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+        }
+        {             // B
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(2);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+        }
+        //image->Graft(BridgeType::CVMatToITKImage<ifind::Image>(this->Frame));
         this->mutex_Frame.unlock();
+
 
         /// Add basic meta data
         {
@@ -134,6 +164,8 @@ void PnPFrameGrabberManager::Send(void){
             image->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
             image->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
             image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+
+            image->SetMetaData<bool>("IsColor", true);
         }
         image->SetSpacing(params.pixel_size);
         if (this->mTransmitedStreamType.size()>0){

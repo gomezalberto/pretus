@@ -9,6 +9,8 @@
 #include <QString>
 #include <QStringList>
 #include <QThread>
+#include <itkVectorIndexSelectionCastImageFilter.h>
+//#include <itkImageFileWriter.h>
 
 VideoManager::VideoManager(QObject *parent) : Manager(parent){
     this->FrameRate = 25;
@@ -68,15 +70,15 @@ void VideoManager::slot_previous(){
 }
 
 void VideoManager::SetStringTime(std::string timeString){
-   int msec = 0;
+    int msec = 0;
 
-   QString qtimeString(timeString.c_str());
-   QStringList sl = qtimeString.split(":");
-   int minutes = sl[0].toInt();
-   int seconds = sl[1].toInt();
-   msec = minutes*60*1000 + seconds*1000;
+    QString qtimeString(timeString.c_str());
+    QStringList sl = qtimeString.split(":");
+    int minutes = sl[0].toInt();
+    int seconds = sl[1].toInt();
+    msec = minutes*60*1000 + seconds*1000;
 
-   this->initial_time_msec = msec;
+    this->initial_time_msec = msec;
 
 }
 
@@ -152,13 +154,41 @@ void VideoManager::Send(void)
             return;
         }
         this->mTransmitedFramesCount++;
-        ifind::Image::Pointer image = ifind::Image::New();
 
+        ifind::Image::Pointer image = ifind::Image::New();
         typedef itk::OpenCVImageBridge BridgeType;
-        image->Graft(BridgeType::CVMatToITKImage<ifind::Image>(this->Frame));
+
+        // Convert to colour image
+        ifind::Image::ColorImageType::Pointer colourImage = ifind::Image::ColorImageType::New();
+        colourImage = BridgeType::CVMatToITKImage<ifind::Image::ColorImageType>(this->Frame);
+
+        // extract components
+        using IndexSelectionType = itk::VectorIndexSelectionCastImageFilter<ifind::Image::ColorImageType, ifind::Image>;
+        {             // First component (R) as base layer
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(0);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->Graft(indexSelectionFilter->GetOutput());
+
+        }
+        {             // G
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(1);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+        }
+        {             // B
+            IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+            indexSelectionFilter->SetIndex(2);
+            indexSelectionFilter->SetInput(colourImage);
+            indexSelectionFilter->Update();
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+        }
+        //image->Graft(BridgeType::CVMatToITKImage<ifind::Image>(this->Frame));
         this->mutex_Frame.unlock();
 
-        //image->Graft(this->convertCVMatToIfindImageData(this->Frame));
         /// Add basic meta data
         {
 
@@ -198,6 +228,8 @@ void VideoManager::Send(void)
             auto current_fr = total_fr / this->TransmitFrameRate.size();
             image->SetMetaData<>("TransmissionFrameRate", QString::number(current_fr).toStdString());
             this->last_transmit_t = current_transmit_t;
+
+            image->SetMetaData<bool>("IsColor", true);
         }
 
         if (this->mTransmitedStreamType.size()>0){

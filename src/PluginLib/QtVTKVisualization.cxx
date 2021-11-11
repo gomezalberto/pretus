@@ -12,7 +12,7 @@
 #include <vtkImageBlend.h>
 #include <vtkImageMapToColors.h>
 #include <vtkNew.h>
-
+#include <vtkImageAppendComponents.h>
 #include <QVTKWidget.h>
 #include <QPainter>
 
@@ -186,91 +186,118 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
         return;
     }
 
-    // Combine the images (blend takes multiple connections on the 0th input port)
-    std::vector<int> layerOrder;
+    // Check if this is a colour image. If it is, then create a RGB
+    // image and then for the remaining computations ignore the first two overlay layers
 
-    // This is what the code was before
-    //std::set_difference(
-    //    VisualizationConsts::StandardLayerOrder().begin(),
-    //    VisualizationConsts::StandardLayerOrder().end(),
-    //    &this->mParams.BaseLayer(), // WTF! This is supposed to be an iterator
-    //    &this->mParams.BaseLayer()+1, // and its end FFS! Unbeliveable
-    //    std::inserter(layerOrder, layerOrder.begin()));
-    //
+    vtkSmartPointer<vtkImageData> blendedImage = nullptr;
 
-    int baselayer = mParams.BaseLayer() >= 0 ? mParams.BaseLayer()  : image->GetNumberOfLayers() + mParams.BaseLayer();
+    if (image->HasKey("IsColor") && image->GetMetaData<bool>("IsColor")==true){
 
-    std::vector<int> baseLayers{ baselayer };
-    std::set_difference(
-                VisualizationConsts::StandardLayerOrder().begin(),
-                VisualizationConsts::StandardLayerOrder().end(),
-                baseLayers.begin(),
-                baseLayers.end(),
-                std::inserter(layerOrder, layerOrder.begin()));
+        vtkSmartPointer<vtkImageAppendComponents> appender = vtkSmartPointer<vtkImageAppendComponents>::New();
 
-    layerOrder.insert(layerOrder.begin(), baselayer); // This will always have 6 elements
+        int R=0, G=1, B=2;
 
-    unsigned int upperlimit = this->mParams.OverlayLayer() != 0 ? image->GetNumberOfLayers() : 1;
+        appender->AddInputData(image->GetVTKImage(R));
+        appender->AddInputData(image->GetVTKImage(G));
+        appender->AddInputData(image->GetVTKImage(B));
+        appender->Update();
 
-    if (this->mParams.OverlayLayer() != 0){
-        /// show only one layer, as overlay, selected by the user
-        layerOrder.clear();
-        layerOrder.push_back(baselayer);
-        if (this->mParams.OverlayLayer() <0){
-            layerOrder.push_back(image->GetNumberOfLayers() + this->mParams.OverlayLayer());
-        } else {
-            layerOrder.push_back(this->mParams.OverlayLayer());
-        }
-        upperlimit = 2;
+        blendedImage = appender->GetOutput();
+
     }
 
-    vtkNew<vtkImageBlend> imageBlender;
+    if (blendedImage == nullptr){
+        // input image is not colored -we can d ooverlays!
 
-    for (unsigned int idx=0; idx < upperlimit; idx++)
-    {
-        if (idx < this->lookupTables.length())
-        {
-            vtkNew<vtkImageMapToColors> mapper;
-            mapper->PassAlphaToOutputOn();
-            mapper->SetOutputFormatToRGBA();
-            mapper->SetLookupTable(this->lookupTables.at(idx));
 
-            auto layerImage = image->GetVTKImage(layerOrder[idx]);
-            if (layerImage == nullptr){
-                continue;
+        // Combine the images (blend takes multiple connections on the 0th input port)
+        std::vector<int> layerOrder;
+
+        // This is what the code was before
+        //std::set_difference(
+        //    VisualizationConsts::StandardLayerOrder().begin(),
+        //    VisualizationConsts::StandardLayerOrder().end(),
+        //    &this->mParams.BaseLayer(), // WTF! This is supposed to be an iterator
+        //    &this->mParams.BaseLayer()+1, // and its end FFS! Unbeliveable
+        //    std::inserter(layerOrder, layerOrder.begin()));
+        //
+
+        int baselayer = mParams.BaseLayer() >= 0 ? mParams.BaseLayer()  : image->GetNumberOfLayers() + mParams.BaseLayer();
+
+        std::vector<int> baseLayers{ baselayer };
+        std::set_difference(
+                    VisualizationConsts::StandardLayerOrder().begin(),
+                    VisualizationConsts::StandardLayerOrder().end(),
+                    baseLayers.begin(),
+                    baseLayers.end(),
+                    std::inserter(layerOrder, layerOrder.begin()));
+
+        layerOrder.insert(layerOrder.begin(), baselayer); // This will always have 6 elements
+
+        unsigned int upperlimit = this->mParams.OverlayLayer() != 0 ? image->GetNumberOfLayers() : 1;
+
+        if (this->mParams.OverlayLayer() != 0){
+            /// show only one layer, as overlay, selected by the user
+            layerOrder.clear();
+            layerOrder.push_back(baselayer);
+            if (this->mParams.OverlayLayer() <0){
+                layerOrder.push_back(image->GetNumberOfLayers() + this->mParams.OverlayLayer());
+            } else {
+                layerOrder.push_back(this->mParams.OverlayLayer());
             }
+            upperlimit = 2;
+        }
 
-            mapper->SetInputData(layerImage);
-            imageBlender->AddInputConnection(mapper->GetOutputPort());
+        vtkNew<vtkImageBlend> imageBlender;
 
-            // add colorbar if not already added
-            if (this->Params().ShowColorbar() == true){
-                if (this->colorBar == nullptr && idx>0)
-                {
-                    this->colorBar = vtkSmartPointer<vtkScalarBarActor>::New();
-                    this->colorBar->SetLookupTable(this->lookupTables.at(idx));
-                    this->colorBar->SetTitle("Attention");
-                    this->colorBar->SetNumberOfLabels(this->lookupTables.at(idx)->GetNumberOfTableValues()+1);
-                    this->colorBar->SetWidth(0.1);
-                    this->colorBar->SetHeight(0.8);
-                    //this->colorBar->SetUnconstrainedFontSize(true);
-                    //this->colorBar->GetLabelTextProperty()->SetFontSize(24);
+        for (unsigned int idx=0; idx < upperlimit; idx++)
+        {
+            if (idx < this->lookupTables.length())
+            {
+                vtkNew<vtkImageMapToColors> mapper;
+                mapper->PassAlphaToOutputOn();
+                mapper->SetOutputFormatToRGBA();
+                mapper->SetLookupTable(this->lookupTables.at(idx));
 
-                    renderer->AddActor2D(this->colorBar);
+                auto layerImage = image->GetVTKImage(layerOrder[idx]);
+                if (layerImage == nullptr){
+                    continue;
+                }
+
+                mapper->SetInputData(layerImage);
+                imageBlender->AddInputConnection(mapper->GetOutputPort());
+
+                // add colorbar if not already added
+                if (this->Params().ShowColorbar() == true){
+                    if (this->colorBar == nullptr && idx>0)
+                    {
+                        this->colorBar = vtkSmartPointer<vtkScalarBarActor>::New();
+                        this->colorBar->SetLookupTable(this->lookupTables.at(idx));
+                        this->colorBar->SetTitle("Attention");
+                        this->colorBar->SetNumberOfLabels(this->lookupTables.at(idx)->GetNumberOfTableValues()+1);
+                        this->colorBar->SetWidth(0.1);
+                        this->colorBar->SetHeight(0.8);
+                        //this->colorBar->SetUnconstrainedFontSize(true);
+                        //this->colorBar->GetLabelTextProperty()->SetFontSize(24);
+
+                        renderer->AddActor2D(this->colorBar);
+                    }
                 }
             }
-        }
-        else
-        {
-            imageBlender->AddInputData(image->GetVTKImage(layerOrder[idx]));
+            else
+            {
+                imageBlender->AddInputData(image->GetVTKImage(layerOrder[idx]));
+            }
+
+            imageBlender->SetOpacity(idx, idx == 0 ? 1.0 : 0.5);
         }
 
-        imageBlender->SetOpacity(idx, idx == 0 ? 1.0 : 0.5);
+        imageBlender->Update();
+
+        blendedImage = imageBlender->GetOutput();
+
     }
 
-    imageBlender->Update();
-
-    vtkSmartPointer<vtkImageData> blendedImage = imageBlender->GetOutput();
     if (!blendedImage) {
         return;
     }
