@@ -3,7 +3,7 @@ import cv2
 def decode_fourcc(cc):
     return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
 
-ID_GRABBER = 4
+ID_GRABBER = 2
 ID_WEBCAM = 2
 
 id = ID_GRABBER
