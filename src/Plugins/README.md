@@ -27,7 +27,20 @@ Output plug-ins:
 
 ## Plugins using Python
 
-PLug-ins are implemented in C++, however the plug-in functionality can be implemented in python. An example plug-in implemented in python is `Plugin_PythonAlgorithm`. In order to build python-based plug-ins, the following CMake fields must be completed:
+### Advice: how to install and manage python dependencies
+
+We recommend using [anaconda](https://www.anaconda.com) to install conda and python, and then use pip to manage packages. 
+Note: If you will be using Tensorflow v1, then the highest version of python is 3.7
+
+An error sometimes arises with HDF version missmatch. This is caused by having different versions of the library and of the headers. The error message will say something like:
+"h5py is running against HDF5 1.10.4 when it was built against 1.12.1", and "Headers are 1.12.1, library is 1.10.4". The solution is to upgrade to a matching version by doing in this case:
+
+```
+conda install --force-reinstall anaconda hdf5==1.10.4
+```
+
+### Additional build notes
+Plug-ins are implemented in C++, however the plug-in functionality can be implemented in python. An example plug-in implemented in python is `Plugin_PythonAlgorithm`. In order to build python-based plug-ins, the following CMake fields must be completed:
 
 * `PYTHON_LIBRARY`, for example,  `<home folder>/anaconda3/lib/libpython3.7m.so`
 * `PYTHON_INCLUDE_DIR`, for example, `<home folder>/anaconda3/include/python3.7m`

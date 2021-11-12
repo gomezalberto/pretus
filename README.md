@@ -225,18 +225,27 @@ The minimum requirements are:
 * CMake 3.15
 * Qt 5 
     * tested with 5.12
+* HDF5 Build from source (tested version 1.10.4)
+	* set `HDF5_GENERATE_HEADERS` to be `ON`.
+	* set `HDF5_BUILD_CPP_LIB`
 * [VTK](https://gitlab.kitware.com/vtk/vtk)
     * Tested with 8.2.0 
     * Recommended to set the `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Set `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
+    * `CMAKE_CXX_FLAGS` set to `-std=c++11 -fPIC`
+    * Use system hdf5, set to the HDF5 built.
 * [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib)
     * Tested with 3.4.4. We suggest following [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/) from stepo 4 (previous steps are for python).
 * [ITK](https://github.com/InsightSoftwareConsortium/ITK) (for the video manager plug-in, built with the `ITKVideoBridgeOpencv` option `ON`)
-    * Tested with 4.9.1
+    * Tested with 5.1.2, (before with 4.9.1, 4.10.0)
     * Enable `ITKVideoBridgeOpencv`
     * Enable `ITKVtkGlue`
+    * `CMAKE_CXX_FLAGS` set to `-std=c++11 -fpermissive`
+    * `VXL_EXTRA_CMAKE_CXX_FLAGS` set to `-std=c++11 -fpermissive`
+    * `VNL_CONFIG_LEGACY_METHODS` set to OFF
     * HDF5 enabled (tip on this later)
+    * Use system hdf5, set to the HDF5 built.
 * Boost
     * Tested with 1.71.0
 * gcc
