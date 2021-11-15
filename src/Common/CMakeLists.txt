@@ -21,11 +21,12 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS) # needed because python has something called "
 
 file(GLOB SOURCES "*.h" "*.cxx")
 
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL CONFIG)
+
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_library(ifind2_common "${PROJECT_BUILD_TYPE}" ${SOURCES}
-)
+add_library(ifind2_common "${PROJECT_BUILD_TYPE}" ${SOURCES})
 
 include(GenerateExportHeader)
 generate_export_header( ifind2_common

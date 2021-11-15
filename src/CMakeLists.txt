@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(PRETUS VERSION 1.0)
+project(PRETUS VERSION 1.0 LANGUAGES C CXX )
 
 ## #################################################################
 ## cmake policy warning removal
@@ -20,7 +20,8 @@ RelWithDebInfo MinSizeRel."
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_SHARED_LIBS "Build shared libraries, required for the plug-ins" ON)
 if (BUILD_SHARED_LIBS)
     set(PROJECT_BUILD_TYPE SHARED)
@@ -99,6 +100,12 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
+
+# I now need this:
+#set(HDF5_INCLUDE_DIRS "VALUE" CACHE STRING "HDF5 include add_subdirectory()")
+#find_package(HDF5 REQUIRED COMPONENTS C CXX)
+
+INCLUDE_DIRECTORIES (${HDF5_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
