@@ -1,7 +1,7 @@
 import os
 import numpy
 import torch
-from utils.util import mkdir
+from spd_utils.util import mkdir
 from .networks_other import get_n_parameters
 
 

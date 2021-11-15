@@ -61,6 +61,7 @@ A basic plug-in will needs one class (the plugin itself) and optionally three mo
 * Class `Worker_CppAlgorithm` will inherit from `Worker` and will carry out the processing task on a separate thread. This class is not required if the task does not need a separate thread and is simple enough to be incorporated into the `Plugin` class.
 * Class `Widget_CppAlgorithm` will implement the widget where results and information about the plug-in are shown.
 * For the image widget we will use the provided `QtVTKVisualization` class that performs basic image and overlay visualization.
+* **IMPORTANT**: although not exemplified here, it is common that multiple plug-ins have python packages (folders) called with similar names, e.g. `utils`. This can confuse the interpreter which is shared accross plug-ins. As a result, it is recommended that all python files are named using a plug-in specific preffix.
 
 # 2. The `plugin_PythonAlgorithm_config.h.in` file.
 

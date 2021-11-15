@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import utils.util as util
+import spd_utils.util as util
 from collections import OrderedDict
 import torch
 from torch.autograd import Variable

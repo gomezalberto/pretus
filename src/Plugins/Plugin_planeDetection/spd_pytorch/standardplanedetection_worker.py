@@ -11,7 +11,7 @@ Edit (AG) this file used to be called api.py
 # Dependencies
 import os, sys, numpy as np
 import torch
-from utils.util import json_file_to_pyobj
+import spd_utils.util as spdutils
 from skimage.transform import resize
 from models import get_model
 import time
@@ -71,7 +71,7 @@ def initialize( python_path, modelname):
     checkpoint_file = python_path + "/checkpoints/ifind1_sononet_8/" + modelname
 
     json_filename = python_path + "/configs/config_sononet_8.json"
-    json_opts = json_file_to_pyobj(json_filename)
+    json_opts = spdutils.json_file_to_pyobj(json_filename)
     with HiddenPrints():
         model = get_model(json_opts.model)
 

@@ -186,23 +186,28 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
         return;
     }
 
-    // Check if this is a colour image. If it is, then create a RGB
+    // Check if this is a colour image and from an input stream. If it is, then create a RGB
     // image and then for the remaining computations ignore the first two overlay layers
 
     vtkSmartPointer<vtkImageData> blendedImage = nullptr;
 
     if (image->HasKey("IsColor") && image->GetMetaData<bool>("IsColor")==true){
 
-        vtkSmartPointer<vtkImageAppendComponents> appender = vtkSmartPointer<vtkImageAppendComponents>::New();
+        // Now check if it is form Input (or Inpu1, Input2, etc)
+        ifind::Image::StreamType subtype  = image->GetStreamType().substr(0, std::string("Input").size());
+        if (QString::fromStdString(subtype).toLower()=="input"){
 
-        int R=0, G=1, B=2;
+            vtkSmartPointer<vtkImageAppendComponents> appender = vtkSmartPointer<vtkImageAppendComponents>::New();
 
-        appender->AddInputData(image->GetVTKImage(R));
-        appender->AddInputData(image->GetVTKImage(G));
-        appender->AddInputData(image->GetVTKImage(B));
-        appender->Update();
+            int R=0, G=1, B=2;
 
-        blendedImage = appender->GetOutput();
+            appender->AddInputData(image->GetVTKImage(R));
+            appender->AddInputData(image->GetVTKImage(G));
+            appender->AddInputData(image->GetVTKImage(B));
+            appender->Update();
+
+            blendedImage = appender->GetOutput();
+        }
 
     }
 
