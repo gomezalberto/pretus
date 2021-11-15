@@ -5,7 +5,7 @@ import os
 import numpy as np
 import torch.optim as optim
 from torch.nn import CrossEntropyLoss
-from utils.metrics import segmentation_scores, dice_score_list
+from spd_utils.metrics import segmentation_scores, dice_score_list
 from sklearn import metrics
 from .layers.loss import *
 

@@ -1,6 +1,6 @@
 import os, sys, numpy as np
 import cv2
-from utils.util import json_file_to_pyobj
+from spd_utils.util import json_file_to_pyobj
 from skimage.transform import resize
 import SimpleITK as sitk
 import standardplanedetection_worker

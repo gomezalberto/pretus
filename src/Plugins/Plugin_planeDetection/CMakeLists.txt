@@ -53,9 +53,25 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS) # needed because python has something called "
 set(PYTHON_FILES
     spd_pytorch/demo.py
     spd_pytorch/standardplanedetection_worker.py
+    spd_pytorch/spd_utils/util.py
+    #
+    #spd_pytorch/dataio/loader/utils.py
+    #spd_pytorch/dataio/loader/us_dataset.py
+    #spd_pytorch/dataio/transformer
+    spd_pytorch/models/utils.py
+    spd_pytorch/models/feedforward_classifier.py
+    spd_pytorch/models/base_model.py
+    #spd_pytorch/test_data
+    #spd_pytorch/LICENSE
+    #spd_pytorch/planedetect2.py
+    #spd_pytorch/README.md
+    #spd_pytorch/run.sh
+    #spd_pytorch/setup.py
+    #spd_pytorch/train_classifaction.py
+    #spd_pytorch/validation.py
     )
 
-file(GLOB SOURCES "*.h" "*.cxx")
+file(GLOB SOURCES "*.h" "*.cxx" )
 
 add_library(Plugin_planeDetection "${PROJECT_BUILD_TYPE}"
     ${SOURCES}
