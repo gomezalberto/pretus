@@ -202,7 +202,6 @@ Actual requirements, and build order:
 5. [ITK](https://github.com/InsightSoftwareConsortium/ITK), tested with version 5.1.2, should also work with previous versions >= 4.9.1 with c++14 enbled. : Set the following CMake flags:
 	* `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the install path, for example `<home>/local/opencv/share/OpenCV`.
     * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
-    * `CMAKE_CXX_FLAGS` set to `-std=c++11 -fpermissive`
     * `VNL_CONFIG_LEGACY_METHODS` set to OFF
     * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
     * Go to the build folder, in a terminal do `make`.
