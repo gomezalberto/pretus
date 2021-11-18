@@ -32,7 +32,7 @@ public:
             pixel_size[2] = 1;
 
             cam_id = 4;
-            resolution = "1280.720"; // width.height
+            resolution = "1024.786"; // width.height
             //Resolution_factor = 1.0;
             CaptureFrameRate  = 30;
             n_components = 1;

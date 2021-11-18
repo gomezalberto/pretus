@@ -28,6 +28,7 @@ public Q_SLOTS:
     virtual void Initialize();
     virtual void InitializeCentralPanel();
     virtual void SetViewScale(int viewScaleInt);
+    virtual void ResetViewScale();
 
 Q_SIGNALS:
 

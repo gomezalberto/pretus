@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QSlider>
+#include <QPushButton>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_GUI::Plugin_GUI(QObject *parent)
@@ -54,8 +55,21 @@ void Plugin_GUI::Initialize()
             &QSlider::valueChanged, mVisualizer.get(),
             &QtVisualizationMainWindow::SetViewScale);
 
+   // QObject::connect(ww->mResetButton,
+   //         &QPushButton::released, mVisualizer.get(),
+   //         &QtVisualizationMainWindow::ResetViewScale);
+
+    QObject::connect(ww->mResetButton,
+            &QPushButton::released, this,
+            &Plugin_GUI::slot_resetScale);
+
     mVisualizer->Initialize();
     this->Timer->Start(this->TimerInterval);
+}
+
+void Plugin_GUI::slot_resetScale(){
+    WidgetType* ww = reinterpret_cast<WidgetType*>(mWidget);
+    ww->mSlider->setValue(50);
 }
 
 void Plugin_GUI::slot_configurationReceived(ifind::Image::Pointer image){

@@ -169,6 +169,16 @@ void QtVisualizationMainWindow::Initialize()
 
 }
 
+
+
+void QtVisualizationMainWindow::ResetViewScale(){
+
+    float viewScale = 0.5;
+
+    Q_EMIT SignalSetViewScale(viewScale);
+
+}
+
 void QtVisualizationMainWindow::SetViewScale(int viewScaleInt){
 
     float maxViewScale = 100;

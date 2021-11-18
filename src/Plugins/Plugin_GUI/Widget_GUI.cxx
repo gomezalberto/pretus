@@ -1,5 +1,6 @@
 #include "Widget_GUI.h"
 #include <QSlider>
+#include <QPushButton>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QtInfoPanelTrafficLightBase.h>
@@ -18,6 +19,10 @@ Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(p
     labelFont.setBold(true);
     mLabel->setFont(labelFont);
     //
+    mResetButton = new QPushButton("Reset");
+    mResetButton->setStyleSheet(QtPluginWidgetBase::sQPushButtonStyle);
+
+
     mSlider = new QSlider(Qt::Orientation::Horizontal);
     mSlider->setStyleSheet(QtPluginWidgetBase::sQSliderStyle);
 
@@ -32,6 +37,7 @@ Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(p
     slLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
     hLayout->addWidget(slLabel);
     hLayout->addWidget(mSlider);
+    hLayout->addWidget(mResetButton);
     sliderWidget->setLayout(hLayout);
 
 
