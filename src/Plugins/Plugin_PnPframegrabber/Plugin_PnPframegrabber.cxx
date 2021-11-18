@@ -51,6 +51,8 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
     this->RemoveArgument("stream");
     this->RemoveArgument("layer");
     this->RemoveArgument("time");
+    this->RemoveArgument("framerate");
+
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
     mArguments.push_back({"studioswing", "<val>",
                           QString( Plugin::ArgumentType[0] ),
@@ -76,6 +78,11 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
                           QString( Plugin::ArgumentType[1] ),
                           "camera id.",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.cam_id)});
+
+    mArguments.push_back({"framerate", "<val>",
+                         QString( ArgumentType[2] ),
+                         "Frame rate at which the framegrabber captures data.",
+                         QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate)});
 
 
 }
@@ -106,11 +113,12 @@ void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
                 std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 1;
             }
         }}
-    // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate = atof(argument.c_str());
         }}
+    // no need to add above since already in plugin
+
     {const std::string &argument = input.getCmdOption("verbose");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.verbose= atoi(argument.c_str());

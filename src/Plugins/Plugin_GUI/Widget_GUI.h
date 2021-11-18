@@ -5,6 +5,7 @@
 
 class QLabel;
 class QSlider;
+class QPushButton;
 
 class Widget_GUI : public QtPluginWidgetBase
 {
@@ -15,6 +16,7 @@ public:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
 
     QSlider *mSlider;
+    QPushButton *mResetButton;
 private:
     QLabel *mLabel;
 };
