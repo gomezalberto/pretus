@@ -32,7 +32,7 @@ public:
             pixel_size[2] = 1;
 
             cam_id = 4;
-            resolution = "1024.786"; // width.height
+            resolution = "1024.768"; // width.height
             //Resolution_factor = 1.0;
             CaptureFrameRate  = 30;
             n_components = 1;
@@ -54,7 +54,33 @@ public:
         int n_components;
     };
 
+    struct VideoSettings {
+        VideoSettings(){
+            buffersize = 1;
+            framerate = 30;
+            w = 1024;
+            h = 768;
+            fourcc = CV_FOURCC('M', 'J', 'P', 'G');
+        }
+
+        std::string toStdString(){
+            std::stringstream ss;
+            ss << "Video Settings:"<<std::endl;
+            ss << "\tBuffer size: "<< buffersize<<std::endl;
+            ss << "\tFrame rate: "<< framerate<<std::endl;
+            ss << "\tResolution: "<< w <<"x"<<h<<std::endl;
+            ss << "\tCodec: "<< fourcc<<std::endl;
+            return ss.str();
+        }
+        int buffersize;
+        int framerate;
+        int w;
+        int h;
+        int fourcc;
+    };
+
     Parameters params;
+
 
 public Q_SLOTS:
 
@@ -66,6 +92,9 @@ public Q_SLOTS:
     virtual void Send(void);
 
     virtual void slot_togglePlayPause(bool v);
+    virtual void slot_updateFrameRate(QString f);
+    virtual void slot_updateResolution(QString resolution);
+    virtual void slot_updateEncoding(QString enc);
 
 protected:
     PnPFrameGrabberManager(QObject *parent = 0);
@@ -79,5 +108,8 @@ private:
     cv::Mat Frame;
     std::chrono::steady_clock::time_point latestAcquisitionTime;
     std::chrono::steady_clock::time_point initialAcquisitionTime;
+    VideoSettings mVideoSettings;
+
+    int updateVideoSettings(void);
 
 };

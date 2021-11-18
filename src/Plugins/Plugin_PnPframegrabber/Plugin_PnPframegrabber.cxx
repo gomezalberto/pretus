@@ -1,6 +1,7 @@
 #include "Plugin_PnPframegrabber.h"
 #include <QObject>
 #include <QPushButton>
+#include <QComboBox>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
@@ -13,6 +14,21 @@ Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
     {
         // create widget
         WidgetType * mWidget_ = new WidgetType;
+        std::vector<int> framerates = {5, 10, 15, 20, 25, 30, 60};
+        mWidget_->setFrameRates(framerates);
+        mWidget_->setSelectedFramerate(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate);
+
+        std::vector<std::string> resolutions = {"1600x1200 (4:3)", "1280x960  (4:3)",
+                                                "1024x768  (4:3)", "960x720 (4:3)", "800x600  (4:3)","640x480  (4:3)","320x240  (4:3)",
+                                                "1920x1080 (16:9)", "1600x896 (16:9)","1360x768 (16:9)", "1280x720 (16:9)",
+                                                "1280x1024 (other)", "720x576 (other)", "720x480 (other)",};
+        mWidget_->setResolutions(resolutions);
+        mWidget_->setSelectedResolution(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution);
+
+        std::vector<std::string> encodings = {"Full", "MJPEG",};
+        mWidget_->setEncodings(encodings);
+        mWidget_->setSelectedEncoding(QString("MJPEG"));
+
         this->mWidget = mWidget_;
 
         ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
@@ -23,6 +39,19 @@ Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
         QObject::connect(mWidget_->mPausePlayButton,
                 &QPushButton::toggled, mWidget_,
                 &WidgetType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_,
+                &WidgetType::signal_newFrameRate, w,
+                &ManagerType::slot_updateFrameRate);
+
+        QObject::connect(mWidget_,
+                &WidgetType::signal_newResolution, w,
+                &ManagerType::slot_updateResolution);
+
+        QObject::connect(mWidget_,
+                &WidgetType::signal_newEncoding, w,
+                &ManagerType::slot_updateEncoding);
+
     }
     {
         // create image widget
@@ -61,7 +90,7 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
 
     mArguments.push_back({"resolution", "width.height",
                           QString( Plugin::ArgumentType[3] ),
-                          "Number of pixels of the video stream, separated by a dot. Accepted values are, in 16:9: 1920.1080, 1360.768, 1280.720; in 4:3: 1600.1200, 1280.960, 1024.786, 800.600, 640.480; and other: 1280.1024, 720.576, 720.480",
+                          "Number of pixels of the video stream, separated by a dot. Accepted values are, in 16:9: 1920.1080, 1360.768, 1280.720; in 4:3: 1600.1200, 1280.960, 1024.768, 800.600, 640.480; and other: 1280.1024, 720.576, 720.480",
                           std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution});
 
     mArguments.push_back({"pixelsize", "<val>",
