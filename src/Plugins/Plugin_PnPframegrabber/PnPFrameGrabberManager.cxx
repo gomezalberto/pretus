@@ -14,37 +14,49 @@ PnPFrameGrabberManager::PnPFrameGrabberManager(QObject *parent) : Manager(parent
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
     this->mIsPaused = false;
+
 }
 
-int PnPFrameGrabberManager::Initialize(){
+int PnPFrameGrabberManager::updateVideoSettings(void){
 
+    if (! this->VideoSource.isOpened()){
+        this->VideoSource.release();
+    }
 
     this->VideoSource.open(this->params.cam_id,cv::CAP_V4L2);
-    this->VideoSource.set(cv::CAP_PROP_BUFFERSIZE, 1);
-    this->VideoSource.set(cv::CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'));
-    this->VideoSource.set(cv::CAP_PROP_FPS, this->params.CaptureFrameRate);
-    // convert resolution string into values
-    int w, h;
-    QStringList pieces = this->params.resolution.split( "." );
-    w = pieces.value(0).toInt();
-    h = pieces.value(1).toInt();
-    this->VideoSource.set(cv::CAP_PROP_FRAME_WIDTH, w);
-    this->VideoSource.set(cv::CAP_PROP_FRAME_HEIGHT, h);
+    this->VideoSource.set(cv::CAP_PROP_BUFFERSIZE, mVideoSettings.buffersize);
+    this->VideoSource.set(cv::CAP_PROP_FOURCC, mVideoSettings.fourcc);
+    this->VideoSource.set(cv::CAP_PROP_FPS, mVideoSettings.framerate);
+    this->VideoSource.set(cv::CAP_PROP_FRAME_WIDTH, mVideoSettings.w);
+    this->VideoSource.set(cv::CAP_PROP_FRAME_HEIGHT, mVideoSettings.h);
 
+    int real_framerate = this->VideoSource.get(cv::CAP_PROP_FPS);
+    if (real_framerate != mVideoSettings.framerate){
+            std::cout << "[Warning] PnPFrameGrabberManager::updateVideoSettings() - selected framerate ("<< mVideoSettings.framerate<<") is not supported by your device, using "<< real_framerate<<" fps"<< std::endl;
+    }
 
     if (! this->VideoSource.isOpened()){
         std::cout << "[ERROR] PnPFrameGrabberManager::Initialize() - Could nt open video grabber on device "<< this->params.cam_id<<std::endl;
         return -1;
     }
+    return 0;
+
+}
+
+int PnPFrameGrabberManager::Initialize(){
+
+    // convert resolution string into values
+    QStringList pieces = this->params.resolution.split( "." );
+    mVideoSettings.w = pieces.value(0).toInt();
+    mVideoSettings.h = pieces.value(1).toInt();
+    mVideoSettings.framerate = this->params.CaptureFrameRate;
+
+    this->updateVideoSettings();
 
     if (this->params.verbose){
         std::cout << "[VERBOSE] PnPFrameGrabberManager::Initialize() - Video settings:"<<std::endl;
-        //        print('fps: {}'.format(fps))
-        //        print('resolution: {}x{}'.format(w,h)) # default 640 x 480
-        //        print('mode: {}'.format(decode_fourcc(fcc))) # default 640 x 480
-        //        print('Buffer size: {}'.format(bs)) # default 640 x 480
+        std::cout << this->mVideoSettings.toStdString()<<std::endl;
     }
-
 
     return 0;
 }
@@ -53,7 +65,41 @@ void PnPFrameGrabberManager::slot_togglePlayPause(bool v){
     this->mIsPaused  =v;
 }
 
+void PnPFrameGrabberManager::slot_updateFrameRate(QString f){
 
+    QStringList pieces =  f.split( " " );
+    int framerate = pieces.value(0).toInt();
+    mVideoSettings.framerate = framerate;
+    this->updateVideoSettings();
+    if (this->params.verbose){
+        std::cout << "[VERBOSE] PnPFrameGrabberManager::slot_updateFrameRate() - Video settings:"<<std::endl;
+        std::cout << this->mVideoSettings.toStdString()<<std::endl;
+    }
+}
+
+void PnPFrameGrabberManager::slot_updateResolution(QString resolution){
+    QStringList pieces0 = resolution.split( " " );
+
+    QStringList pieces = pieces0.value(0).split( "x" );
+    mVideoSettings.w = pieces.value(0).toInt();
+    mVideoSettings.h = pieces.value(1).toInt();
+
+    this->updateVideoSettings();
+    if (this->params.verbose){
+        std::cout << "[VERBOSE] PnPFrameGrabberManager::slot_updateResolution() - Video settings:"<<std::endl;
+        std::cout << this->mVideoSettings.toStdString()<<std::endl;
+    }
+}
+
+void PnPFrameGrabberManager::slot_updateEncoding(QString enc){
+    if (enc.toLower() == "full"){
+        mVideoSettings.fourcc = CV_FOURCC('I', '4', '2', '0');
+    } else if  (enc.toLower() == "mjpeg"){
+        mVideoSettings.fourcc = CV_FOURCC('M', 'J', 'P', 'G');
+    }
+
+    this->updateVideoSettings();
+}
 
 /**
  * @brief Gets a frame, applies the homography and cropping, and converts it to VTK
@@ -67,6 +113,7 @@ void PnPFrameGrabberManager::Send(void){
             this->VideoSource >> this->Frame; // get a new frame from camera
         } catch (const cv::Exception& e) {
             std::cerr << "[Error] VideoManager::Send() -  reading frame from file. Reason: " << e.msg << std::endl;
+            this->mutex_Frame.unlock();
             return;
         }
     }
@@ -96,6 +143,12 @@ void PnPFrameGrabberManager::Send(void){
             this->mutex_Frame.unlock();
             this->VideoSource.release();
             QApplication::quit();
+        }
+
+        if (this->Frame.rows != mVideoSettings.h || this->Frame.cols != mVideoSettings.w){
+            std::cout << "[Warning] PnPFrameGrabberManager::Send() - selected resolution ("<< mVideoSettings.w<< "x"<< mVideoSettings.h<<") is not supported by your device, using "<< this->Frame.cols<< "x"<< this->Frame.rows<< std::endl;
+            QString res = QString::number(this->Frame.cols) + "x" + QString::number(this->Frame.rows) + " (other)";
+            this->slot_updateResolution(res);
         }
 
 
