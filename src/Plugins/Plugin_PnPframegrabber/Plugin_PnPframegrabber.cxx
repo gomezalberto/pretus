@@ -25,7 +25,7 @@ Plugin_PnPframegrabber::Plugin_PnPframegrabber(QObject *parent) : Plugin(parent)
         mWidget_->setResolutions(resolutions);
         mWidget_->setSelectedResolution(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution);
 
-        std::vector<std::string> encodings = {"Full", "MJPEG",};
+        std::vector<std::string> encodings = {"Full", "MJPEG", "H.264"};
         mWidget_->setEncodings(encodings);
         mWidget_->setSelectedEncoding(QString("MJPEG"));
 

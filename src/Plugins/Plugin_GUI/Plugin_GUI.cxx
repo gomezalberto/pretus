@@ -14,7 +14,7 @@ Plugin_GUI::Plugin_GUI(QObject *parent)
     // the plugin needs to accept all streams by default,
     // then the indivdual widgets will decide what to take
     this->mStreamTypes = ifind::InitialiseStreamTypeSetFromString("");
-    this->setFrameRate(25);
+    this->setFrameRate(30);
     //this->Timer->SetDropFrames(true);
 
     //mVisualizer = std::make_shared<QtVisualizationMainWindow>();

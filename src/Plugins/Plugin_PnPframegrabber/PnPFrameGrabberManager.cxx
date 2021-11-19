@@ -96,6 +96,8 @@ void PnPFrameGrabberManager::slot_updateEncoding(QString enc){
         mVideoSettings.fourcc = CV_FOURCC('I', '4', '2', '0');
     } else if  (enc.toLower() == "mjpeg"){
         mVideoSettings.fourcc = CV_FOURCC('M', 'J', 'P', 'G');
+    } else if  (enc.toLower() == "h.264"){
+        mVideoSettings.fourcc = CV_FOURCC('H', '2', '6', '4');
     }
 
     this->updateVideoSettings();
