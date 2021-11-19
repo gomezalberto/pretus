@@ -165,7 +165,6 @@ void Widget_PnPframegrabber::setSelectedResolution(QString res){
 
 void Widget_PnPframegrabber::setSelectedEncoding(QString enc){
 
-    std::cout << "Widget_PnPframegrabber::setSelectedEncoding - TODO"<< std::endl;
     int idx = -1;
 
     for (int i=0; i<mEncodingList->count(); i++){
