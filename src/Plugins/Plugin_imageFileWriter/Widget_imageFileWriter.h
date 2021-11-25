@@ -5,7 +5,9 @@
 #include <ifindStreamTypeHelper.h>
 
 class QCheckBox;
+class QPushButton;
 class QLabel;
+class QLineEdit;
 
 class Widget_imageFileWriter : public QtPluginWidgetBase
 {
@@ -17,6 +19,10 @@ public:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
 
     QCheckBox *mCheckBoxSaveFiles;
+    QPushButton *mPushButtonSaveOne;
+    QLineEdit *mSubfolderText;
+
+    void setOutputFolder(const QString &outputFolder);
 
 public Q_SLOTS:
 
@@ -26,6 +32,6 @@ public Q_SLOTS:
 private:
     // raw pointer to new object which will be deleted by QT hierarchy
     QLabel *mLabel;
-
+    QString mOutputFolder;
     int n_images_written;
 };

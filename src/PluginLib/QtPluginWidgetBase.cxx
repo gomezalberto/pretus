@@ -3,6 +3,7 @@
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 
 static const std::string sDefaultStreamTypesStr("Input");
 const QString QtPluginWidgetBase::sQSliderStyle = "QSlider::groove:horizontal { background-color: none; border: 1px solid #828282;  height: 2px;  border-radius: 2px; }"
@@ -25,6 +26,9 @@ const QString QtPluginWidgetBase::sQPushButtonStyle = "QPushButton { border: 2px
 
 const QString QtPluginWidgetBase::sQGroupBoxStyle = "QGroupBox { border: 1px solid white; background-color : black; color : white; } "
         "QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top center; top: -4px; color: #000000; background-color: rgb(255, 255, 255);}";
+
+
+const QString QtPluginWidgetBase::sQLineEditStyle  = "QLineEdit { background-color : black; color : white; }";
 
 QtPluginWidgetBase::QtPluginWidgetBase(
     QWidget *parent, Qt::WindowFlags f)

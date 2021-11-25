@@ -48,11 +48,16 @@ public Q_SLOTS:
 
     virtual void slot_toggleSaveImages(bool b);
 
+    virtual void slot_saveOneImage();
+
+    virtual void slot_setSubFolder();
+
     virtual void slot_Write(ifind::Image::Pointer arg);
 
 Q_SIGNALS:
 
     void ImageToBeSaved(ifind::Image::Pointer image);
+    void ImageActuallyWritten();
 
 protected:
     virtual void SetDefaultArguments();
@@ -75,5 +80,7 @@ private:
     std::mutex m_Mutex;
 
     bool mSaveImages;
+    bool mSaveOne;
     bool mVerbose;
+    QString mSubfolder;
 };
