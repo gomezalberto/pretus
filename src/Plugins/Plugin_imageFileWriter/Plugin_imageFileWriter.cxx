@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QObject>
 #include <QCheckBox>
+#include <QPushButton>
+#include <QLineEdit>
 
 static const std::string sDefaultStreamTypeToWrite("Input");
 
@@ -17,7 +19,9 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
     this->subdivide_folders = 0;
     this->first_subdivision = 0;
     this->mSaveImages = true;
+    this->mSubfolder = "";
     mVerbose = false;
+    mSaveOne = false;
 
     {
         // create widget
@@ -29,6 +33,12 @@ Plugin_imageFileWriter::Plugin_imageFileWriter(QObject *parent) : Plugin(parent)
                          this, &Plugin_imageFileWriter::slot_Write);
         QObject::connect(mWidget_->mCheckBoxSaveFiles, &QCheckBox::stateChanged,
                          this, &Plugin_imageFileWriter::slot_toggleSaveImages);
+        QObject::connect(mWidget_->mPushButtonSaveOne, &QPushButton::released,
+                         this, &Plugin_imageFileWriter::slot_saveOneImage);
+        QObject::connect(mWidget_->mSubfolderText, &QLineEdit::returnPressed,
+                         this, &Plugin_imageFileWriter::slot_setSubFolder);
+
+
 
         this->mWidget = mWidget_;
     }
@@ -40,13 +50,23 @@ void Plugin_imageFileWriter::Initialize(void){
     ifind::Image::Pointer configuration = ifind::Image::New();
     configuration->SetMetaData<QString>("SavingImagesToFile_ON","True");
     this->mWidget->SetStreamTypes(this->m_streamtype_to_write);
+    WidgetType *w = static_cast<WidgetType *>( this->mWidget);
+    w->setOutputFolder(this->OutputFolder.c_str());
 
     Q_EMIT this->ConfigurationGenerated(configuration);
 }
 
 void Plugin_imageFileWriter::slot_toggleSaveImages(bool b){
-    //std::cout << "Plugin_imageFileWriter::slot_toggleSaveImages(bool b) "<< b <<std::endl;
     this->mSaveImages=b;
+}
+
+void Plugin_imageFileWriter::slot_saveOneImage(){
+    this->mSaveOne = true;
+}
+
+void Plugin_imageFileWriter::slot_setSubFolder(){
+    WidgetType *w = static_cast<WidgetType *>( this->mWidget);
+    this->mSubfolder = w->mSubfolderText->text();
 }
 
 void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
@@ -67,15 +87,15 @@ void Plugin_imageFileWriter::slot_imageReceived(ifind::Image::Pointer image){
 
     if (ifind::IsImageOfStreamTypeSet(image, m_streamtype_to_write))
     {
-        if (image->HasKey("DO_NOT_WRITE") || this->mSaveImages==false){
+        if (image->HasKey("DO_NOT_WRITE") ||
+                (this->mSaveImages==false && this->mSaveOne == false) ){
             // image should not be written.
             //std::cout << "Plugin_imageFileWriter::slot_imageReceived() : Do not save"<<std::endl;
 
         } else {
 
             Q_EMIT this->ImageToBeSaved(image);
-
-            //this->Write(image); // this is called by the signal/slot
+            this->mSaveOne = false;
         }
     }
 
@@ -191,6 +211,11 @@ void Plugin_imageFileWriter::slot_Write(ifind::Image::Pointer arg)
 
         QDir sessiondirectory(QString::fromStdString(this->OutputFolder));
         dirname = sessiondirectory.filePath(streamfolder + QDir::separator() + subfolder);
+        if (this->mSubfolder.length()>0){
+            dirname = sessiondirectory.filePath(streamfolder + QDir::separator() + this->mSubfolder);
+        }
+
+
         if (!sessiondirectory.mkpath(dirname))
         {
             qWarning() << "Plugin_imageFileWriter::Write() - Cannot create dir " << dirname;
