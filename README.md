@@ -150,13 +150,10 @@ Pre-requisites (likely already in your system!):
 
 * Boost
     * Tested with 1.71.0
-    * No need to build from source, use the package manager to install the latest version.
+    * No need to build from source, use the package manager to install the latest version. See further instructions for [Ubuntu 20.04x64](https://www.devmanuals.net/install/ubuntu/ubuntu-20-04-focal-fossa/installing-libboost-all-dev-on-ubuntu20-04.html).
 *  gcc
     * Tested with 8.4.0
-    * No need to build from source, use the package manager instead.
-* Anaconda
-    * Testing with 2020.02, latest version should work
-    * Install using the instructions form 
+    * No need to build from source, use the package manager instead. You might need to switch to another version of [gcc](https://linuxconfig.org/how-to-switch-between-multiple-gcc-and-g-compiler-versions-on-ubuntu-20-04-lts-focal-fossa).
 
 ### Actual requirements and build order
 * CMake 3.15 (versions >= 3.10 might work) this can be installed from a package manager. CMake-gui is recommended.  
