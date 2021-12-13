@@ -94,34 +94,33 @@ We suggest installing CUDA, then python and python dependencies , then C++ depen
 
 ### Installing CUDA
 CUDA is only required to run some of the plug-ins in the GPU, specifically those using deep learning models via tensorflow or pytorch. 
-We have tested with CUDA 10.2. This version can be installed from the nvidia website following [this link](https://developer.nvidia.com/cuda-10.2-download-archive).
-
+We have tested with [CUDA 10.2](https://developer.nvidia.com/cuda-10.2-download-archive). 
 When modern GPUs are available, more modern versions of CUDA (11+) are preferred.
 
 ### Python dependencies
-
 Python is not required to build PRETUS, however it is recommended and required for many plug-ins, such as `Plugin_pythonaAlgorithm` and `Plugin_standardPlaneDetection`. 
 As a result, we suggest to start by installing python with conda, then creating a virtual environment for PRETUS, and finally installing the required packages within the `pretus` environment using `pip`:
 
+#### Step by step installation
 1. Install `Anaconda`, following the instructions from [here](https://docs.anaconda.com/anaconda/install/linux/).
 2. Install pip:
 
-	```
-	conda install pip
-	```
+    ```
+    conda install pip
+    ```
 3. Create an environment for PRETUS using python 3.7
 
-	```
-	conda create --name pretus python=3.7
-	```
-3. Install required python packages. We provide a `requirements_low.txt` file that can be used for systems with a *low* performance graphics card (tested with GeForce GTX 960M):
+    ```
+    conda create --name pretus python=3.7
+    ```
+4. Install required python packages. We provide a `requirements_low.txt` file that can be used for systems with a *low* performance graphics card (tested with GeForce GTX 960M):
 
-	```
-	conda activate pretus
-	pip install -r pretus/src/Plugins/requirements_low.txt
-	```
+    ```
+    conda activate pretus
+    pip install -r pretus/src/Plugins/requirements_low.txt
+    ```
 
-Alternatively you can install the required packages manually. The main ones to install, and their versions, are:
+You can install the required packages manually. The main ones to install, and their versions, are:
 
 * dill==0.3.4
 * h5py==2.10.0
@@ -140,10 +139,11 @@ Alternatively you can install the required packages manually. The main ones to i
 * torch==1.10.0 (installed for the corresponding CUDA version, in this case 10.2)
 * torchvision==0.11.1
 
+#### Direct installation
+If you are in Ubuntu 20.04x64, you can follow conda installation of the [virtual-environment](dependencies/virtual-environment).
 
 ### C++ dependencies
-
-The dependencies should be built in the following order. 
+The dependencies should be built in the following order.  
 The build instructions and options assume, unless otherwise stated, that each library will be build from source using CMake and that the required options are CMake options.
 
 Pre-requisites (likely already in your system!):
