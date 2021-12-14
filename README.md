@@ -206,6 +206,11 @@ Pre-requisites (likely already in your system!):
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`. Make sure that all QT directories point at the downloaded QT installation, as in the figure:
     ![VTK-config-0](Art/VTK-config-0.png)
     * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
+    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (it might be a different tag which is dependent on the VTK version)
+    * `X11_SM_LIB` set to `/usr/lib/x86_64-linux-gnu/libSM.so;-luuid`
+    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...`.
+    * Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make`.
+
     * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (if you don't see this flag, ignore this step)
     * Activate `VTK_USE_SYSTEM_HDF5`, and and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
     ![VTK-config-1](Art/VTK-config-1.png)
