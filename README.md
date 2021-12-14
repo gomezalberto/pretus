@@ -169,7 +169,8 @@ Actual requirements, and build order:
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
     * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
     * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO`
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
+    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
+    ![VTK-config-1](Art/VTK-config-1.png)
     * Go to the build folder, in a terminal do `make`.
 * [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib), Tested with 3.4.4. Higher versions might work. TO build and install follow these steps: 
 	
