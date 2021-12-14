@@ -175,13 +175,32 @@ Pre-requisites (likely already in your system!):
   cmake-gui ../HDF5
   ```
   
-  `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
-  * set `HDF5_GENERATE_HEADERS` to be `ON`.
-  * set `HDF5_BUILD_CPP_LIB` to be `ON`.
-  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
-  Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
+  * `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
+    * set `HDF5_GENERATE_HEADERS` to be `ON`.
+    * set `HDF5_BUILD_CPP_LIB` to be `ON`.
+    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
+    Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
 
-* [VTK](https://gitlab.kitware.com/vtk/vtk), tested with version 8.2.0. To select this version, after checkout, do `git checkout v8.2.0`. The following CMake options must be set: 
+* [VTK](https://gitlab.kitware.com/vtk/vtk)
+  * Download and clone
+  ```bash 
+  ## Cloning repo and checking out version
+  mkdir -p $HOME/repositories/ && cd $HOME/repositories
+  git clone https://gitlab.kitware.com/vtk/vtk VTK
+  
+  cd $HOME/repositories/VTK
+  git checkout tags/v8.2.0
+  git submodule init
+  git submodule update
+  
+  ## Creating paths
+  mkdir -p $HOME/workspace/VTK/release
+  cd $HOME/workspace/VTK/release
+  rm -rf *
+  mkdir -p $HOME/repositories/VTK/build && cd $HOME/repositories/VTK/build
+  cmake-gui ../VTK
+  ```
+  * `vtk` should be built from source (tested version 8.2.0., other versions might work). The following CMake options should be enabled:
     * `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
     * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`. Make sure that all QT directories point at the downloaded QT installation, as in the figure:
