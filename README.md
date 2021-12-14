@@ -278,12 +278,37 @@ Pre-requisites (likely already in your system!):
     * Go to the build folder, in a terminal do `make && make install`.
   * Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
 	
-* [ITK](https://github.com/InsightSoftwareConsortium/ITK), tested with version 5.1.2, should also work with previous versions >= 4.9.1 with c++14 enbled. : Set the following CMake flags:
-    * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the install path, for example `<home>/local/opencv/share/OpenCV`.
+* [Insight Toolkit (ITK)](https://github.com/InsightSoftwareConsortium/ITK)  
+  * Download and clone
+  ```bash 
+  ## Cloning repo and checking out version
+  mkdir -p $HOME/repositories/ && cd $HOME/repositories
+  git clone git@github.com:InsightSoftwareConsortium/ITK.git ITK
+  cd $HOME/repositories/ITK
+  git checkout v5.2.1
+  git submodule init
+  git submodule update
+  
+  ## Creating paths  
+  mkdir -p $HOME/workspace/ITK/release && cd $HOME/workspace/ITK/release
+  mkdir -p $HOME/repositories/ITK/build && cd $HOME/repositories/ITK/build
+  rm -rf * # clean release build
+  ```
+  * ITK has been build with version 5.1.2.  It should also work with previous versions >= 4.9.1 with c++14 enabled. Set the following CMake-gui flags
+    * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the installation path, for example `$HOME/local/opencv/share/OpenCV`.
     * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
     * `VNL_CONFIG_LEGACY_METHODS` set to OFF
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
+    * Use system HDF5
+      * `ITK_USE_SYSTEM_HDF5` set to ON.
+      * `HDF5_DIR` set to `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
+    * Use system QT:
+      * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
+      * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
+      * `Qt5OpenGL_DIR` set to `$HOME//Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
+      * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
+      * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
     * Go to the build folder, in a terminal do `make`.
+    * See further installation instructions [here](https://itk.org/ITKSoftwareGuide/html/Book1/ITKSoftwareGuide-Book1ch2.html)
     
 * [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. 
     It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:
