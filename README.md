@@ -158,7 +158,7 @@ Pre-requisites (likely already in your system!):
 ### Actual requirements and build order
 * CMake 3.15 (versions >= 3.10 might work) this can be installed from a package manager. CMake-gui is recommended.  
 * Qt 5 (versions >= 5.12 might work). Installing binaries from the web based installer using the manager tool is recommended. 
-  The installer can be downloaded from [here](https://www.qt.io/download-qt-installer?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4).  
+  The installer, `qt-unified-linux-x64-4.2.0-online.run` can be downloaded from [here](https://download.qt.io/archive/online_installers/4.2/) and you need to create your Qt account to be able to install it.   
 * [HDF5](https://github.com/HDFGroup/hdf5) Should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
     * set `HDF5_GENERATE_HEADERS` to be `ON`.
     * set `HDF5_BUILD_CPP_LIB`
@@ -230,10 +230,11 @@ Pre-requisites (likely already in your system!):
     * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
     * Go to the build folder, in a terminal do `make`.
     
-* [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:
+* [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. 
+    It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:
     * `PYTHON_EXECUTABLE` set to `<home folder>/anaconda3/envs/pretus/bin/python3.7m`
     * `PYTHON_LIBRARY` set to `<home folder>/anaconda3/envs/pretus/lib/libpython3.7m.so`
-     * `USE_PYTHON_INCLUDE_DIR` set to `ON`
+    * `USE_PYTHON_INCLUDE_DIR` set to `ON`
     * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pybind11`.
     * Go to the build folder, in a terminal do `make && make install`.
 
