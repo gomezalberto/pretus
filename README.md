@@ -194,7 +194,7 @@ Actual requirements, and build order:
 	```
 	
 	4.3 Configure opencv, setting the following CMake variables:
-	* `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5`
+	* `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5` (wherever the file `hdf5-config.cmake` is)
 	* `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
 	* `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
 	* `WITH_QT` enabled and the `QT_DIR` to the Qt directories of the QT installation (as with VTK).
@@ -205,7 +205,7 @@ Actual requirements, and build order:
 	* `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the install path, for example `<home>/local/opencv/share/OpenCV`.
     * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
     * `VNL_CONFIG_LEGACY_METHODS` set to OFF
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
+    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`. Refer to the instructions for VTK here.
     * Go to the build folder, in a terminal do `make`.
     
 6. [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:
