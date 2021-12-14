@@ -223,14 +223,15 @@ Pre-requisites (likely already in your system!):
     cd opencv
     git checkout 3.4.4
     cd ..
-    ```
 
-    Download opencv_contrib from Github:
-    ```bash	
     git clone https://github.com/opencv/opencv_contrib.git
     cd opencv_contrib
     git checkout 3.4.4
     cd ..
+
+    ## Creating paths
+    mkdir -p $HOME/repositories/opencv_build/opencv/build && cd $HOME/repositories/opencv_build/opencv/build
+    rm -rf *
     ```
 	* Version 3.4.4 seems to have a bug that prevents from building `cvv` (which is required!). The fix is the following: In the file `modules/cvv/src/qtutil/filter/diffFilterWidget.cpp`, line 68, you need to replace
 	
@@ -259,9 +260,19 @@ Pre-requisites (likely already in your system!):
     Configure opencv, setting the following CMake variables:  
     * `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5`
     * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
+    
+  * opencv and OpenCV contrib versions are 3.4.4 and higher versions might work. To them build and install follow these steps:
+  * Configure opencv, setting the following CMake variables:
+    * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
     * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
+    * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/hdf5/share/cmake/hdf5`
     * `WITH_QT` enabled and the `QT_DIR` to the Qt directories of the QT installation (as with VTK).
-    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/opencv`.
+    * `WITH_TIFF` disabled. 
+    * `CMAKE_CXX_FLAGS` with `-std=c++14 -fPIC -luuid -isystem`
+    * `ENABLE_PRECOMPILED_HEADERS` disabled. 
+    * `WITH_GTK` disabled.
+    * `WITH_CUDA` disabled.
+    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/opencv`.
     * Go to the build folder, in a terminal do `make && make install`.
 	
 * [ITK](https://github.com/InsightSoftwareConsortium/ITK), tested with version 5.1.2, should also work with previous versions >= 4.9.1 with c++14 enbled. : Set the following CMake flags:
