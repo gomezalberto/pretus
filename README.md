@@ -158,12 +158,29 @@ Pre-requisites (likely already in your system!):
 ### Actual requirements and build order
 * CMake 3.15 (versions >= 3.10 might work) this can be installed from a package manager. CMake-gui is recommended.  
 * Qt 5 (versions >= 5.12 might work). Installing binaries from the web based installer using the manager tool is recommended. 
-  The installer, `qt-unified-linux-x64-4.2.0-online.run` can be downloaded from [here](https://download.qt.io/archive/online_installers/4.2/) and you need to create your Qt account to be able to install it.   
-* [HDF5](https://github.com/HDFGroup/hdf5) Should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
-    * set `HDF5_GENERATE_HEADERS` to be `ON`.
-    * set `HDF5_BUILD_CPP_LIB`
-    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/hdf5`.
-    then go to the build folder and in a terminal do `make && make install`.
+  The installer, `qt-unified-linux-x64-4.2.0-online.run` can be downloaded from [here](https://download.qt.io/archive/online_installers/4.2/) and you need to create your Qt account to be able to install it.
+* [HDF5](https://github.com/HDFGroup/hdf5)
+  * Download and clone
+  ```bash 
+  ## Cloning repo and checking out version
+  mkdir -p $HOME/repositories/ && cd $HOME/repositories/
+  git clone git@github.com:HDFGroup/hdf5.git HDF5
+  cd $HOME/repositories/HDF5
+  git checkout tags/hdf5-1_13_0 
+  
+  ## Creating paths 
+  mkdir -p $HOME/repositories/HDF5/build && cd $HOME/repositories/HDF5/build
+  mkdir -p $HOME/workspace/HDF5/release
+  mkdir -p $HOME/local/HDF_Group/HDF5/1.13.0
+  cmake-gui ../HDF5
+  ```
+  
+  `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
+  * set `HDF5_GENERATE_HEADERS` to be `ON`.
+  * set `HDF5_BUILD_CPP_LIB` to be `ON`.
+  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
+  Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
+
 * [VTK](https://gitlab.kitware.com/vtk/vtk), tested with version 8.2.0. To select this version, after checkout, do `git checkout v8.2.0`. The following CMake options must be set: 
     * `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
