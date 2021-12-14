@@ -166,10 +166,11 @@ Actual requirements, and build order:
 * [VTK](https://gitlab.kitware.com/vtk/vtk), tested with version 8.2.0. To select this version, after checkout, do `git checkout v8.2.0`. The following CMake options must be set: 
     * `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
-    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
+    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`. Make sure that all QT directories point at the downloaded QT installation, as in the figure:
+    ![VTK-config-0](Art/VTK-config-0.png)
     * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
-    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO`
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
+    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (if you don't see this flag, ignore this step)
+    * Activate `VTK_USE_SYSTEM_HDF5`, and and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
     ![VTK-config-1](Art/VTK-config-1.png)
     * Go to the build folder, in a terminal do `make`.
 * [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib), Tested with 3.4.4. Higher versions might work. TO build and install follow these steps: 
