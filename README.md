@@ -265,15 +265,18 @@ Pre-requisites (likely already in your system!):
   * Configure opencv, setting the following CMake variables:
     * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
     * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
-    * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/hdf5/share/cmake/hdf5`
+    * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
     * `WITH_QT` enabled and the `QT_DIR` to the Qt directories of the QT installation (as with VTK).
     * `WITH_TIFF` disabled. 
-    * `CMAKE_CXX_FLAGS` with `-std=c++14 -fPIC -luuid -isystem`
+    * `BUILD_opencv_cvv` disabled.
+    * `WITH_WEBP` disabled.
+    * `CMAKE_CXX_FLAGS` with no tags.
     * `ENABLE_PRECOMPILED_HEADERS` disabled. 
     * `WITH_GTK` disabled.
     * `WITH_CUDA` disabled.
     * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/opencv`.
     * Go to the build folder, in a terminal do `make && make install`.
+  * Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
 	
 * [ITK](https://github.com/InsightSoftwareConsortium/ITK), tested with version 5.1.2, should also work with previous versions >= 4.9.1 with c++14 enbled. : Set the following CMake flags:
     * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the install path, for example `<home>/local/opencv/share/OpenCV`.

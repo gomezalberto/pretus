@@ -26,4 +26,4 @@ dependencies:
   - SimpleITK==2.1.1
   - pip
   - pip:
-     - opencv-python==4.5.4.58
+     - opencv-python==4.5.4.*
