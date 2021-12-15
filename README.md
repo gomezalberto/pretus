@@ -265,7 +265,9 @@ Pre-requisites (likely already in your system!):
   * Configure opencv, setting the following CMake variables:
     * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
     * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
-    * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
+    * HDF5 settings
+      * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
+      * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
     * QT settings:
       * `WITH_QT` enabled 
       * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
