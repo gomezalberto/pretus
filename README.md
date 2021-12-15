@@ -268,7 +268,7 @@ Pre-requisites (likely already in your system!):
     * HDF5 settings
       * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
       * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
-    * QT settings:
+    * QT settings
       * `WITH_QT` enabled 
       * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
       * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
@@ -306,18 +306,23 @@ Pre-requisites (likely already in your system!):
   rm -rf * # clean release build
   ```
   * ITK has been build with version 5.1.2.  It should also work with previous versions >= 4.9.1 with c++14 enabled. Set the following CMake-gui flags
-    * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the installation path, for example `$HOME/local/opencv/share/OpenCV`.
+    * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the installation path, for example `$HOME/local/opencv/share/OpenCV` or `$HOME/local/opencv/lib/cmake/opencv4`
     * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
     * `VNL_CONFIG_LEGACY_METHODS` set to OFF
-    * Use system HDF5
+    * HDF5 settings
       * `ITK_USE_SYSTEM_HDF5` set to ON.
       * `HDF5_DIR` set to `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
-    * Use system QT:
+      * `HDF5_CXX_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
+      * `HDF5_CXX_LIBRARY_hdf5_cpp` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5_cpp.so`
+      * `HDF5_C_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
+      * `HDF5_DIFF_EXCECUTABLE` set to `/home/mx19/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
+    * QT settings
       * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
       * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
       * `Qt5OpenGL_DIR` set to `$HOME//Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
       * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
       * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
+    * `BUILD_TESTING` disable 
     * Go to the build folder, in a terminal do `make`.
     * See further installation instructions [here](https://itk.org/ITKSoftwareGuide/html/Book1/ITKSoftwareGuide-Book1ch2.html)
     
