@@ -1,11 +1,15 @@
 # PRETUS
 **P**lug-in based, **Re**al-**t**ime **U**ltra**s**ound
 
-This is a plug-in based, lightweight software for real time image analysis, data collection, and operator guidance, developed within the [iFIND project](www.ifindproject.com). 
-PRETUS is a lightweight software that creates, at run-time, a real-time imaging pipeline. 
-The program itself does not do much on its own: most functionality is brought in through [plug-ins](src/Plugins) that are conected in sequence in the user-defined pipeline. 
+PRETUS is a lightweight software that creates, at run-time, a real-time imaging pipeline.
+PRETUS is a plug-in based, lightweight software for real time image analysis, data collection, and operator guidance, developed within the [iFIND project](www.ifindproject.com).
+PRETUS functionality is brought in through [plug-ins](src/Plugins) that are connected in sequence in the user-defined pipeline. 
 Configuration information as well as data is passed from a plug-in to the next embedded in an object of the `the ifind::Image` class. 
 This class, together with convenience readers and writers make up the [Common](src/Common) tools.
+
+### Contact
+* Lead development: [Alberto Gomez](mailto:alberto.gomez@kcl.ac.uk)
+* Support: [pretus@googlegroups.com](mailto:pretus@googlegroups.com).
 
 ### Citations
 If you use PRETUS please cite our preprint:
@@ -20,17 +24,14 @@ If you use PRETUS please cite our preprint:
       archivePrefix={arXiv},
       primaryClass={physics.med-ph}
 }
-``` 
-
-### Contact
-* Lead development: [Alberto Gomez](mailto:alberto.gomez@kcl.ac.uk)
-* Support: [pretus@googlegroups.com](mailto:pretus@googlegroups.com).
+```
 
 ### Contributors
-* Alberto Gomez
-* Nicolas Toussaint
-* Gavin Wheeler
-* Veronika Zimmer
+* Alberto Gomez  
+* Nicolas Toussaint  
+* Gavin Wheeler  
+* Veronika Zimmer  
+* Miguel Xochicale (documentation and testing)  
 
 # 1. Quick usage notes
 
@@ -376,7 +377,8 @@ Pre-requisites (likely already in your system!):
       
 ### Building PRETUS
 
-At this stage you can enable and disable what plug-ins will be built. See plug-in specific instructions on how to configure CMake options for them. 
+At this stage you can enable and disable what plug-ins will be built. 
+See plug-in specific [instructions](src/Plugins) on how to configure CMake options for them. 
 If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. 
 These can be more than one folder, separated by `;`. 
 These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```) as described at the top of this document.
