@@ -326,13 +326,28 @@ Pre-requisites (likely already in your system!):
     * Go to the build folder, in a terminal do `make`.
     * See further installation instructions [here](https://itk.org/ITKSoftwareGuide/html/Book1/ITKSoftwareGuide-Book1ch2.html)
     
-* [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. 
-    It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:
-    * `PYTHON_EXECUTABLE` set to `<home folder>/anaconda3/envs/pretus/bin/python3.7m`
-    * `PYTHON_LIBRARY` set to `<home folder>/anaconda3/envs/pretus/lib/libpython3.7m.so`
-    * `USE_PYTHON_INCLUDE_DIR` set to `ON`
-    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pybind11`.
-    * Go to the build folder, in a terminal do `make && make install`.
+* [PyBind11](https://github.com/pybind/pybind11)
+  * Download and clone
+    ```bash 
+    ## Cloning repo and checking out version
+    mkdir -p $HOME/repositories/ && cd $HOME/repositories
+    git clone git@github.com:pybind/pybind11.git
+    cd $HOME/repositories/pybind11
+    git checkout v2.8.1
+  
+    ## Creating paths  
+    mkdir -p $HOME/local/pybind11 && cd $HOME/local/pybind11
+    mkdir -p $HOME/repositories/pybind11/build && cd $HOME/repositories/pybind11/build
+    rm -rf * # clean release build
+    ```
+    * PyBind11 version is 2.8.1 with python 3.7 in an anaconda environment.
+    * Make use of the following paths to build PyBind11 with Cmake-gui 
+    * In the CMake, the python version used throughout must be indicated.
+        * `PYTHON_EXECUTABLE` set to `$HOME/anaconda3/envs/pretus/bin/python3.7m`
+        * `PYTHON_LIBRARY` set to `$HOME/anaconda3/envs/pretus/lib/libpython3.7m.so`
+        * `USE_PYTHON_INCLUDE_DIR` set to `ON`
+        * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pybind11`.
+        * Go to the build folder, in a terminal do `make && make install`.
 
 
 ### Building PRETUS

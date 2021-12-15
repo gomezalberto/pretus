@@ -23,7 +23,8 @@ dependencies:
   - scikit-image==0.18.3
   - scikit-learn==1.0.1
   - scipy
-  - SimpleITK==2.1.1
+  - SimpleITK==2.1.1 # why we need this as we built ITK5.2.1 from source
+  - pytest
   - pip
   - pip:
-     - opencv-python==4.5.4.*
+     - opencv-python==4.5.4.* # why we need this as we built opencv4.5.4 from source
