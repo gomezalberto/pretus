@@ -192,6 +192,22 @@ Actual requirements, and build order:
 	git checkout 3.4.4
 	cd ..
 	```
+	* Version 3.4.4 seems to have a bug that prevents from building `cvv` (which is required!). The fix is the following: In the file `modules/cvv/src/qtutil/filter/diffFilterWidget.cpp`, line 68, you need to replace
+	
+	``` 
+	  cv::cvtColor(in.at(0).get(), originalHSV, COLOR_BGR2HSV);
+      cv::cvtColor(in.at(1).get(), filteredHSV, COLOR_BGR2HSV);
+   ```
+   
+   with 
+   
+   ```
+   cv::cvtColor(in.at(0).get(), originalHSV, cv::COLOR_BGR2HSV);
+   cv::cvtColor(in.at(1).get(), filteredHSV, cv::COLOR_BGR2HSV);
+   ```
+   
+   And it should work.
+   
 	4.3 Make sure you have opencv dependencies:
 	* gstreamer-1.0 (by doing, in a terminal `sudo apt-get install libgstreamer-plugins-base1.0-dev`)
 	* jpeg (by doing, in a terminal `sudo apt-get install libjpeg-dev`)
