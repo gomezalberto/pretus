@@ -2,3 +2,6 @@
 
 ## pycharm project path
 .idea
+
+## build paths
+**/build

@@ -376,30 +376,51 @@ Pre-requisites (likely already in your system!):
     * Go to the build folder, in a terminal do `make && make install`.
       
 ### Building PRETUS
-
-At this stage you can enable and disable what plug-ins will be built. 
-See plug-in specific [instructions](src/Plugins) on how to configure CMake options for them. 
-If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. 
-These can be more than one folder, separated by `;`. 
-These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```) as described at the top of this document.
-
-Set your install path using the `CMAKE_INSTALL_PREFIX` variable. We recommend a path within `<HOME>/local/`. 
-And select the plug-ins to build with `BUILD_PLUGIN_XXX`. 
-We recommend to initially build with the default enabled plug-ins, and gradually build the rest to isolate potential build errors.
-
-* Generate using CMake.  At this stage, you *might* get some errors or warnings. 
-  If there is an error about conflicting library versions with conda, make sure you select the anaconda versions on CMake.
-* Set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pretus`.
-* Go to the build folder in the terminal, do `make`, and `make install`. 
-  The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
-
-
-Launch `./launch_pretus -h` from your install location.
-
-### Notes
-
-Each plug-in may have additional dependencies, so please do check the README in each Plug-in folder for specific build instructions. 
-More comprehensive instructions, and troubleshooting, can be found [here](src/troubleshooting.md).
+* Creating building paths
+  ```bash
+  mkdir -p $HOME/local/pretus
+  mkdir -p $HOME/repositories/pretus/src/build && cd $HOME/repositories/pretus/src/build
+  ```
+* CMake tags in PRETUS
+  * `CMAKE_INSTALL_PREFIX` set to `$HOME/local/pretus`
+  * `VTK_DIR` set to `$HOME/workspace/VTK/release`
+  * `ITK_DIR` set to `$HOME/workspace/ITK/release`
+  * Qt settings
+    * `Qt5Concurrent_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Concurrent`
+    * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
+    * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
+    * `Qt5OpenGL_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
+    * `Qt5PrintSupport_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5PrintSupport`
+    * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
+    * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
+    * `Qt5X11Extras_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5X11Extras`
+    * `Qt5Xml_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Xml`    
+  * Plugins settings
+    We recommend to initially build with the default enabled plug-ins, and gradually build the rest to isolate potential build errors.
+    * `BUILD_PLUGIN_GUI` enabled
+    * `BUILD_PLUGIN_CPPALGORITHM` enabled
+    * `BUILD_PLUGIN_PLANEDETECTION` enabled
+      * `PYTHON_LIBRARY` set to `$HOME/anaconda3/envs/pretus/lib/libpython3.7m.so`
+      * `PYTHON_INCLUDE_DIR` set to `$HOME/anaconda3/envs/pretus/include/python3.7m`
+      * `pybind11_DIR` set to `$HOME/local/pybind11/share/cmake/pybind11`
+    * `BUILD_PLUGIN_PYTHONALGORITHM` enabled 
+    * `BUILD_PLUGIN_VIDEOMANAGER` enabled
+    * `BUILD_PLUGIN_PNPFRAMEGRABBER` enabled (you need an installed driver)
+    * `BUILD_PLUGIN_FRAMEGRABBER` enabled (you need an installed driver)
+  * Go to the build folder in the terminal, do `make`, and `make install`.
+    The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
+* See plug-in further [instructions](src/Plugins) on how to configure CMake options for them.
+* Launch application
+  ```bash
+  cd $HOME/local/pretus
+  ./launch_pretus -h
+  ```
+* Notes
+  * If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. 
+  * These can be more than one folder, separated by `;`. 
+  * These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```) as described at the top of this document.
+  * Each plug-in may have additional dependencies, so please do check the README in each Plug-in folder for specific build instructions.
+  * More comprehensive instructions, and troubleshooting, can be found [here](src/troubleshooting.md).
 
 # Acknowledgement
 This work was supported by the Wellcome Trust IEH Award [102431], by the Wellcome/EPSRC Centre for Medical Engineering [WT203148/Z/16/Z], by the National Institute for Health Research (NIHR) Biomedical Research Centre at Guy's and St Thomas' NHS Foundation Trust and King's College London. 
