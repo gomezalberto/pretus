@@ -221,12 +221,12 @@ Pre-requisites (likely already in your system!):
    ```bash
     git clone https://github.com/opencv/opencv.git
     cd opencv
-    git checkout 3.4.4
+    git checkout 4.5.4
     cd ..
 
     git clone https://github.com/opencv/opencv_contrib.git
     cd opencv_contrib
-    git checkout 3.4.4
+    git checkout 4.5.4
     cd ..
 
     ## Creating paths
@@ -266,15 +266,24 @@ Pre-requisites (likely already in your system!):
     * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
     * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
     * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
-    * `WITH_QT` enabled and the `QT_DIR` to the Qt directories of the QT installation (as with VTK).
-    * `WITH_TIFF` disabled. 
-    * `BUILD_opencv_cvv` disabled.
+    * QT settings:
+      * `WITH_QT` enabled 
+      * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
+      * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
+      * `Qt5Test_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Test`
+      * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
+      * `Qt5OpenGL_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
+      * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
+      * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
+      * `Qt5Concurrent_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Concurrent`
+    * `WITH_TIFF` disabled.
     * `WITH_WEBP` disabled.
     * `CMAKE_CXX_FLAGS` with no tags.
     * `ENABLE_PRECOMPILED_HEADERS` disabled. 
     * `WITH_GTK` disabled.
     * `WITH_CUDA` disabled.
     * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/opencv`.
+    * `BUILD_opencv_cvv` disabled (if available).
     * Go to the build folder, in a terminal do `make && make install`.
   * Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
 	
