@@ -192,8 +192,16 @@ Actual requirements, and build order:
 	git checkout 3.4.4
 	cd ..
 	```
+	4.3 Make sure you have opencv dependencies:
+	* gstreamer-1.0 (by doing, in a terminal `sudo apt-get install libgstreamer-plugins-base1.0-dev`)
+	* jpeg (by doing, in a terminal `sudo apt-get install libjpeg-dev`)
+	* tiff (by doing, in a terminal `sudo apt-get install libtiff-dev`)
+	* png (by doing, in a terminal `sudo apt-get install libpng-dev`)
+	* DC1394 video codecs (by doing, in a terminal `sudo apt-get install libdc1394-dev`)
+	* NOTE: Some users have found problems finding ffmpeg. This remains unsolved for now.
 	
-	4.3 Configure opencv, setting the following CMake variables:
+	
+	4.4 Configure opencv, setting the following CMake variables:
 	* `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5` (wherever the file `hdf5-config.cmake` is)
 	* `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
 	* `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
