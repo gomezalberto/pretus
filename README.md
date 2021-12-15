@@ -155,12 +155,15 @@ Pre-requisites (likely already in your system!):
     * Tested with 8.4.0
     * No need to build from source, use the package manager instead. You might need to switch to another version of [gcc](https://linuxconfig.org/how-to-switch-between-multiple-gcc-and-g-compiler-versions-on-ubuntu-20-04-lts-focal-fossa).
 
-### Actual requirements and build order
-* CMake 3.15 (versions >= 3.10 might work) this can be installed from a package manager. CMake-gui is recommended.  
+### CMake
+* CMake 3.15 (versions >= 3.10 might work) this can be installed from a package manager. CMake-gui is recommended.
+
+### Qt5
 * Qt 5 (versions >= 5.12 might work). Installing binaries from the web based installer using the manager tool is recommended. 
   The installer, `qt-unified-linux-x64-4.2.0-online.run` can be downloaded from [here](https://download.qt.io/archive/online_installers/4.2/) and you need to create your Qt account to be able to install it.
-* [HDF5](https://github.com/HDFGroup/hdf5)
-  * Download and clone
+
+### [HDF5](https://github.com/HDFGroup/hdf5)
+* Download and clone
   ```bash 
   ## Cloning repo and checking out version
   mkdir -p $HOME/repositories/ && cd $HOME/repositories/
@@ -175,14 +178,14 @@ Pre-requisites (likely already in your system!):
   cmake-gui ../HDF5
   ```
   
-  * `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
-    * set `HDF5_GENERATE_HEADERS` to be `ON`.
-    * set `HDF5_BUILD_CPP_LIB` to be `ON`.
-    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
-    Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
+* `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
+  * set `HDF5_GENERATE_HEADERS` to be `ON`.
+  * set `HDF5_BUILD_CPP_LIB` to be `ON`.
+  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
+  Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
 
-* [VTK](https://gitlab.kitware.com/vtk/vtk)
-  * Download and clone
+### [VTK](https://gitlab.kitware.com/vtk/vtk)
+* Download and clone
   ```bash 
   ## Cloning repo and checking out version
   mkdir -p $HOME/repositories/ && cd $HOME/repositories
@@ -200,6 +203,15 @@ Pre-requisites (likely already in your system!):
   mkdir -p $HOME/repositories/VTK/build && cd $HOME/repositories/VTK/build
   cmake-gui ../VTK
   ```
+* `vtk` should be built from source (tested version 8.2.0., other versions might work). The following CMake options should be enabled:
+  * `VTK_LEGACY_SILENT` CMake flag to `ON`
+  * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
+  * Set the `Qt5_DIR` variable to where Qt is installed, for example `$HOME/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
+  * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
+  * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (it might be a different tag which is dependent on the VTK version)
+  * `X11_SM_LIB` set to `/usr/lib/x86_64-linux-gnu/libSM.so;-luuid`
+  * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...`.
+  * Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make`.
   * `vtk` should be built from source (tested version 8.2.0., other versions might work). The following CMake options should be enabled:
     * `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
@@ -211,6 +223,15 @@ Pre-requisites (likely already in your system!):
     * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...`.
     * Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make`.
 
+### [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib)
+* Download and clone opencv and opencv_contrib from Github:  
+   ```bash
+  ## Cloning repo and checking out version
+  mkdir -p $HOME/repositories/opencv_build && cd $HOME/repositories/opencv_build
+  git clone https://github.com/opencv/opencv.git
+  cd opencv
+  git checkout 4.5.4
+  cd ..
     * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (if you don't see this flag, ignore this step)
     * Activate `VTK_USE_SYSTEM_HDF5`, and and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
     ![VTK-config-1](Art/VTK-config-1.png)
@@ -224,11 +245,15 @@ Pre-requisites (likely already in your system!):
     git checkout 4.5.4
     cd ..
 
-    git clone https://github.com/opencv/opencv_contrib.git
-    cd opencv_contrib
-    git checkout 4.5.4
-    cd ..
+  git clone https://github.com/opencv/opencv_contrib.git
+  cd opencv_contrib
+  git checkout 4.5.4
+  cd ..
 
+  ## Creating paths
+  mkdir -p $HOME/repositories/opencv_build/opencv/build && cd $HOME/repositories/opencv_build/opencv/build
+  rm -rf *
+  ```
     ## Creating paths
     mkdir -p $HOME/repositories/opencv_build/opencv/build && cd $HOME/repositories/opencv_build/opencv/build
     rm -rf *
@@ -261,36 +286,36 @@ Pre-requisites (likely already in your system!):
     * `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5`
     * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
     
-  * opencv and OpenCV contrib versions are 3.4.4 and higher versions might work. To them build and install follow these steps:
-  * Configure opencv, setting the following CMake variables:
-    * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
-    * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
-    * HDF5 settings
-      * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
-      * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
-    * QT settings
-      * `WITH_QT` enabled 
-      * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
-      * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
-      * `Qt5Test_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Test`
-      * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
-      * `Qt5OpenGL_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
-      * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
-      * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
-      * `Qt5Concurrent_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Concurrent`
-    * `WITH_TIFF` disabled.
-    * `WITH_WEBP` disabled.
-    * `CMAKE_CXX_FLAGS` with no tags.
-    * `ENABLE_PRECOMPILED_HEADERS` disabled. 
-    * `WITH_GTK` disabled.
-    * `WITH_CUDA` disabled.
-    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/opencv`.
-    * `BUILD_opencv_cvv` disabled (if available).
-    * Go to the build folder, in a terminal do `make && make install`.
-  * Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
+* opencv and OpenCV contrib versions are 3.4.4 and higher versions might work. To them build and install follow these steps:
+* Configure opencv, setting the following CMake variables:
+  * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
+  * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
+  * HDF5 settings
+    * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
+    * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
+  * QT settings
+    * `WITH_QT` enabled 
+    * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
+    * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
+    * `Qt5Test_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Test`
+    * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
+    * `Qt5OpenGL_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
+    * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
+    * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
+    * `Qt5Concurrent_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Concurrent`
+  * `WITH_TIFF` disabled.
+  * `WITH_WEBP` disabled.
+  * `CMAKE_CXX_FLAGS` with no tags.
+  * `ENABLE_PRECOMPILED_HEADERS` disabled. 
+  * `WITH_GTK` disabled.
+  * `WITH_CUDA` disabled.
+  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/opencv`.
+  * `BUILD_opencv_cvv` disabled (if available).
+  * Go to the build folder, in a terminal do `make && make install`.
+* Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
 	
-* [Insight Toolkit (ITK)](https://github.com/InsightSoftwareConsortium/ITK)  
-  * Download and clone
+### [Insight Toolkit (ITK)](https://github.com/InsightSoftwareConsortium/ITK)  
+* Download and clone
   ```bash 
   ## Cloning repo and checking out version
   mkdir -p $HOME/repositories/ && cd $HOME/repositories
@@ -299,57 +324,56 @@ Pre-requisites (likely already in your system!):
   git checkout v5.2.1
   git submodule init
   git submodule update
-  
+
   ## Creating paths  
   mkdir -p $HOME/workspace/ITK/release && cd $HOME/workspace/ITK/release
   mkdir -p $HOME/repositories/ITK/build && cd $HOME/repositories/ITK/build
   rm -rf * # clean release build
   ```
-  * ITK has been build with version 5.1.2.  It should also work with previous versions >= 4.9.1 with c++14 enabled. Set the following CMake-gui flags
-    * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the installation path, for example `$HOME/local/opencv/share/OpenCV` or `$HOME/local/opencv/lib/cmake/opencv4`
-    * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
-    * `VNL_CONFIG_LEGACY_METHODS` set to OFF
-    * HDF5 settings
-      * `ITK_USE_SYSTEM_HDF5` set to ON.
-      * `HDF5_DIR` set to `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
-      * `HDF5_CXX_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
-      * `HDF5_CXX_LIBRARY_hdf5_cpp` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5_cpp.so`
-      * `HDF5_C_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
-      * `HDF5_DIFF_EXCECUTABLE` set to `/home/mx19/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
-    * QT settings
-      * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
-      * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
-      * `Qt5OpenGL_DIR` set to `$HOME//Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
-      * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
-      * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
-    * `BUILD_TESTING` disable 
-    * Go to the build folder, in a terminal do `make`.
-    * See further installation instructions [here](https://itk.org/ITKSoftwareGuide/html/Book1/ITKSoftwareGuide-Book1ch2.html)
-    
-* [PyBind11](https://github.com/pybind/pybind11)
-  * Download and clone
-    ```bash 
-    ## Cloning repo and checking out version
-    mkdir -p $HOME/repositories/ && cd $HOME/repositories
-    git clone git@github.com:pybind/pybind11.git
-    cd $HOME/repositories/pybind11
-    git checkout v2.8.1
+* ITK has been build with version 5.1.2.  It should also work with previous versions >= 4.9.1 with c++14 enabled. Set the following CMake-gui flags
+  * `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the installation path, for example `$HOME/local/opencv/share/OpenCV` or `$HOME/local/opencv/lib/cmake/opencv4`
+  * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
+  * `VNL_CONFIG_LEGACY_METHODS` set to OFF
+  * HDF5 settings
+    * `ITK_USE_SYSTEM_HDF5` set to ON.
+    * `HDF5_DIR` set to `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
+    * `HDF5_CXX_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
+    * `HDF5_CXX_LIBRARY_hdf5_cpp` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5_cpp.so`
+    * `HDF5_C_LIBRARY_hdf5` set to `$HOME/local/HDF_Group/HDF5/1.13.0/lib/libhdf5.so`
+    * `HDF5_DIFF_EXCECUTABLE` set to `/home/mx19/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
+  * QT settings
+    * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
+    * `Qt5Gui_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Gui`
+    * `Qt5OpenGL_DIR` set to `$HOME//Qt/5.12.5/gcc_64/lib/cmake/Qt5OpenGL`
+    * `Qt5Sql_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Sql`
+    * `Qt5Widgets_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Widgets`
+  * `BUILD_TESTING` disable 
+  * Go to the build folder, in a terminal do `make`.
+  * See further installation instructions [here](https://itk.org/ITKSoftwareGuide/html/Book1/ITKSoftwareGuide-Book1ch2.html)
   
-    ## Creating paths  
-    mkdir -p $HOME/local/pybind11 && cd $HOME/local/pybind11
-    mkdir -p $HOME/repositories/pybind11/build && cd $HOME/repositories/pybind11/build
-    rm -rf * # clean release build
-    ```
-    * PyBind11 version is 2.8.1 with python 3.7 in an anaconda environment.
-    * Make use of the following paths to build PyBind11 with Cmake-gui 
-    * In the CMake, the python version used throughout must be indicated.
-        * `PYTHON_EXECUTABLE` set to `$HOME/anaconda3/envs/pretus/bin/python3.7m`
-        * `PYTHON_LIBRARY` set to `$HOME/anaconda3/envs/pretus/lib/libpython3.7m.so`
-        * `USE_PYTHON_INCLUDE_DIR` set to `ON`
-        * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pybind11`.
-        * Go to the build folder, in a terminal do `make && make install`.
+### [PyBind11](https://github.com/pybind/pybind11)
+* Download and clone
+  ```bash 
+  ## Cloning repo and checking out version
+  mkdir -p $HOME/repositories/ && cd $HOME/repositories
+  git clone git@github.com:pybind/pybind11.git
+  cd $HOME/repositories/pybind11
+  git checkout v2.8.1
 
-
+  ## Creating paths  
+  mkdir -p $HOME/local/pybind11 && cd $HOME/local/pybind11
+  mkdir -p $HOME/repositories/pybind11/build && cd $HOME/repositories/pybind11/build
+  rm -rf * # clean release build
+  ```
+* PyBind11 version is 2.8.1 with python 3.7 in an anaconda environment.
+* Make use of the following paths to build PyBind11 with Cmake-gui 
+* In the CMake, the python version used throughout must be indicated.
+    * `PYTHON_EXECUTABLE` set to `$HOME/anaconda3/envs/pretus/bin/python3.7m`
+    * `PYTHON_LIBRARY` set to `$HOME/anaconda3/envs/pretus/lib/libpython3.7m.so`
+    * `USE_PYTHON_INCLUDE_DIR` set to `ON`
+    * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `<home>/local/pybind11`.
+    * Go to the build folder, in a terminal do `make && make install`.
+      
 ### Building PRETUS
 
 At this stage you can enable and disable what plug-ins will be built. See plug-in specific instructions on how to configure CMake options for them. 
