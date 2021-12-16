@@ -226,7 +226,7 @@ void VideoManager::Send(void)
                 total_fr+= *cit;
             }
             auto current_fr = total_fr / this->TransmitFrameRate.size();
-            image->SetMetaData<>("TransmissionFrameRate", QString::number(current_fr).toStdString());
+            image->SetMetaData<>("MeasuredFrameRate", QString::number(current_fr).toStdString());
             this->last_transmit_t = current_transmit_t;
 
             image->SetMetaData<bool>("IsColor", true);

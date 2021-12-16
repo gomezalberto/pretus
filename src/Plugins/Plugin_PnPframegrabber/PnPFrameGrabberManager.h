@@ -8,6 +8,8 @@
 #include <list>
 #include <chrono>
 #include <opencv2/opencv.hpp>
+#include <chrono>
+#include <boost/circular_buffer.hpp>
 
 
 class PnPFrameGrabberManager : public Manager{
@@ -100,6 +102,10 @@ protected:
     PnPFrameGrabberManager(QObject *parent = 0);
 
 private:
+
+    int FrameRate;
+    boost::circular_buffer<double> TransmitFrameRate;
+    std::chrono::steady_clock::time_point last_transmit_t;
 
     cv::VideoCapture VideoSource;
     bool mIsPaused;

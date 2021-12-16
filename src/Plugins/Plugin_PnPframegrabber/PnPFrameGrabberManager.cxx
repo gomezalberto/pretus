@@ -14,6 +14,7 @@
 PnPFrameGrabberManager::PnPFrameGrabberManager(QObject *parent) : Manager(parent){
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
+    this->TransmitFrameRate.set_capacity(60);
     this->mIsPaused = false;
 
 }
@@ -58,6 +59,7 @@ int PnPFrameGrabberManager::Initialize(){
         std::cout << "[VERBOSE] PnPFrameGrabberManager::Initialize() - Video settings:"<<std::endl;
         std::cout << this->mVideoSettings.toStdString()<<std::endl;
     }
+    this->last_transmit_t = std::chrono::steady_clock::now();
 
     return 0;
 }
@@ -140,6 +142,7 @@ void PnPFrameGrabberManager::Send(void){
     }
 
     {
+        int w=this->Frame.cols, h = this->Frame.rows;
         /// check if the frame is ok
         if (this->Frame.rows == 0 || this->Frame.cols == 0){
             std::cerr << "[Error] PnPFrameGrabberManager::Send() -  frame is empty."<< std::endl;
@@ -240,6 +243,18 @@ void PnPFrameGrabberManager::Send(void){
             image->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
             image->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
             image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            auto current_transmit_t = std::chrono::steady_clock::now();
+            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(current_transmit_t - this->last_transmit_t).count();
+            this->TransmitFrameRate.push_back(1000.0 / double(duration));
+            double total_fr= 0;
+            for (boost::circular_buffer<double>::const_iterator cit = this->TransmitFrameRate.begin(); cit != this->TransmitFrameRate.end(); ++cit){
+                total_fr+= *cit;
+            }
+            auto current_fr = total_fr / this->TransmitFrameRate.size();
+            image->SetMetaData<>("MeasuredFrameRate", QString::number(current_fr).toStdString());
+            this->last_transmit_t = current_transmit_t;
+            image->SetMetaData<>("Width", QString::number(w).toStdString());
+            image->SetMetaData<>("Height", QString::number(h).toStdString());
 
             image->SetMetaData<bool>("IsColor", true);
         }
