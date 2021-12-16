@@ -84,8 +84,8 @@ void Plugin_PnPframegrabber::SetDefaultArguments(){
 
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
     mArguments.push_back({"studioswing", "<val>",
-                          QString( Plugin::ArgumentType[0] ),
-                          "Correct for studio swing (1) or not (0).",
+                          QString( Plugin::ArgumentType[1] ),
+                          "Correct for studio swing (>0) or not (0). The value (typically 16) indicates how much to correct for.",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing)});
 
     mArguments.push_back({"resolution", "width.height",
