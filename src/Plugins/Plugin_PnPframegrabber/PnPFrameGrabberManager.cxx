@@ -9,6 +9,7 @@
 #include <itkShiftScaleImageFilter.h>
 #include <QApplication>
 #include <itkVectorIndexSelectionCastImageFilter.h>
+#include <algorithm>
 
 PnPFrameGrabberManager::PnPFrameGrabberManager(QObject *parent) : Manager(parent){
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
@@ -151,6 +152,26 @@ void PnPFrameGrabberManager::Send(void){
             std::cout << "[Warning] PnPFrameGrabberManager::Send() - selected resolution ("<< mVideoSettings.w<< "x"<< mVideoSettings.h<<") is not supported by your device, using "<< this->Frame.cols<< "x"<< this->Frame.rows<< std::endl;
             QString res = QString::number(this->Frame.cols) + "x" + QString::number(this->Frame.rows) + " (other)";
             this->slot_updateResolution(res);
+        }
+
+
+        /// copy the buffer
+        const unsigned long numberOfPixels = this->Frame.cols *this->Frame.rows * 3;
+       // ifind::Image::PixelType frame_data[numberOfPixels];
+       // std::memcpy(&frame_data, this->Frame.data, sizeof(ifind::Image::PixelType)*numberOfPixels);
+
+        /// Do the studio swing
+        //const ifind::Image::PixelType *p_end = &frame_data[0]+numberOfPixels;
+        const ifind::Image::PixelType *p_end = &this->Frame.data[0]+numberOfPixels;
+        double factor0 = 1.0;
+        double factor1 = 0.0;
+        if (this->params.correct_studio_swing > 0) {
+            factor0 = 255./(235.-this->params.correct_studio_swing);
+            factor1 = this->params.correct_studio_swing;
+        }
+        for (ifind::Image::PixelType *p = &this->Frame.data[0]; p <  p_end; ++p){
+            ifind::Image::PixelType newval = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
+            *p = std::min(std::max(newval,ifind::Image::PixelType(0)), ifind::Image::PixelType(255));
         }
 
 

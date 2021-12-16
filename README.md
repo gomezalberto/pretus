@@ -166,10 +166,12 @@ Actual requirements, and build order:
 * [VTK](https://gitlab.kitware.com/vtk/vtk), tested with version 8.2.0. To select this version, after checkout, do `git checkout v8.2.0`. The following CMake options must be set: 
     * `VTK_LEGACY_SILENT` CMake flag to `ON`
     * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
-    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
+    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`. Make sure that all QT directories point at the downloaded QT installation, as in the figure:
+    ![VTK-config-0](Art/VTK-config-0.png)
     * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
-    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO`
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
+    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (if you don't see this flag, ignore this step)
+    * Activate `VTK_USE_SYSTEM_HDF5`, and and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
+    ![VTK-config-1](Art/VTK-config-1.png)
     * Go to the build folder, in a terminal do `make`.
 * [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib), Tested with 3.4.4. Higher versions might work. TO build and install follow these steps: 
 	
@@ -190,9 +192,33 @@ Actual requirements, and build order:
 	git checkout 3.4.4
 	cd ..
 	```
+	* Version 3.4.4 seems to have a bug that prevents from building `cvv` (which is required!). The fix is the following: In the file `modules/cvv/src/qtutil/filter/diffFilterWidget.cpp`, line 68, you need to replace
 	
-	4.3 Configure opencv, setting the following CMake variables:
-	* `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5`
+	``` 
+	  cv::cvtColor(in.at(0).get(), originalHSV, COLOR_BGR2HSV);
+      cv::cvtColor(in.at(1).get(), filteredHSV, COLOR_BGR2HSV);
+   ```
+   
+   with 
+   
+   ```
+   cv::cvtColor(in.at(0).get(), originalHSV, cv::COLOR_BGR2HSV);
+   cv::cvtColor(in.at(1).get(), filteredHSV, cv::COLOR_BGR2HSV);
+   ```
+   
+   And it should work.
+   
+	4.3 Make sure you have opencv dependencies:
+	* gstreamer-1.0 (by doing, in a terminal `sudo apt-get install libgstreamer-plugins-base1.0-dev`)
+	* jpeg (by doing, in a terminal `sudo apt-get install libjpeg-dev`)
+	* tiff (by doing, in a terminal `sudo apt-get install libtiff-dev`)
+	* png (by doing, in a terminal `sudo apt-get install libpng-dev`)
+	* DC1394 video codecs (by doing, in a terminal `sudo apt-get install libdc1394-dev`)
+	* NOTE: Some users have found problems finding ffmpeg. This remains unsolved for now.
+	
+	
+	4.4 Configure opencv, setting the following CMake variables:
+	* `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5` (wherever the file `hdf5-config.cmake` is)
 	* `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
 	* `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
 	* `WITH_QT` enabled and the `QT_DIR` to the Qt directories of the QT installation (as with VTK).
@@ -203,7 +229,7 @@ Actual requirements, and build order:
 	* `ITKVideoBridgeOpencv` option `ON`, and the `OpenCV_DIR` ser to the install path, for example `<home>/local/opencv/share/OpenCV`.
     * Enable `ITKVtkGlue`, and set the `VTK_DIR` to the build folder for VTK.
     * `VNL_CONFIG_LEGACY_METHODS` set to OFF
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`.
+    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`. Refer to the instructions for VTK here.
     * Go to the build folder, in a terminal do `make`.
     
 6. [PyBind11](https://github.com/pybind/pybind11), tested with version 2.8.1. In the CMake, the python version used throughout must be indicated. It is recommended that this is version 3.7 installed with anaconda, in the environment prepared for pretus:

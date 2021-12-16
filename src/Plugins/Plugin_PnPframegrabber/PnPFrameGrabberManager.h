@@ -38,7 +38,7 @@ public:
             n_components = 1;
 
             verbose = false;
-            correct_studio_swing = false;
+            correct_studio_swing = 0;
         }
 
         double pixel_size[3];
@@ -47,7 +47,7 @@ public:
         //float Resolution_factor;
         double CaptureFrameRate;
         bool verbose;
-        bool correct_studio_swing;
+        int correct_studio_swing;
         /**
          * @brief number of components of raw data: 1 (gray) or 3 YUV
          */
