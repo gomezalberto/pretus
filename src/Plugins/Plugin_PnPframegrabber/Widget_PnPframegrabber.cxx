@@ -188,6 +188,11 @@ void Widget_PnPframegrabber::SendImageToWidgetImpl(ifind::Image::Pointer image){
     if (image->HasKey("StreamTime")){
         stream << "Stream time: "<<image->GetMetaData<std::string>("StreamTime") << std::endl;
     }
+    if (image->HasKey("MeasuredFrameRate")){
+        stream << "Video: "<< std::fixed << std::setprecision(1)  << atof(image->GetMetaData<std::string>("MeasuredFrameRate").c_str())
+        << " Hz ("<< image->GetMetaData<std::string>("Width") <<"x"<<image->GetMetaData<std::string>("Height") <<")"<< std::endl;
+    }
+
 
     mLabel->setText(stream.str().c_str());
 }

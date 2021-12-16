@@ -76,7 +76,7 @@ void Widget_videomanager::SendImageToWidgetImpl(ifind::Image::Pointer image){
     if (image->HasKey("VideoTime")){
         stream << "Play time: "<<image->GetMetaData<std::string>("VideoTime") << std::endl;
         stream << "Acq. FR / Eff. FR: "<<image->GetMetaData<std::string>("AcquisitionFrameRate") << "/"
-        << std::fixed << std::setprecision(1)  << atof(image->GetMetaData<std::string>("TransmissionFrameRate").c_str())
+        << std::fixed << std::setprecision(1)  << atof(image->GetMetaData<std::string>("MeasuredFrameRate").c_str())
         << " Hz"<< std::endl;
 
     }
