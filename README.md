@@ -170,19 +170,19 @@ Pre-requisites (likely already in your system!):
   mkdir -p $HOME/repositories/ && cd $HOME/repositories/
   git clone git@github.com:HDFGroup/hdf5.git HDF5
   cd $HOME/repositories/HDF5
-  git checkout tags/hdf5-1_13_0 
+  git checkout tags/hdf5-1_10_4 
   
   ## Creating paths 
   mkdir -p $HOME/repositories/HDF5/build && cd $HOME/repositories/HDF5/build
   mkdir -p $HOME/workspace/HDF5/release
-  mkdir -p $HOME/local/HDF_Group/HDF5/1.13.0
+  mkdir -p $HOME/local/HDF_Group/HDF5/1.10.4
   cmake-gui ../HDF5
   ```
   
 * `hdf5` should be built from source (tested version 1.10.4, other versions might work). The following CMake options should be enabled:
   * set `HDF5_GENERATE_HEADERS` to be `ON`.
   * set `HDF5_BUILD_CPP_LIB` to be `ON`.
-  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.13.0`.
+  * set the `CMAKE_INSTALL_PREFIX` to a specific location. Recommended a local folder, for example `$HOME/local/HDF_Group/HDF5/1.10.4`.
   Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make && make install`.
 
 ### [VTK](https://gitlab.kitware.com/vtk/vtk)
@@ -207,23 +207,15 @@ Pre-requisites (likely already in your system!):
 * `vtk` should be built from source (tested version 8.2.0., other versions might work). The following CMake options should be enabled:
   * `VTK_LEGACY_SILENT` CMake flag to `ON`
   * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
-  * Set the `Qt5_DIR` variable to where Qt is installed, for example `$HOME/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`
+  * Set the `Qt5_DIR` variable to where Qt is installed, for example `$HOME/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5` and make sure that all QT directories point at the downloaded QT installation, as in the figure:
+    ![VTK-config-0](Art/VTK-config-0.png)
   * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
   * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (it might be a different tag which is dependent on the VTK version)
   * `X11_SM_LIB` set to `/usr/lib/x86_64-linux-gnu/libSM.so;-luuid`
-  * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...`.
+  * Activate `VTK_USE_SYSTEM_HDF5` and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...` as follows:
+    ![VTK-config-1](Art/VTK-config-1.png)
   * Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make`.
-  * `vtk` should be built from source (tested version 8.2.0., other versions might work). The following CMake options should be enabled:
-    * `VTK_LEGACY_SILENT` CMake flag to `ON`
-    * Activate `VTK_Group_Qt`, `vtkGUISupportQtOpenGL`, `vtkImagingOpenGL2`
-    * Set the `Qt5_DIR` variable to where Qt is installed, for example `<homefolder>/local/Qt/5.12.1/gcc_64/lib/cmake/Qt5`. Make sure that all QT directories point at the downloaded QT installation, as in the figure:
-    ![VTK-config-0](Art/VTK-config-0.png)
-    * `CMAKE_CXX_FLAGS` set to `-std=c++14 -fPIC`
-    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (it might be a different tag which is dependent on the VTK version)
-    * `X11_SM_LIB` set to `/usr/lib/x86_64-linux-gnu/libSM.so;-luuid`
-    * Use system hdf5, and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `$HOME/local/hdf5/...`.
-    * Configure and generate in your CMake-gui, then go to the build folder and in a terminal do `make`.
-
+  
 ### [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib)
 * Download and clone opencv and opencv_contrib from Github:  
    ```bash
@@ -231,69 +223,45 @@ Pre-requisites (likely already in your system!):
   mkdir -p $HOME/repositories/opencv_build && cd $HOME/repositories/opencv_build
   git clone https://github.com/opencv/opencv.git
   cd opencv
-  git checkout 4.5.4
+  git checkout 3.4.4
   cd ..
-    * `VTK_MODULE_ENABLE_VTK_libxml2` set to `NO` (if you don't see this flag, ignore this step)
-    * Activate `VTK_USE_SYSTEM_HDF5`, and and set each HDF5-related folder to the subfolders of the HDF5 installation i.e. `<home>/local/hdf5/...`, as follows:
-    ![VTK-config-1](Art/VTK-config-1.png)
-    * Go to the build folder, in a terminal do `make`.
-* [OpenCV](https://github.com/opencv/opencv) and [OpenCV contrib](https://github.com/opencv/opencv_contrib), Tested with 3.4.4. Higher versions might work. TO build and install follow these steps: 
-	
-    Download and clone opencv:  
-   ```bash
-    git clone https://github.com/opencv/opencv.git
-    cd opencv
-    git checkout 4.5.4
-    cd ..
 
   git clone https://github.com/opencv/opencv_contrib.git
   cd opencv_contrib
-  git checkout 4.5.4
+  git checkout 3.4.4
   cd ..
 
   ## Creating paths
   mkdir -p $HOME/repositories/opencv_build/opencv/build && cd $HOME/repositories/opencv_build/opencv/build
   rm -rf *
   ```
-    ## Creating paths
-    mkdir -p $HOME/repositories/opencv_build/opencv/build && cd $HOME/repositories/opencv_build/opencv/build
-    rm -rf *
-    ```
-	* Version 3.4.4 seems to have a bug that prevents from building `cvv` (which is required!). The fix is the following: In the file `modules/cvv/src/qtutil/filter/diffFilterWidget.cpp`, line 68, you need to replace
-	
-	``` 
-	  cv::cvtColor(in.at(0).get(), originalHSV, COLOR_BGR2HSV);
+  
+* Other opencv dependencies:
+  * gstreamer-1.0 (by doing in a terminal `sudo apt-get install libgstreamer-plugins-base1.0-dev`)
+  * jpeg (by doing in a terminal `sudo apt-get install libjpeg-dev`)
+  * tiff (by doing in a terminal `sudo apt-get install libtiff-dev`)
+  * png (by doing in a terminal `sudo apt-get install libpng-dev`)
+  * DC1394 video codecs (by doing in a terminal `sudo apt-get install libdc1394-dev`)
+  * NOTE: You might found problems finding ffmpeg which is unsolved for now but we would suggest to opening an issue. 
+  
+* OpenCV version 3.4.4 seems to have a bug that prevents from building `cvv` to which line 72 in the file `$HOME/repositories/opencv_build/modules/cvv/src/qtutil/filter/diffFilterWidget.cpp` need to replace as follows
+    ``` 
+      cv::cvtColor(in.at(0).get(), originalHSV, COLOR_BGR2HSV);
       cv::cvtColor(in.at(1).get(), filteredHSV, COLOR_BGR2HSV);
    ```
-   
-   with 
-   
+   with
    ```
    cv::cvtColor(in.at(0).get(), originalHSV, cv::COLOR_BGR2HSV);
    cv::cvtColor(in.at(1).get(), filteredHSV, cv::COLOR_BGR2HSV);
    ```
-   
-   And it should work.
-   
-	4.3 Make sure you have opencv dependencies:
-	* gstreamer-1.0 (by doing, in a terminal `sudo apt-get install libgstreamer-plugins-base1.0-dev`)
-	* jpeg (by doing, in a terminal `sudo apt-get install libjpeg-dev`)
-	* tiff (by doing, in a terminal `sudo apt-get install libtiff-dev`)
-	* png (by doing, in a terminal `sudo apt-get install libpng-dev`)
-	* DC1394 video codecs (by doing, in a terminal `sudo apt-get install libdc1394-dev`)
-	* NOTE: Some users have found problems finding ffmpeg. This remains unsolved for now.
-	
-    Configure opencv, setting the following CMake variables:  
-    * `HDF_DIR` to the install cmake location:  `<home>/local/hdf5/share/cmake/hdf5`
-    * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `<path to repos>/opencv_contrib/modules`
-    
-* opencv and OpenCV contrib versions are 3.4.4 and higher versions might work. To them build and install follow these steps:
+
+* The version of opencv and OpenCV_contrib are 3.4.4 and higher versions might work. To them build and install follow these steps:
 * Configure opencv, setting the following CMake variables:
   * `OPENCV_EXTRA_MODULES_PATH` to the source code where opencv_contrib is cloned, e.g. `$HOME/repositories/opencv_build/opencv_contrib/modules`
   * `WITH_VTK` enabled and `VTK_DIR` to the VTK build directory
   * HDF5 settings
     * `HDF5_DIR` to the installation of cmake location:  `$HOME/local/HDF_Group/HDF5/1.13.0/share/cmake`
-    * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.13.0/bin/h5diff`
+    * `HDF5_DIFF_EXECUTABLE` set to `$HOME/local/HDF_Group/HDF5/1.10.4/bin/h5diff`
   * QT settings
     * `WITH_QT` enabled 
     * `QT_DIR` to the Qt directories of the QT installation (as with VTK), e.g. `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5`
@@ -314,7 +282,8 @@ Pre-requisites (likely already in your system!):
   * `BUILD_opencv_cvv` disabled (if available).
   * Go to the build folder, in a terminal do `make && make install`.
 * Further instructions for installations are [here](https://docs.opencv.org/3.4.4/d7/d9f/tutorial_linux_install.html).
-	
+
+
 ### [Insight Toolkit (ITK)](https://github.com/InsightSoftwareConsortium/ITK)  
 * Download and clone
   ```bash 
@@ -378,13 +347,14 @@ Pre-requisites (likely already in your system!):
 ### Building PRETUS
 * Creating building paths
   ```bash
-  mkdir -p $HOME/local/pretus
-  mkdir -p $HOME/repositories/pretus/src/build && cd $HOME/repositories/pretus/src/build
+  mkdir -p $HOME/local/pretus # 
+  mkdir -p $HOME/build/pretus/release/ && cd $HOME/build/pretus/release/ 
   ```
 * CMake tags in PRETUS
   * `CMAKE_INSTALL_PREFIX` set to `$HOME/local/pretus`
   * `VTK_DIR` set to `$HOME/workspace/VTK/release`
   * `ITK_DIR` set to `$HOME/workspace/ITK/release`
+  * `pybind11_DIR` set to `$HOME/local/pybind11/share/cmake/pybind11`
   * Qt settings
     * `Qt5Concurrent_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Concurrent`
     * `Qt5Core_DIR` set to `$HOME/Qt/5.12.5/gcc_64/lib/cmake/Qt5Core`
@@ -405,22 +375,30 @@ Pre-requisites (likely already in your system!):
       * `pybind11_DIR` set to `$HOME/local/pybind11/share/cmake/pybind11`
     * `BUILD_PLUGIN_PYTHONALGORITHM` enabled 
     * `BUILD_PLUGIN_VIDEOMANAGER` enabled
-    * `BUILD_PLUGIN_PNPFRAMEGRABBER` enabled (you need an installed driver)
-    * `BUILD_PLUGIN_FRAMEGRABBER` enabled (you need an installed driver)
+    * `BUILD_PLUGIN_PNPFRAMEGRABBER` enabled (you might need an installed hardware driver)
+    * `BUILD_PLUGIN_FRAMEGRABBER` enabled (you need an hardware installed driver)
   * Go to the build folder in the terminal, do `make`, and `make install`.
     The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
-* See plug-in further [instructions](src/Plugins) on how to configure CMake options for them.
-* Launch application
-  ```bash
-  cd $HOME/local/pretus
-  ./launch_pretus -h
+  * Make sure you have your conda environment activated e.g.: `conda activate pretus`.
+* Build pretus with Cmake-gui as follows
+ ![fig](Art/pretus-build.png)
+ See plug-in further [instructions](src/Plugins) on how to configure CMake options for them.
+* Application usage
+  * Launch help of the application
+    ```bash
+    cd $HOME/local/pretus
+    ./launch_pretus -h
+    ```
+  * Launch example
   ```
+  ./launcher_pretus.sh -pipeline "videomanager>pythonalgorithm>cppalgorithm>gui" --videomanager_input  ~/path/video.mp4
+  ```
+
 * Notes
-  * If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. 
-  * These can be more than one folder, separated by `;`. 
-  * These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```) as described at the top of this document.
+  * If you have external plug-ins built somewhere else, you need to specify the plug-ins build folder in the CMake entry `PLUGIN_FOLDER`. These can be more than one folder, separated by `;`. 
+  * These folders can also be set after build in the config file (```<$HOME>/.config/iFIND/PRETUS.conf```).
   * Each plug-in may have additional dependencies, so please do check the README in each Plug-in folder for specific build instructions.
-  * More comprehensive instructions, and troubleshooting, can be found [here](src/troubleshooting.md).
+  * More comprehensive instructions and troubleshooting documentation can be found [here](src/troubleshooting.md).
 
 # Acknowledgement
 This work was supported by the Wellcome Trust IEH Award [102431], by the Wellcome/EPSRC Centre for Medical Engineering [WT203148/Z/16/Z], by the National Institute for Health Research (NIHR) Biomedical Research Centre at Guy's and St Thomas' NHS Foundation Trust and King's College London. 

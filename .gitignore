@@ -3,5 +3,6 @@
 ## pycharm project path
 .idea
 
-## build paths
+## build or release paths
 **/build
+**/release
