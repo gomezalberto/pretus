@@ -18,6 +18,11 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
+    this->TransmitFrameRate.set_capacity(60);
+    this->mIsPaused = false;
+    gg::ColourSpace colour = gg::ColourSpace::I420;
+    gg::VideoFrame frame(colour);
+    this->Frame = new gg::VideoFrame(frame);
 }
 
 int FrameGrabberManager::Initialize(){
@@ -35,6 +40,9 @@ int FrameGrabberManager::Initialize(){
 }
 
 
+void FrameGrabberManager::slot_togglePlayPause(bool v){
+    this->mIsPaused  =v;
+}
 
 /**
  * @brief Gets a frame, applies the homography and cropping, and converts it to VTK
@@ -42,7 +50,7 @@ int FrameGrabberManager::Initialize(){
 void FrameGrabberManager::Send(void){
 
     /// Go for next round and continue!
-    if (this->IsActive())
+    if (this->IsActive() )
     {
 
         //int wait = 0;
@@ -61,23 +69,13 @@ void FrameGrabberManager::Send(void){
     auto YUV = this->getFrameAsIfindImageData();
 
     ///-----------------------------------
-    ifind::Image::Pointer Y = YUV[0];
-    if (Y != nullptr){
+    ifind::Image::Pointer image = YUV[0];
+    if (image != nullptr){
 
-        //        if (params.verbose){
-        //            for (int i=0; i<params.n_components; i++){
-        //                typedef itk::ImageFileWriter<ifind::Image> WriterType;
+        /// make color
+        image->GraftOverlay(YUV[1], image->GetNumberOfLayers(), "U");
+        image->GraftOverlay(YUV[2], image->GetNumberOfLayers(), "V");
 
-        //                std::stringstream ss;
-        //                ss << "/tmp/image_"<< i <<"_"<< this->params.framecount<<".mhd";
-        //                std::cout << "[FrameGrabberManager::Send()] writing to file "<< ss.str()<<std::endl;
-        //                /// write the image
-        //                WriterType::Pointer writer = WriterType::New();
-        //                writer->SetFileName(ss.str());
-        //                writer->SetInput(YUV[i]);
-        //                writer->Update();
-        //            }
-        //        }
 
         this->mTransmitedFramesCount++;
         if (params.verbose){
@@ -102,23 +100,34 @@ void FrameGrabberManager::Send(void){
             QString timestring;
             timestring.sprintf("%02d:%02d:%02.3f", hours, minutes, seconds);
 
-            Y->SetMetaData<std::string>("StreamTime", timestring.toStdString());
+            image->SetMetaData<std::string>("StreamTime", timestring.toStdString());
 
             std::string timestamp = std::to_string(std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count());
 
-            Y->SetMetaData<std::string>("DNLTimestamp", timestamp);
-            Y->SetMetaData<std::string>("AcquisitionSystem", "FrameGrabber");
-            Y->SetMetaData<std::string>("NDimensions", "2");
-            Y->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
-            Y->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
-            Y->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
-            Y->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            image->SetMetaData<std::string>("DNLTimestamp", timestamp);
+            image->SetMetaData<std::string>("AcquisitionSystem", "FrameGrabber");
+            image->SetMetaData<std::string>("NDimensions", "2");
+            image->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
+            image->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
+            image->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
+            image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            auto current_transmit_t = std::chrono::steady_clock::now();
+            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(current_transmit_t - this->last_transmit_t).count();
+            this->TransmitFrameRate.push_back(1000.0 / double(duration));
+            double total_fr= 0;
+            for (boost::circular_buffer<double>::const_iterator cit = this->TransmitFrameRate.begin(); cit != this->TransmitFrameRate.end(); ++cit){
+                total_fr+= *cit;
+            }
+            auto current_fr = total_fr / this->TransmitFrameRate.size();
+            image->SetMetaData<>("MeasuredFrameRate", QString::number(current_fr).toStdString());
+            this->last_transmit_t = current_transmit_t;
+            image->SetMetaData<bool>("IsColor", true);
         }
-        Y->SetSpacing(params.pixel_size);
+        image->SetSpacing(params.pixel_size);
         if (this->mTransmitedStreamType.size()>0){
-            Y->SetStreamType(this->mTransmitedStreamType);
+            image->SetStreamType(this->mTransmitedStreamType);
         }
-        Q_EMIT this->ImageGenerated(Y);
+        Q_EMIT this->ImageGenerated(image);
     }
 }
 
@@ -126,29 +135,35 @@ void FrameGrabberManager::Send(void){
 std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
 
-    gg::ColourSpace colour = gg::ColourSpace::I420;
-    gg::VideoFrame frame(colour);
-    {
-        try {
+    if (!this->mIsPaused){
+        gg::ColourSpace colour = gg::ColourSpace::I420;
+        gg::VideoFrame frame(colour);
 
-            this->Cap->get_frame(frame);
+        {
+            try {
 
-        } catch (...) {
-            std::cerr << "[Error] FrameGrabberManager::GetFrame() -  reading frame from framegrabber. "  << std::endl;
+                this->Cap->get_frame(frame);
+
+            } catch (...) {
+                std::cerr << "[Error] FrameGrabberManager::GetFrame() -  reading frame from framegrabber. "  << std::endl;
+            }
         }
+        this->mutex_Frame.lock();
+        this->Frame = &frame;
+        this->mutex_Frame.unlock();
     }
 
     assert( frame.data() != NULL );
 
-    if (frame.rows() == 0 || frame.cols() == 0){
+    if (this->Frame->rows() == 0 || this->Frame->cols() == 0){
         std::vector<ifind::Image::Pointer> YUV(params.n_components, nullptr);
         return YUV;
     }
 
     /// copy the buffer
-    const unsigned long numberOfPixels = frame.cols() *frame.rows() *1.02; /// I do not know why I need to add osme extra pixels but otherwise it fills weird values at the end
+    const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows() *1.02; /// I do not know why I need to add osme extra pixels but otherwise it fills weird values at the end
     ifind::Image::PixelType frame_data[numberOfPixels];
-    std::memcpy(&frame_data, frame.data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
+    std::memcpy(&frame_data, this->Frame->data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
 
     /// Do the studio swing
     const ifind::Image::PixelType *p_end = &frame_data[0]+numberOfPixels;
@@ -181,8 +196,8 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     /// Import Y
     ImportFilterType::Pointer importFilter = ImportFilterType::New();
 
-    size[0] = frame.cols(); // size along X
-    size[1] = frame.rows() ; // size along Y
+    size[0] = this->Frame->cols(); // size along X
+    size[1] = this->Frame->rows() ; // size along Y
 
     region.SetSize(size);
     importFilter->SetRegion(region);
@@ -207,8 +222,8 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
         // No longer ensuring integrity here - buffer not copied
         ImportFilterType::Pointer importFilter = ImportFilterType::New();
 
-        size[0] = frame.cols()/2; // size along X
-        size[1] = frame.rows()/2; // size along Y
+        size[0] = this->Frame->cols()/2; // size along X
+        size[1] = this->Frame->rows()/2; // size along Y
 
         region.SetSize(size);
 
@@ -221,7 +236,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
 
         const unsigned int numberOfPixels = size[0] * size[1];
         {
-            ifind::Image::PixelType *localBuffer = &frame.data()[buffer_idx];
+            ifind::Image::PixelType *localBuffer = &this->Frame->data()[buffer_idx];
 
             const bool importImageFilterWillOwnTheBuffer = false;
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
@@ -235,7 +250,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
             buffer_idx+=numberOfPixels;
         }
         {
-            ifind::Image::PixelType *localBuffer = &frame.data()[buffer_idx];
+            ifind::Image::PixelType *localBuffer = &this->Frame->data()[buffer_idx];
 
             const bool importImageFilterWillOwnTheBuffer = false;
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);

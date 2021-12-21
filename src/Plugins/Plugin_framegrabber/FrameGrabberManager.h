@@ -9,6 +9,7 @@
 #include <videoframe.h>
 #include <epiphansdk_video_source.h>
 #include <chrono>
+#include <boost/circular_buffer.hpp>
 
 // define some custom EDIDs
 class FrameGrabberManager : public Manager{
@@ -63,20 +64,27 @@ public Q_SLOTS:
    * This method has to be public so that it can be binded to the periodic callback
    */
     virtual void Send(void);
+    virtual void slot_togglePlayPause(bool v);
 
 protected:
     FrameGrabberManager(QObject *parent = 0);
 
 private:
+    int FrameRate;
+    boost::circular_buffer<double> TransmitFrameRate;
+    std::chrono::steady_clock::time_point last_transmit_t;
 
     gg::VideoSourceEpiphanSDK *Cap;
+    bool mIsPaused;
+    std::mutex mutex_frame_buffer;
+    std::mutex mutex_Frame;
+    gg::VideoFrame *Frame;
 
     /**
      * @brief GetFrame
      * @return nullptr if the re is no frame
      */
     std::vector<ifind::Image::Pointer> getFrameAsIfindImageData(void);
-    std::mutex mutex_frame_buffer;
 
     std::chrono::steady_clock::time_point latestAcquisitionTime;
     std::chrono::steady_clock::time_point initialAcquisitionTime;
