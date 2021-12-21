@@ -28,17 +28,16 @@ void Worker_CppAlgorithm::doWork(ifind::Image::Pointer image){
     using FilterType = itk::BinaryThresholdImageFilter<ifind::Image, GrayImageType>;
     FilterType::Pointer filter = FilterType::New();
 
-    /// Use the appropriate layer
-    if (this->params.inputLayer >=0){
-        ifind::Image::Pointer layerImage = ifind::Image::New();
-        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
-        filter->SetInput(layerImage);
-    } else {
-        ifind::Image::Pointer layerImage = ifind::Image::New();
-        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
-        filter->SetInput(layerImage);
-        //filter->SetInput(image);
+    std::vector<std::string> layernames = image->GetLayerNames();
+    int layer_idx = this->params.inputLayer;
+    if (this->params.inputLayer <0){
+        /// counting from the end
+        layer_idx = image->GetNumberOfLayers() + this->params.inputLayer;
     }
+    ifind::Image::Pointer layerImage = ifind::Image::New();
+    layerImage->Graft(image->GetOverlay(layer_idx), layernames[layer_idx]);
+    filter->SetInput(layerImage);
+
 
     filter->SetLowerThreshold(this->mThreshold);
     filter->SetUpperThreshold(255);
@@ -51,7 +50,7 @@ void Worker_CppAlgorithm::doWork(ifind::Image::Pointer image){
     }
     GrayImageType::Pointer segmentation = filter->GetOutput();
 
-    image->GraftOverlay(segmentation.GetPointer(), image->GetNumberOfLayers());
+    image->GraftOverlay(segmentation.GetPointer(), image->GetNumberOfLayers(), "Segmentation");
     image->SetMetaData<int>(this->mPluginName.toStdString() + "_segmentation", image->GetNumberOfLayers() );
     image->SetMetaData<std::string>(this->mPluginName.toStdString() + "_threshold",  QString::number(this->mThreshold).toStdString());
 

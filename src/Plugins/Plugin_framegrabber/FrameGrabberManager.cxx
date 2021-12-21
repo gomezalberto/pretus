@@ -197,7 +197,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     //importFilter->SetImportPointer(&frame.data()[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
     importFilter->Update();
     ifind::Image::Pointer Y = ifind::Image::New();
-    Y->Graft(importFilter->GetOutput());
+    Y->Graft(importFilter->GetOutput(), "Y");
     Y->DisconnectPipeline();
     YUV[0] = Y;
 
@@ -227,7 +227,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
             importFilter->Update();
             YUV[1] = ifind::Image::New();
-            YUV[1]->Graft(importFilter->GetOutput());
+            YUV[1]->Graft(importFilter->GetOutput(),"U");
             buffer_idx+=numberOfPixels;
         }
         {
@@ -237,7 +237,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
             importFilter->Update();
             YUV[2] = ifind::Image::New();
-            YUV[2]->Graft(importFilter->GetOutput());
+            YUV[2]->Graft(importFilter->GetOutput(), "V");
             buffer_idx+=numberOfPixels;
         }
     }

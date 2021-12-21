@@ -169,7 +169,7 @@ void VideoManager::Send(void)
             indexSelectionFilter->SetIndex(0);
             indexSelectionFilter->SetInput(colourImage);
             indexSelectionFilter->Update();
-            image->Graft(indexSelectionFilter->GetOutput());
+            image->Graft(indexSelectionFilter->GetOutput(), "R");
 
         }
         {             // G
@@ -177,14 +177,14 @@ void VideoManager::Send(void)
             indexSelectionFilter->SetIndex(1);
             indexSelectionFilter->SetInput(colourImage);
             indexSelectionFilter->Update();
-            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "G");
         }
         {             // B
             IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
             indexSelectionFilter->SetIndex(2);
             indexSelectionFilter->SetInput(colourImage);
             indexSelectionFilter->Update();
-            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers());
+            image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "B");
         }
         //image->Graft(BridgeType::CVMatToITKImage<ifind::Image>(this->Frame));
         this->mutex_Frame.unlock();

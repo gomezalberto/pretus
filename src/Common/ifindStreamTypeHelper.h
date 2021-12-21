@@ -18,6 +18,7 @@ namespace ifind
 
     //typedef std::string StreamType;
     typedef std::set<Image::StreamType, InsensitiveCompare> StreamTypeSet;
+    typedef std::map<Image::StreamType, std::vector<std::string> > StreamLayerNamesTypeSet;
     typedef std::map<Image::StreamType, int> StreamLayersTypeSet;
     static StreamTypeSet InitialiseStreamTypeSetFromString(const std::string &initStr)
     {

@@ -10,6 +10,7 @@ namespace ifind
 Image::Image()
 {
     this->m_Layers = std::vector<vtkSmartPointer<vtkImageData> >(0);
+    this->m_LayerNames = std::vector< std::string> (0);
     ///// Initiaizing metadata
     this->SetMetaData<std::string>("ReorientMatrix", "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1");
     this->SetMetaData<std::string>("TransducerMatrix", "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1");
@@ -90,7 +91,8 @@ void Image::ShallowCopy (const Image *data){
         if (data->GetOverlay(i) == nullptr){
             continue;
         }
-        this->GraftOverlay(data->GetOverlay(i).GetPointer(), i);
+        std::string layername = data->GetLayerNames()[i];
+        this->GraftOverlay(data->GetOverlay(i).GetPointer(), i, layername);
     }
     this->SetMetaDataDictionary(dic);
     // itk::MetaDataDictionary dic2 = this->GetMetaDataDictionary(); // this works, no crashes
@@ -106,7 +108,8 @@ void Image::ShallowMerge (const Image *data, bool mergeLayers){
             if (data->GetOverlay(i) == nullptr){
                 continue;
             }
-            this->GraftOverlay(data->GetOverlay(i).GetPointer(), i);
+            std::string layername = data->GetLayerNames()[i];
+            this->GraftOverlay(data->GetOverlay(i).GetPointer(), i, layername);
         }
     }
     //itk::MetaDataDictionary &this_dic = this->GetMetaDataDictionary(); // this works, no crashes
@@ -129,17 +132,17 @@ void Image::VeryShallowCopy (const Image *data){
     this->SetMetaDataDictionary(dic);
 }
 
-void Image::Graft (const Superclass *data)
+void Image::Graft(const Superclass *data, std::string layername)
 {
     /// graft the input data but conserving the dictionary
     itk::MetaDataDictionary dic = this->GetMetaDataDictionary();
     Superclass::Graft(data);
     this->SetMetaDataDictionary(dic);
-    this->GraftOverlay(data, 0);
+    this->GraftOverlay(data, 0, layername);
 }
 
 
-void Image::GraftOverlay (const Superclass *data, unsigned int index)
+void Image::GraftOverlay (const Superclass *data, unsigned int index, std::string layername)
 {
     if (index >= m_Converters.size())
     {
@@ -155,10 +158,12 @@ void Image::GraftOverlay (const Superclass *data, unsigned int index)
     /// resize the layer array if necessary
     if (index >= m_Layers.size()){
         m_Layers.resize(index+1, nullptr);
+        m_LayerNames.resize(index+1, "");
     }
 
     /// push the overlay in the array
     m_Layers[index] = vtkimage;
+    m_LayerNames[index] = layername;
 }
 
 void Image::GraftOverlay(const vtkSmartPointer<vtkImageData> data, unsigned int index)
@@ -177,7 +182,6 @@ void Image::GraftOverlay(const vtkSmartPointer<vtkImageData> data, unsigned int 
     /// push the overlay in the array
     m_Layers[index] = vtkimage;
 }
-
 
 vtkSmartPointer<vtkMatrix4x4> Image::GetTotalMatrix()
 {

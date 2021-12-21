@@ -196,12 +196,12 @@ public:
    * @brief Graft the information and PixelData from the input
    * @param data
    */
-    virtual void Graft (const Superclass *data);
+    virtual void Graft (const Superclass *data, std::string layername);
    /**
    * @brief Graft the information and PixelData from the input and put it as overlay
    * @param data
    */
-    virtual void GraftOverlay (const Superclass *data, unsigned int index);
+    virtual void GraftOverlay (const Superclass *data, unsigned int index, std::string layername);
 
     /**
     * @brief Graft the information and PixelData from the input and put it as overlay
@@ -215,6 +215,13 @@ public:
    */
     unsigned int GetNumberOfLayers(void) const
     { return m_Layers.size(); }
+
+    /**
+   * @brief Returns the names of layers (original image + overlays)
+   * @return vector with names of layers
+   */
+    std::vector<std::string> GetLayerNames(void) const
+     { return m_LayerNames; }
 
     /**
    * @brief Returns the image (or overlay) in a VTK format
@@ -278,6 +285,7 @@ private:
 
     std::vector<ConverterType::Pointer> m_Converters;
     std::vector<vtkSmartPointer<vtkImageData> > m_Layers;
+    std::vector< std::string> m_LayerNames;
 
 };
 
