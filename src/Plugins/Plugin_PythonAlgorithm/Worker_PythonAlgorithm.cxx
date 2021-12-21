@@ -91,15 +91,15 @@ void Worker_PythonAlgorithm::doWork(ifind::Image::Pointer image){
     GrayImageType2D::Pointer image_2d, output_2d;
 
     /// Use the appropriate layer
-    if (this->params.inputLayer >=0){
-        ifind::Image::Pointer layerImage = ifind::Image::New();
-        layerImage->Graft(image->GetOverlay(this->params.inputLayer));
-        image_2d = this->get2dimage(layerImage);
-    } else {
-        ifind::Image::Pointer layerImage = ifind::Image::New();
-        layerImage->Graft(image->GetOverlay(image->GetNumberOfLayers() + this->params.inputLayer));
-        image_2d = this->get2dimage(layerImage);
+    std::vector<std::string> layernames = image->GetLayerNames();
+    int layer_idx = this->params.inputLayer;
+    if (this->params.inputLayer <0){
+        /// counting from the end
+        layer_idx = image->GetNumberOfLayers() + this->params.inputLayer;
     }
+    ifind::Image::Pointer layerImage = ifind::Image::New();
+    layerImage->Graft(image->GetOverlay(layer_idx), layernames[layer_idx]);
+    image_2d = this->get2dimage(layerImage);
 
     if (this->params.verbose){
         std::cout << "Worker_PythonAlgorithm::doWork() - 2D image extracted" <<std::endl;
@@ -155,7 +155,7 @@ void Worker_PythonAlgorithm::doWork(ifind::Image::Pointer image){
         //output->DisconnectPipeline();
 
         /// Finally add to the image before emitting it.
-        image->GraftOverlay(output.GetPointer(), image->GetNumberOfLayers());
+        image->GraftOverlay(output.GetPointer(), image->GetNumberOfLayers(), "Blurred");
         image->SetMetaData<std::string>( this->mPluginName.toStdString() +"_output", QString::number(image->GetNumberOfLayers()).toStdString() );
         image->SetMetaData<std::string>(this->mPluginName.toStdString() + "_sigma",  QString::number(this->mFsigma).toStdString());
         image->SetMetaData<std::string>(this->mPluginName.toStdString() + "_delay",  QString::number(this->mDelay).toStdString());

@@ -23,6 +23,7 @@ Plugin::Plugin(QObject *parent)
     this->mStreamTypes = ifind::InitialiseStreamTypeSetFromString("-"); // by default, all streams
     this->mAvailableStreamTypes = ifind::InitialiseStreamTypeSetFromString(""); // by default, all streams
     this->mAvailableLayersForAvailableStream.clear();
+    this->mAvailableLayerNamesForAvailableStream.clear();
     this->isTimed = true;
     this->mWidget = nullptr;
     this->mImageWidget = nullptr;
@@ -137,7 +138,8 @@ void Plugin::slot_updateInputStream(int idx){
     // update the layers
     this->mWidget->mInputLayerComboBox->clear();
     for (int l=0; l < mAvailableLayersForAvailableStream[selected_stream]; l++){
-        this->mWidget->mInputLayerComboBox->addItem("Layer " + QString::number(l));
+        std::string layername = this->mAvailableLayerNamesForAvailableStream[selected_stream][l];
+        this->mWidget->mInputLayerComboBox->addItem(layername.c_str());
     }
 
     if (this->worker->params.inputLayer >= mAvailableLayersForAvailableStream[selected_stream]){
@@ -218,7 +220,15 @@ void Plugin::slot_imageReceived(ifind::Image::Pointer image){
     if (is_accounted == false){
         if (this->mWidget != nullptr && this->mWidget->mInputStreamComboBox!=nullptr){
             this->mAvailableStreamTypes.insert(image->GetStreamType());
-            int nlayers = image->GetNumberOfLayers();
+            std::vector<std::string> layerNames = image->GetLayerNames();
+            //int nlayers = image->GetNumberOfLayers();
+            int nlayers = layerNames.size();
+            /* Here do something like:
+             * QStringList layernames = image->GetLayerNames();
+             * this->mAvailableLayersForAvailableStream[image->GetStreamType()] = nlayers;
+             * this->mAvailableLayerNamesForAvailableStream[image->GetStreamType()] = layerNames;
+             * */
+            this->mAvailableLayerNamesForAvailableStream[ image->GetStreamType() ] = layerNames;
             this->mAvailableLayersForAvailableStream[image->GetStreamType()] = nlayers;
             // now update the widget
             //std::cout << "\tPlugin::slot_imageReceived  at "<< this->GetCompactPluginName().toStdString() << " the streams so far are "<< ifind::StreamTypeSetToString(this->mAvailableStreamTypes)<<std::endl;
@@ -230,7 +240,9 @@ void Plugin::slot_imageReceived(ifind::Image::Pointer image){
                     this->mWidget->mInputStreamComboBox->addItem(stream_name);
                 }
             }
-        }
+            // Trigger the update
+            this->slot_updateInputStream(0);
+        }        
     }
     m_mutex_inputStreamTypes.unlock();
 

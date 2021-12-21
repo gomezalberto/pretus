@@ -6,28 +6,28 @@
 namespace ifind
 {
 
-  ImageReader::ImageReader()
-  {
+ImageReader::ImageReader()
+{
     this->m_Image = Image::New();
-  }
+}
 
 
-  void ImageReader::Read (void)
-  {
+void ImageReader::Read (void)
+{
     std::vector<std::string> layers;
     this->EvaluateLayers(this->m_FileName.c_str(), layers);
 
     if (!layers.size())
-      this->ReadLayer(this->m_FileName.c_str(), 0);
+        this->ReadLayer(this->m_FileName.c_str(), 0);
     
     else if (this->ReadHeader(this->m_FileName.c_str()))
-      for (unsigned int i=0; i<layers.size(); i++)
-        this->ReadLayer(layers[i].c_str(), i);
-  }
+        for (unsigned int i=0; i<layers.size(); i++)
+            this->ReadLayer(layers[i].c_str(), i);
+}
 
 
-  void ImageReader::ReadLayer (const char* filename, unsigned int layer)
-  {
+void ImageReader::ReadLayer (const char* filename, unsigned int layer)
+{
     typedef itk::ImageFileReader<Image::Superclass> ReaderType;
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(filename);
@@ -44,46 +44,50 @@ namespace ifind
     image->SetOrigin(origin);
     if (layer == 0)
     {
-      this->m_Image->Graft(image);
-      ifind::Image::DictionaryType dic = this->m_Image->GetMetaDataDictionary();
-      ifind::Image::DictionaryType additionaldic = reader->GetImageIO()->GetMetaDataDictionary();
-      std::vector<std::string> keys = additionaldic.GetKeys();
-      for (unsigned int i=0; i<keys.size(); i++)
-        dic[keys[i]] = additionaldic[keys[i]];
-      this->m_Image->SetMetaDataDictionary(dic);
-      std::string dimensionalitystring;
-      bool valid = itk::ExposeMetaData<std::string>(dic, "NDimensions", dimensionalitystring);
-      if (!valid || std::stoi(dimensionalitystring) < 2)
-      {
-        unsigned int dimensionality = imagesize[2] > 1 ? 3 : 2;
-        this->m_Image->SetMetaData<std::string>("NDimensions", std::to_string(dimensionality));
-        this->m_Image->SetMetaData<std::string>("ImageMode", std::to_string( dimensionality == 3 ? ifind::Image::ImageMode::ThreeDCartesian : ifind::Image::ImageMode::TwoD));
-      }
+        std::stringstream ss;
+        ss << "ReadLayer_" << layer;
+        this->m_Image->Graft(image, ss.str());
+        ifind::Image::DictionaryType dic = this->m_Image->GetMetaDataDictionary();
+        ifind::Image::DictionaryType additionaldic = reader->GetImageIO()->GetMetaDataDictionary();
+        std::vector<std::string> keys = additionaldic.GetKeys();
+        for (unsigned int i=0; i<keys.size(); i++)
+            dic[keys[i]] = additionaldic[keys[i]];
+        this->m_Image->SetMetaDataDictionary(dic);
+        std::string dimensionalitystring;
+        bool valid = itk::ExposeMetaData<std::string>(dic, "NDimensions", dimensionalitystring);
+        if (!valid || std::stoi(dimensionalitystring) < 2)
+        {
+            unsigned int dimensionality = imagesize[2] > 1 ? 3 : 2;
+            this->m_Image->SetMetaData<std::string>("NDimensions", std::to_string(dimensionality));
+            this->m_Image->SetMetaData<std::string>("ImageMode", std::to_string( dimensionality == 3 ? ifind::Image::ImageMode::ThreeDCartesian : ifind::Image::ImageMode::TwoD));
+        }
+    } else {
+        std::stringstream ss;
+        ss << "ReadLayer_" << layer;
+        this->m_Image->GraftOverlay(image, layer, ss.str());
     }
-    else
-      this->m_Image->GraftOverlay(image, layer);
-  }
+}
 
 
-  void ImageReader::EvaluateLayers (const char* filename, std::vector<std::string>& layers)
-  {
+void ImageReader::EvaluateLayers (const char* filename, std::vector<std::string>& layers)
+{
     std::string fn = filename;
     size_t found = fn.find_last_of("_layer");
     if (!found)
-      return;
+        return;
 
     std::string prefix = fn.substr(0, found+1);
     for (unsigned int i=0; i<16; i++)
     {
-      std::string layerfilename = prefix + std::to_string(i) + ".mhd";
-      if ( itksys::SystemTools::FileExists(layerfilename.c_str(), true) )
-        layers.push_back(layerfilename);
+        std::string layerfilename = prefix + std::to_string(i) + ".mhd";
+        if ( itksys::SystemTools::FileExists(layerfilename.c_str(), true) )
+            layers.push_back(layerfilename);
     }
-  }
+}
 
 
-  bool ImageReader::ReadHeader (const char* filename)
-  {
+bool ImageReader::ReadHeader (const char* filename)
+{
     std::vector<std::string> layers;
     this->EvaluateLayers(filename, layers);
     unsigned int nlayers = layers.size();
@@ -100,126 +104,126 @@ namespace ifind
     myfile.open(filename, fstream::in);
     if (!myfile.is_open())
     {
-       std::cerr << "[ifind::ImageReader::ReadHeader()] WARNING, file cannot be opened for reading" << std::endl;
-       return false;
+        std::cerr << "[ifind::ImageReader::ReadHeader()] WARNING, file cannot be opened for reading" << std::endl;
+        return false;
     }
 
     /// Read meta data ///
     while (!myfile.eof())
     {
-      /// read line
-      char strdata[200];
-      myfile.getline(strdata, 200);
-      std::string line = strdata;
-      std::istringstream is (line);
-      std::string dump;
+        /// read line
+        char strdata[200];
+        myfile.getline(strdata, 200);
+        std::string line = strdata;
+        std::istringstream is (line);
+        std::string dump;
 
-      if (itksys::SystemTools::StringStartsWith(line, "NDims ="))
-      {
-        is >> dump >> dump >> dimensionality; // read 'NDims' and '=' first
-        this->m_Image->SetMetaData<std::string>("NDimensions", std::to_string(dimensionality));
-        this->m_Image->SetMetaData<std::string>("ImageMode", std::to_string( dimensionality == 3 ? ifind::Image::ImageMode::ThreeDCartesian : ifind::Image::ImageMode::TwoD));
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TRANSDUCERMATRIX"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<16; i++)
+        if (itksys::SystemTools::StringStartsWith(line, "NDims ="))
         {
-          is >> t;
-          v += t + " ";
+            is >> dump >> dump >> dimensionality; // read 'NDims' and '=' first
+            this->m_Image->SetMetaData<std::string>("NDimensions", std::to_string(dimensionality));
+            this->m_Image->SetMetaData<std::string>("ImageMode", std::to_string( dimensionality == 3 ? ifind::Image::ImageMode::ThreeDCartesian : ifind::Image::ImageMode::TwoD));
         }
-        this->m_Image->SetMetaData<>("TransducerMatrix", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TRACKERMATRIX"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<16; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#TRANSDUCERMATRIX"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<16; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("TransducerMatrix", v);
         }
-        this->m_Image->SetMetaData<>("TrackerMatrix", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#REORIENTMATRIX"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<16; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#TRACKERMATRIX"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<16; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("TrackerMatrix", v);
         }
-        this->m_Image->SetMetaData<>("ReorientMatrix", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#FORCE"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<6; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#REORIENTMATRIX"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<16; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("ReorientMatrix", v);
         }
-        this->m_Image->SetMetaData<>("ForceData", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_LOCAL"))
-      {
-        std::string v;
-        is >> dump; // read keyword first
-        is >> v;
-        this->m_Image->SetMetaData<>("LocalTimestamp", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_DNL"))
-      {
-        std::string v;
-        is >> dump; // read keyword first
-        is >> v;
-        this->m_Image->SetMetaData<>("DNLTimestamp", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_DNLLAYERTIMELAG"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<nlayers; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#FORCE"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<6; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("ForceData", v);
         }
-        this->m_Image->SetMetaData<>("DNLLayerTimeTag", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_TRACKER"))
-      {
-        std::string v;
-        is >> dump; // read keyword first
-        is >> v;
-        this->m_Image->SetMetaData<>("TrackerTimestamp", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#ACQFR"))
-      {
-        std::string v, t;
-        is >> dump; // read keyword first
-        for (unsigned int i=0; i<nlayers; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_LOCAL"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v;
+            is >> dump; // read keyword first
+            is >> v;
+            this->m_Image->SetMetaData<>("LocalTimestamp", v);
         }
-        this->m_Image->SetMetaData<>("AcquisitionFrameRate", v);
-      }
-      else if (itksys::SystemTools::StringStartsWith(line, "#TXFR"))
-      {
-        is >> dump; // read keyword first
-        std::string v, t;
-        for (unsigned int i=0; i<nlayers; i++)
+        else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_DNL"))
         {
-          is >> t;
-          v += t + " ";
+            std::string v;
+            is >> dump; // read keyword first
+            is >> v;
+            this->m_Image->SetMetaData<>("DNLTimestamp", v);
         }
-        this->m_Image->SetMetaData<>("TransmissionFrameRate", v);
-      }
+        else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_DNLLAYERTIMELAG"))
+        {
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<nlayers; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("DNLLayerTimeTag", v);
+        }
+        else if (itksys::SystemTools::StringStartsWith(line, "#TIMESTAMP_TRACKER"))
+        {
+            std::string v;
+            is >> dump; // read keyword first
+            is >> v;
+            this->m_Image->SetMetaData<>("TrackerTimestamp", v);
+        }
+        else if (itksys::SystemTools::StringStartsWith(line, "#ACQFR"))
+        {
+            std::string v, t;
+            is >> dump; // read keyword first
+            for (unsigned int i=0; i<nlayers; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("AcquisitionFrameRate", v);
+        }
+        else if (itksys::SystemTools::StringStartsWith(line, "#TXFR"))
+        {
+            is >> dump; // read keyword first
+            std::string v, t;
+            for (unsigned int i=0; i<nlayers; i++)
+            {
+                is >> t;
+                v += t + " ";
+            }
+            this->m_Image->SetMetaData<>("TransmissionFrameRate", v);
+        }
     }
     myfile.close();
     return true;
-  }
+}
 } // end of namespace

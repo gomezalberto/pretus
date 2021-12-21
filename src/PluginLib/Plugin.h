@@ -229,6 +229,7 @@ protected:
      */
     ifind::StreamTypeSet mAvailableStreamTypes;
     ifind::StreamLayersTypeSet mAvailableLayersForAvailableStream;
+    ifind::StreamLayerNamesTypeSet mAvailableLayerNamesForAvailableStream;
 
     ifind::Image::StreamType mTransmittedStreamType;
 

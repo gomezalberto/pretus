@@ -73,7 +73,7 @@ void QtPluginWidgetBase::AddInputStreamComboboxToLayout(QBoxLayout *vLayout){
     mInputStreamComboBox->setStyleSheet(sQComboBoxStyle);
     mInputLayerComboBox = new QComboBox(this);
     mInputLayerComboBox->setStyleSheet(sQComboBoxStyle);
-    mInputLayerComboBox->addItem("Layer 0");
+    //mInputLayerComboBox->addItem("Layer 0");
     layout->addWidget(label);
     layout->addWidget(mInputStreamComboBox);
     layout->addWidget(mInputLayerComboBox);
