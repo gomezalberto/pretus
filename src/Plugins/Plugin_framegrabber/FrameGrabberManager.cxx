@@ -226,8 +226,12 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
             const bool importImageFilterWillOwnTheBuffer = false;
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
             importFilter->Update();
+            ifind::Image::Pointer tmp = ifind::Image::New();
+            tmp->Graft(importFilter->GetOutput(), "tmp");
+            /// need to upsample times 2
+            ifind::Image::Pointer Uu = this->Upsample(tmp);
             YUV[1] = ifind::Image::New();
-            YUV[1]->Graft(importFilter->GetOutput(),"U");
+            YUV[1]->Graft(Uu,"U");
             buffer_idx+=numberOfPixels;
         }
         {
@@ -236,8 +240,12 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
             const bool importImageFilterWillOwnTheBuffer = false;
             importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
             importFilter->Update();
+            ifind::Image::Pointer tmp = ifind::Image::New();
+            tmp->Graft(importFilter->GetOutput(), "tmp");
+            /// need to upsample times 2
+            ifind::Image::Pointer Vu = this->Upsample(tmp);
             YUV[2] = ifind::Image::New();
-            YUV[2]->Graft(importFilter->GetOutput(), "V");
+            YUV[2]->Graft(Vu, "V");
             buffer_idx+=numberOfPixels;
         }
     }
@@ -245,3 +253,68 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
 
 }
 
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkResampleImageFilter.h>
+
+ifind::Image::Pointer FrameGrabberManager::Upsample(ifind::Image::Pointer in){
+
+    ifind::Image::SizeType size = in->GetLargestPossibleRegion().GetSize();
+
+    using T_Transform = itk::IdentityTransform<double, 3>;
+
+    // If ITK resampler determines there is something to interpolate which is
+    // usually the case when upscaling (!) then we must specify the interpolation
+    // algorithm. In our case, we want bicubic interpolation. One way to implement
+    // it is with a third order b-spline. So the type is specified here and the
+    // order will be specified with a method call later on.
+    using T_Interpolator = itk::LinearInterpolateImageFunction<ifind::Image, double>;
+
+    // The resampler type itself.
+    using T_ResampleFilter = itk::ResampleImageFilter<ifind::Image, ifind::Image>;
+    // Instantiate the transform and specify it should be the id transform.
+    T_Transform::Pointer _pTransform = T_Transform::New();
+    _pTransform->SetIdentity();
+
+    // Instantiate the b-spline interpolator and set it as the third order
+    // for bicubic.
+    T_Interpolator::Pointer _pInterpolator = T_Interpolator::New();
+
+    // Instantiate the resampler. Wire in the transform and the interpolator.
+    T_ResampleFilter::Pointer _pResizeFilter = T_ResampleFilter::New();
+    _pResizeFilter->SetTransform(_pTransform);
+    _pResizeFilter->SetInterpolator(_pInterpolator);
+
+    // Set the output origin. You may shift the original image "inside" the
+    // new image size by specifying something else than 0.0, 0.0 here.
+
+    const double vfOutputOrigin[3] = { 0.0, 0.0, 0.0 };
+    _pResizeFilter->SetOutputOrigin(vfOutputOrigin);
+
+
+    // Fetch original image spacing.
+    const ifind::Image::SpacingType & vfInputSpacing = in->GetSpacing();
+    // Will be {1.0, 1.0} in the usual
+    // case.
+
+    double vfOutputSpacing[3];
+    vfOutputSpacing[0] = vfInputSpacing[0] / 2.0;
+    vfOutputSpacing[1] = vfInputSpacing[1] / 2.0;
+    vfOutputSpacing[2] = 1.0;
+
+    // Set the output spacing. If you comment out the following line, the original
+    // image will be simply put in the upper left corner of the new image without
+    // any scaling.
+    _pResizeFilter->SetOutputSpacing(vfOutputSpacing);
+
+    // Set the output size as specified on the command line.
+
+    itk::Size<3> vnOutputSize = { { size[0] * 2, size[1] * 2, 1 } };
+    _pResizeFilter->SetSize(vnOutputSize);
+
+    // Specify the input.
+
+    _pResizeFilter->SetInput(in);
+    _pResizeFilter->Update();
+    return _pResizeFilter->GetOutput();
+
+}

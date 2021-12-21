@@ -35,7 +35,7 @@ public:
             Device_name = "DVI2USB 3.0 ET";
             //Resolution_factor = 1.0;
             CaptureFrameRate  = 0; /// this will be as fast as can by default
-            n_components = 1;
+            n_components = 3;
 
             verbose = false;
             correct_studio_swing = true;
@@ -80,5 +80,7 @@ private:
 
     std::chrono::steady_clock::time_point latestAcquisitionTime;
     std::chrono::steady_clock::time_point initialAcquisitionTime;
+
+    ifind::Image::Pointer Upsample(ifind::Image::Pointer in);
 
 };
