@@ -13,6 +13,9 @@
 #include <itkImageFileWriter.h>
 #include <itkShiftScaleImageFilter.h>
 #include <QApplication>
+#include <itkImageDuplicator.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkResampleImageFilter.h>
 
 FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
@@ -67,14 +70,13 @@ void FrameGrabberManager::Send(void){
     }
 
     auto YUV = this->getFrameAsIfindImageData();
+    auto image = this->YUV2RGB(YUV);
 
     ///-----------------------------------
-    ifind::Image::Pointer image = YUV[0];
+
     if (image != nullptr){
 
-        /// make color
-        image->GraftOverlay(YUV[1], image->GetNumberOfLayers(), "U");
-        image->GraftOverlay(YUV[2], image->GetNumberOfLayers(), "V");
+
 
 
         this->mTransmitedFramesCount++;
@@ -131,6 +133,83 @@ void FrameGrabberManager::Send(void){
     }
 }
 
+
+ifind::Image::Pointer FrameGrabberManager::YUV2RGB(std::vector<ifind::Image::Pointer> &YUV ) {
+
+    // create empty RGB images
+    ifind::Image::Pointer R, G, B;
+
+    using DuplicatorType = itk::ImageDuplicator<ifind::Image>;
+    {
+        DuplicatorType::Pointer duplicator = DuplicatorType::New();
+        duplicator->SetInputImage(YUV[0]);
+        duplicator->Update();
+        R = duplicator->GetOutput();
+    }
+    {
+        DuplicatorType::Pointer duplicator = DuplicatorType::New();
+        duplicator->SetInputImage(YUV[1]);
+        duplicator->Update();
+        G = duplicator->GetOutput();
+    }
+    {
+        DuplicatorType::Pointer duplicator = DuplicatorType::New();
+        duplicator->SetInputImage(YUV[2]);
+        duplicator->Update();
+        B = duplicator->GetOutput();
+    }
+    // now do the pixel computation
+    ifind::Image::RegionType outputRegion;
+    ifind::Image::RegionType::IndexType outputStart;
+    outputStart.Fill(0);
+
+    outputRegion.SetSize(R->GetLargestPossibleRegion().GetSize());
+    outputRegion.SetIndex(outputStart);
+
+    using ConstIteratorType = itk::ImageRegionConstIterator<ifind::Image>;
+    using IteratorType = itk::ImageRegionIterator<ifind::Image>;
+
+    ConstIteratorType Yit(YUV[0], outputRegion), Uit(YUV[1], outputRegion), Vit(YUV[2], outputRegion);
+    IteratorType      RIt(R, outputRegion), GIt(G, outputRegion), BIt(B, outputRegion);
+
+    Yit.GoToBegin();
+    Uit.GoToBegin();
+    Vit.GoToBegin();
+    RIt.GoToBegin();
+    GIt.GoToBegin();
+    BIt.GoToBegin();
+
+    while (!Yit.IsAtEnd())
+    {
+        auto y=Yit.Get();
+        auto u=Uit.Get();
+        auto v=Vit.Get();
+
+        auto r = y +0*u + 1.14*v;
+        auto g = y -0.396*u + -0.581*v;
+        auto b = y + 2.029*u + 0*v;
+        RIt.Set(r);
+        GIt.Set(g);
+        BIt.Set(b);
+
+        ++Yit;
+        ++Uit;
+        ++Vit;
+        ++RIt;
+        ++GIt;
+        ++BIt;
+    }
+
+
+    ifind::Image::Pointer image = ifind::Image::New();
+
+    /// make color
+    image->Graft(R,  "R");
+    image->GraftOverlay(G, image->GetNumberOfLayers(), "G");
+    image->GraftOverlay(B, image->GetNumberOfLayers(), "B");
+
+    return image;
+}
 
 std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
@@ -268,8 +347,7 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
 
 }
 
-#include <itkLinearInterpolateImageFunction.h>
-#include <itkResampleImageFilter.h>
+
 
 ifind::Image::Pointer FrameGrabberManager::Upsample(ifind::Image::Pointer in){
 
