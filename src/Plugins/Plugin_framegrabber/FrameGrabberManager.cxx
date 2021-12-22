@@ -69,8 +69,7 @@ void FrameGrabberManager::Send(void){
         QApplication::quit();
     }
 
-    auto YUV = this->getFrameAsIfindImageData();
-    auto image = this->YUV2RGB(YUV);
+    auto image = this->getFrameAsIfindImageData(); // as RGB
 
     ///-----------------------------------
 
@@ -134,84 +133,8 @@ void FrameGrabberManager::Send(void){
 }
 
 
-ifind::Image::Pointer FrameGrabberManager::YUV2RGB(std::vector<ifind::Image::Pointer> &YUV ) {
 
-    // create empty RGB images
-    ifind::Image::Pointer R, G, B;
-
-    using DuplicatorType = itk::ImageDuplicator<ifind::Image>;
-    {
-        DuplicatorType::Pointer duplicator = DuplicatorType::New();
-        duplicator->SetInputImage(YUV[0]);
-        duplicator->Update();
-        R = duplicator->GetOutput();
-    }
-    {
-        DuplicatorType::Pointer duplicator = DuplicatorType::New();
-        duplicator->SetInputImage(YUV[1]);
-        duplicator->Update();
-        G = duplicator->GetOutput();
-    }
-    {
-        DuplicatorType::Pointer duplicator = DuplicatorType::New();
-        duplicator->SetInputImage(YUV[2]);
-        duplicator->Update();
-        B = duplicator->GetOutput();
-    }
-    // now do the pixel computation
-    ifind::Image::RegionType outputRegion;
-    ifind::Image::RegionType::IndexType outputStart;
-    outputStart.Fill(0);
-
-    outputRegion.SetSize(R->GetLargestPossibleRegion().GetSize());
-    outputRegion.SetIndex(outputStart);
-
-    using ConstIteratorType = itk::ImageRegionConstIterator<ifind::Image>;
-    using IteratorType = itk::ImageRegionIterator<ifind::Image>;
-
-    ConstIteratorType Yit(YUV[0], outputRegion), Uit(YUV[1], outputRegion), Vit(YUV[2], outputRegion);
-    IteratorType      RIt(R, outputRegion), GIt(G, outputRegion), BIt(B, outputRegion);
-
-    Yit.GoToBegin();
-    Uit.GoToBegin();
-    Vit.GoToBegin();
-    RIt.GoToBegin();
-    GIt.GoToBegin();
-    BIt.GoToBegin();
-
-    while (!Yit.IsAtEnd())
-    {
-        auto y=Yit.Get();
-        auto u=Uit.Get();
-        auto v=Vit.Get();
-
-        auto r = y +0*u + 1.14*v;
-        auto g = y -0.396*u + -0.581*v;
-        auto b = y + 2.029*u + 0*v;
-        RIt.Set(r);
-        GIt.Set(g);
-        BIt.Set(b);
-
-        ++Yit;
-        ++Uit;
-        ++Vit;
-        ++RIt;
-        ++GIt;
-        ++BIt;
-    }
-
-
-    ifind::Image::Pointer image = ifind::Image::New();
-
-    /// make color
-    image->Graft(R,  "R");
-    image->GraftOverlay(G, image->GetNumberOfLayers(), "G");
-    image->GraftOverlay(B, image->GetNumberOfLayers(), "B");
-
-    return image;
-}
-
-std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData(void ) {
+ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
 
     if (!this->mIsPaused){
@@ -235,29 +158,60 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     assert( frame.data() != NULL );
 
     if (this->Frame->rows() == 0 || this->Frame->cols() == 0){
-        std::vector<ifind::Image::Pointer> YUV(params.n_components, nullptr);
-        return YUV;
+        return nullptr;
     }
 
-    /// copy the buffer
-    const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows() *1.02; /// I do not know why I need to add osme extra pixels but otherwise it fills weird values at the end
-    ifind::Image::PixelType frame_data[numberOfPixels];
-    std::memcpy(&frame_data, this->Frame->data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
+    /// copy the buffers
+    const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
+    const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
+
+    ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
+    ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
+    std::memcpy(&Y_channel, this->Frame->data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
+    std::memcpy(&U_channel, &this->Frame->data()[numberOfPixels], sizeof(ifind::Image::PixelType)*numberOfPixelsUV);
+    std::memcpy(&V_channel, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], sizeof(ifind::Image::PixelType)*numberOfPixelsUV);
+
+    /// convert to RGB
+    ifind::Image::PixelType *y = &Y_channel[0], *u = &U_channel[0], *v = &V_channel[0];
+    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
+    const ifind::Image::PixelType *y_end = &Y_channel[0]+numberOfPixels;
+    unsigned int npixel = 0, npixel_ = 0;
+    unsigned int i, j, i_, j_; // indices from the large image
+
+    for (; y <  y_end; ++y, ++r, ++g, ++b){
+        // do NN interpolation for u and v
+        i = npixel / this->Frame->rows();
+        j = npixel - i * this->Frame->rows();
+        i_ = i / 2;
+        j_ = j / 2;
+        npixel_ = j_ + this->Frame->rows()/2;
+        //std::cout << "i, j "<< i << ", "<< j<<std::endl;
+        auto u_= u[npixel_];
+        auto v_= v[npixel_];
+        *r = *y +0*u_ + 1.14*v_;
+        *g = *y -0.396*u_ + -0.581*v_;
+        *b = *y + 2.029*u_ + 0*v_;
+    }
+
 
     /// Do the studio swing
-    const ifind::Image::PixelType *p_end = &frame_data[0]+numberOfPixels;
+
     double factor0 = 1.0;
     double factor1 = 0.0;
     if (this->params.correct_studio_swing == true) {
         factor0 = 255./(235.-16.);
         factor1 = 16.0;
     }
-    for (ifind::Image::PixelType *p = &frame_data[0]; p <  p_end; ++p){
-        *p = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
+    const ifind::Image::PixelType *r_end = &R_channel[0]+numberOfPixels;
+    r = &R_channel[0], g = &G_channel[0], b = &B_channel[0];
+    for (; r <  r_end; ++r){
+        *r = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*r)-factor1)*factor0));
+        *g = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*g)-factor1)*factor0));
+        *b = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*b)-factor1)*factor0));
     }
 
     constexpr unsigned int Dimension = ifind::Image::ImageDimension;
-    std::vector<ifind::Image::Pointer> YUV(params.n_components);
+
     /// For an n-pixel I420 frame: Y×8×n U×2×n V×2×n (so here taking only the Y channel)
 
     /// common to all
@@ -270,42 +224,14 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
     ImportFilterType::RegionType region;
     region.SetIndex(start);
 
-    unsigned long buffer_idx = 0;
-
-    /// Import Y
-    ImportFilterType::Pointer importFilter = ImportFilterType::New();
-
     size[0] = this->Frame->cols(); // size along X
     size[1] = this->Frame->rows() ; // size along Y
-
-    region.SetSize(size);
-    importFilter->SetRegion(region);
-
-    /// @todo: change these
-    const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-    importFilter->SetOrigin(origin);
-    importFilter->SetSpacing(spacing);
-
     const bool importImageFilterWillOwnTheBuffer = false;
-    importFilter->SetImportPointer(&frame_data[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-    //importFilter->SetImportPointer(&frame.data()[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-    importFilter->Update();
-    ifind::Image::Pointer Y = ifind::Image::New();
-    Y->Graft(importFilter->GetOutput(), "Y");
-    Y->DisconnectPipeline();
-    YUV[0] = Y;
-
-    /// now get the U and V components
-    if (params.n_components ==3) {
-        buffer_idx+=numberOfPixels;
-        // No longer ensuring integrity here - buffer not copied
+    ifind::Image::Pointer RGB;
+    /// Import R
+    {
         ImportFilterType::Pointer importFilter = ImportFilterType::New();
-
-        size[0] = this->Frame->cols()/2; // size along X
-        size[1] = this->Frame->rows()/2; // size along Y
-
         region.SetSize(size);
-
         importFilter->SetRegion(region);
 
         /// @todo: change these
@@ -313,41 +239,48 @@ std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData
         importFilter->SetOrigin(origin);
         importFilter->SetSpacing(spacing);
 
-        const unsigned int numberOfPixels = size[0] * size[1];
-        {
-            ifind::Image::PixelType *localBuffer = &this->Frame->data()[buffer_idx];
-
-            const bool importImageFilterWillOwnTheBuffer = false;
-            importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
-            importFilter->Update();
-            ifind::Image::Pointer tmp = ifind::Image::New();
-            tmp->Graft(importFilter->GetOutput(), "tmp");
-            /// need to upsample times 2
-            ifind::Image::Pointer Uu = this->Upsample(tmp);
-            YUV[1] = ifind::Image::New();
-            YUV[1]->Graft(Uu,"U");
-            buffer_idx+=numberOfPixels;
-        }
-        {
-            ifind::Image::PixelType *localBuffer = &this->Frame->data()[buffer_idx];
-
-            const bool importImageFilterWillOwnTheBuffer = false;
-            importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
-            importFilter->Update();
-            ifind::Image::Pointer tmp = ifind::Image::New();
-            tmp->Graft(importFilter->GetOutput(), "tmp");
-            /// need to upsample times 2
-            ifind::Image::Pointer Vu = this->Upsample(tmp);
-            YUV[2] = ifind::Image::New();
-            YUV[2]->Graft(Vu, "V");
-            buffer_idx+=numberOfPixels;
-        }
+        importFilter->SetImportPointer(&R_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        //importFilter->SetImportPointer(&frame.data()[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        importFilter->Update();
+        RGB = ifind::Image::New();
+        RGB->Graft(importFilter->GetOutput(), "R");
+        RGB->DisconnectPipeline();
     }
-    return YUV;
+    {
+        // No longer ensuring integrity here - buffer not copied
+        ImportFilterType::Pointer importFilter = ImportFilterType::New();
+        region.SetSize(size);
+        importFilter->SetRegion(region);
 
+        /// @todo: change these
+        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
+        importFilter->SetOrigin(origin);
+        importFilter->SetSpacing(spacing);
+
+        importFilter->SetImportPointer(&G_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        importFilter->Update();
+        RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "G");
+        RGB->DisconnectPipeline();
+    }
+    {
+        // No longer ensuring integrity here - buffer not copied
+        ImportFilterType::Pointer importFilter = ImportFilterType::New();
+        region.SetSize(size);
+        importFilter->SetRegion(region);
+
+        /// @todo: change these
+        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
+        importFilter->SetOrigin(origin);
+        importFilter->SetSpacing(spacing);
+
+        importFilter->SetImportPointer(&B_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        importFilter->Update();
+        RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "B");
+        RGB->DisconnectPipeline();
+    }
+
+    return RGB;
 }
-
-
 
 ifind::Image::Pointer FrameGrabberManager::Upsample(ifind::Image::Pointer in){
 

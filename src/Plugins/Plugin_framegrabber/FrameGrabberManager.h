@@ -84,9 +84,9 @@ private:
      * @brief GetFrame
      * @return nullptr if the re is no frame
      */
-    std::vector<ifind::Image::Pointer> getFrameAsIfindImageData(void);
+    ifind::Image::Pointer getFrameAsIfindImageData(void);
 
-    ifind::Image::Pointer YUV2RGB(std::vector<ifind::Image::Pointer> &YUV );
+    //ifind::Image::Pointer YUV2RGB(std::vector<ifind::Image::Pointer> &YUV );
 
     std::chrono::steady_clock::time_point latestAcquisitionTime;
     std::chrono::steady_clock::time_point initialAcquisitionTime;
