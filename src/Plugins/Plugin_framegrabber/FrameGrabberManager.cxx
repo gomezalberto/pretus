@@ -195,7 +195,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     unsigned int npixel = 0, npixel_ = 0;
     unsigned int i, j, i_, j_; // indices from the large image
 
-    for (; y <  y_end; ++y, ++r, ++g){ //, ++b
+    for (; y <  y_end; ++y, ++r, ++g, ++b){
         // do NN interpolation for u and v
         i = npixel / this->Frame->rows();
         j = npixel - i * this->Frame->rows();
@@ -207,7 +207,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         auto v_= v[npixel_];
         *r = *y +0*u_ + 1.14*v_;
         *g = *y -0.396*u_ + -0.581*v_;
-        //*b = *y + 2.029*u_ + 0*v_;
+        *b = *y + 2.029*u_ + 0*v_;
     }
 
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - converted"<<std::endl;
