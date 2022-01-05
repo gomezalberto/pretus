@@ -179,7 +179,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     //char R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
 
     //ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
-    ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
+
     std::memcpy(&Y_channelc, this->Frame->data(), numberOfPixels);
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - copied Y"<<std::endl;
     std::memcpy(&U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
@@ -190,6 +190,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - memcopuied"<<std::endl;
 
     /// convert to RGB
+    ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
     char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
     ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
     const char *y_end = &Y_channelc[0]+numberOfPixels;
