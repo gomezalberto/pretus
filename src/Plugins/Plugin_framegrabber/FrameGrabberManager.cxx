@@ -165,6 +165,14 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
     const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
 
+    {
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
+        /// Test to write data
+        std::string filename("/tmp/epiphan_data_char.bin");
+        ofstream outfile(filename, ios::out | ios::binary);
+        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
+    }
+
     ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
     ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
     std::memcpy(&Y_channel, this->Frame->data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
