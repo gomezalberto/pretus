@@ -190,8 +190,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     ifind::Image::PixelType B_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - B"<<std::endl;
     char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
-    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0];
-    //ifind::Image::PixelType *b = &B_channel[0];
+    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
     const char *y_end = &Y_channelc[0]+numberOfPixels;
     unsigned int npixel = 0, npixel_ = 0;
     unsigned int i, j, i_, j_; // indices from the large image
