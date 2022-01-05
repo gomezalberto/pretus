@@ -174,12 +174,14 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 //    }
 
 
-    char Y_channelc[numberOfPixels], U_channelc[numberOfPixelsUV], V_channelc[numberOfPixelsUV];
+    char *Y_channelc = new char[numberOfPixels];
+    char *U_channelc = new char[numberOfPixelsUV];
+    char *V_channelc = new char[numberOfPixelsUV];
     //ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
 
-    std::memcpy(&Y_channelc, this->Frame->data(), numberOfPixels);
-    std::memcpy(&U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
-    std::memcpy(&V_channelc, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], numberOfPixelsUV);
+    std::memcpy(Y_channelc, this->Frame->data(), numberOfPixels);
+    std::memcpy(U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
+    std::memcpy(V_channelc, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], numberOfPixelsUV);
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - memcopuied"<<std::endl;
 
     /// convert to RGB
@@ -210,6 +212,10 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         //*b=0;
         //*b = *y + 2.029*u_ + 0*v_;
     }
+
+    delete [] Y_channelc;
+    delete [] U_channelc;
+    delete [] V_channelc;
 
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - converted"<<std::endl;
 
