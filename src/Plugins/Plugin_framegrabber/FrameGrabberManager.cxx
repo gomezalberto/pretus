@@ -209,8 +209,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         auto v_= v[npixel_];
         *r = *y +0*u_ + 1.14*v_;
         *g = *y -0.396*u_ + -0.581*v_;
-        *b=*g;
-        //*b = *y + 2.029*u_ + 0*v_;
+        *b = *y + 2.029*u_;// + 0*v_;
     }
 
     delete [] Y_channelc;
