@@ -193,6 +193,13 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     unsigned int npixel = 0, npixel_ = 0;
     unsigned int i, j, i_, j_; // indices from the large image
 
+    float yoff=16, uoff=128, voff=128;
+
+    // define the conversion matrix C
+    float C00 = 1.1643, C01 = 0.0, C02 = 1.5958;
+    float C10 = 1.1643, C11 = -0.39173, C12 = -0.81290;
+    float C20 = 1.1643, C21 = 2.017, C22 = 0.0;
+
     for (; y <  y_end; ++y, ++r, ++g, ++b){
         // do NN interpolation for u and v
         i = npixel / this->Frame->rows();
@@ -201,12 +208,17 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         j_ = j / 2;
         npixel_ = j_ + this->Frame->rows()/2;
         //std::cout << "i, j "<< i << ", "<< j<<"     i_, j_" << i_ <<", "<< j_<< std::endl;
-        float u_= float(u[npixel_]);
-        float v_= float(v[npixel_]);
-        float y_ = float(*y );
-        *r = ifind::Image::PixelType( y_  + 1.14*v_); // +0*u_
-        *g = ifind::Image::PixelType(y_ -0.396*u_ + -0.581*v_);
-        *b = ifind::Image::PixelType(y_ + 2.029*u_);// + 0*v_;
+        float u_= float(u[npixel_])-uoff;
+        float v_= float(v[npixel_])-voff;
+        float y_ = float(*y ) -yoff;
+
+        float r_ = ifind::Image::PixelType( C00 * y_  + C01* u_ + C02 *v_);
+        float g_ = ifind::Image::PixelType( C10 * y_  + C11* u_ + C12 *v_);
+        float b_ = ifind::Image::PixelType( C20 * y_  + C21* u_ + C22 *v_);
+        *r = r_ < 0 ? 0 : (r_ > 255 ? 255 : r_);
+        *g = g_ < 0 ? 0 : (g_ > 255 ? 255 : g_);
+        *b = b_ < 0 ? 0 : (b_ > 255 ? 255 : b_);
+
         npixel++;
         //std::cout << "r, g, b "<< int(*r) << ", "<< int(*g) <<", " << int(*b) << std::endl;
     }
