@@ -174,9 +174,9 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 //    }
 
 
-    char *Y_channelc = new char[numberOfPixels];
-    char *U_channelc = new char[numberOfPixelsUV];
-    char *V_channelc = new char[numberOfPixelsUV];
+    int8_t *Y_channelc = new int8_t[numberOfPixels];
+    int8_t *U_channelc = new int8_t[numberOfPixelsUV];
+    int8_t *V_channelc = new int8_t[numberOfPixelsUV];
     //ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
 
     std::memcpy(Y_channelc, this->Frame->data(), numberOfPixels);
@@ -187,9 +187,9 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     ifind::Image::PixelType R_channel[numberOfPixels];
     ifind::Image::PixelType G_channel[numberOfPixels];
     ifind::Image::PixelType B_channel[numberOfPixels];
-    char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
+    int8_t *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
     ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
-    const char *y_end = &Y_channelc[0]+numberOfPixels;
+    const int8_t *y_end = &Y_channelc[0]+numberOfPixels;
     unsigned int npixel = 0, npixel_ = 0;
     unsigned int i, j, i_, j_; // indices from the large image
 
