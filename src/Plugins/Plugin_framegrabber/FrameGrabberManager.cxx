@@ -180,7 +180,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
     //ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
     ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
-    std::memcpy(&Y_channelc, &this->Frame->data()[0], numberOfPixels);
+    std::memcpy(&Y_channelc, this->Frame->data(), numberOfPixels);
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - copied Y"<<std::endl;
     std::memcpy(&U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - copied U"<<std::endl;
