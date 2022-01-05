@@ -173,6 +173,8 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 //        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
 //    }
 
+    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - copy mem"<<std::endl;
+
     ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
     ifind::Image::PixelType R_channel[numberOfPixels], G_channel[numberOfPixels], B_channel[numberOfPixels];
     std::memcpy(&Y_channel, this->Frame->data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
