@@ -183,14 +183,15 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - memcopuied"<<std::endl;
 
     /// convert to RGB
-    unsigned char R_channel[numberOfPixels];
+    ifind::Image::PixelType R_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - R"<<std::endl;
-    unsigned char G_channel[numberOfPixels];
+    ifind::Image::PixelType G_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - G"<<std::endl;
-    unsigned char B_channel[numberOfPixels];
+    //ifind::Image::PixelType B_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - B"<<std::endl;
     char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
-    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
+    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0];
+    //ifind::Image::PixelType *b = &B_channel[0];
     const char *y_end = &Y_channelc[0]+numberOfPixels;
     unsigned int npixel = 0, npixel_ = 0;
     unsigned int i, j, i_, j_; // indices from the large image
@@ -207,7 +208,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         auto v_= v[npixel_];
         *r = *y +0*u_ + 1.14*v_;
         *g = *y -0.396*u_ + -0.581*v_;
-        *b = *y + 2.029*u_ + 0*v_;
+        //*b = *y + 2.029*u_ + 0*v_;
     }
 
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - converted"<<std::endl;
@@ -221,11 +222,12 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         factor1 = 16.0;
     }
     const ifind::Image::PixelType *r_end = &R_channel[0]+numberOfPixels;
-    r = &R_channel[0], g = &G_channel[0], b = &B_channel[0];
+    r = &R_channel[0], g = &G_channel[0];
+    //b = &B_channel[0];
     for (; r <  r_end; ++r){
         *r = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*r)-factor1)*factor0));
         *g = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*g)-factor1)*factor0));
-        *b = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*b)-factor1)*factor0));
+        //*b = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*b)-factor1)*factor0));
     }
 
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - sswing"<<std::endl;
@@ -293,7 +295,8 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         importFilter->SetOrigin(origin);
         importFilter->SetSpacing(spacing);
 
-        importFilter->SetImportPointer(&B_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        //importFilter->SetImportPointer(&B_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
+        importFilter->SetImportPointer(&G_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
         importFilter->Update();
         RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "B");
         RGB->DisconnectPipeline();
