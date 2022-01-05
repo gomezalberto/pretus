@@ -208,6 +208,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         *g = ifind::Image::PixelType(y_ -0.396*u_ + -0.581*v_);
         *b = ifind::Image::PixelType(y_ + 2.029*u_);// + 0*v_;
         npixel++;
+        std::cout << "r, g, b "<< *r << ", "<< *g<<", " << *b<< std::endl;
     }
 
     delete [] Y_channelc;
