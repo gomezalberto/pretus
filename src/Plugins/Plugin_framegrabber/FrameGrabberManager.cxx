@@ -182,15 +182,11 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     std::memcpy(Y_channelc, this->Frame->data(), numberOfPixels);
     std::memcpy(U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
     std::memcpy(V_channelc, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], numberOfPixelsUV);
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - memcopuied"<<std::endl;
 
     /// convert to RGB
     ifind::Image::PixelType R_channel[numberOfPixels];
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - R"<<std::endl;
     ifind::Image::PixelType G_channel[numberOfPixels];
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - G"<<std::endl;
     ifind::Image::PixelType B_channel[numberOfPixels];
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - B"<<std::endl;
     char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
     ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
     const char *y_end = &Y_channelc[0]+numberOfPixels;
@@ -216,8 +212,6 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     delete [] U_channelc;
     delete [] V_channelc;
 
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - converted"<<std::endl;
-
     /// Do the studio swing
 
     double factor0 = 1.0;
@@ -234,8 +228,6 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         *g = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*g)-factor1)*factor0));
         *b = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*b)-factor1)*factor0));
     }
-
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData - sswing"<<std::endl;
 
     constexpr unsigned int Dimension = ifind::Image::ImageDimension;
 
@@ -301,12 +293,11 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         importFilter->SetSpacing(spacing);
 
         importFilter->SetImportPointer(&B_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-        //importFilter->SetImportPointer(&G_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
         importFilter->Update();
         RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "B");
         RGB->DisconnectPipeline();
     }
-    std::cout << "FrameGrabberManager::getFrameAsIfindImageData -done"<<std::endl;
+
     return RGB;
 }
 
