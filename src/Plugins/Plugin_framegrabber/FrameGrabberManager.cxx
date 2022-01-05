@@ -183,11 +183,11 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - memcopuied"<<std::endl;
 
     /// convert to RGB
-    ifind::Image::PixelType R_channel[numberOfPixels];
+    unsigned char R_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - R"<<std::endl;
-    ifind::Image::PixelType G_channel[numberOfPixels];
+    unsigned char G_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - G"<<std::endl;
-    ifind::Image::PixelType B_channel[numberOfPixels];
+    unsigned char B_channel[numberOfPixels];
     std::cout << "FrameGrabberManager::getFrameAsIfindImageData - B"<<std::endl;
     char *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
     ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
