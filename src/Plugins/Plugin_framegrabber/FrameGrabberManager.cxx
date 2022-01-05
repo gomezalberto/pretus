@@ -200,7 +200,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         i_ = i / 2;
         j_ = j / 2;
         npixel_ = j_ + this->Frame->rows()/2;
-        //std::cout << "i, j "<< i << ", "<< j<<std::endl;
+        std::cout << "i, j "<< i << ", "<< j<<"     i_, j_" << i_ <<", "<< j_<< std::endl;
         auto u_= u[npixel_];
         auto v_= v[npixel_];
         *r = *y  + 1.14*v_; // +0*u_
