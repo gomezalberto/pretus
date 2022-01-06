@@ -73,6 +73,11 @@ void Plugin_framegrabber::SetDefaultArguments(){
                          "Frame rate at which the framegrabber captures data.",
                          QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate)});
 
+    mArguments.push_back({"demo", "filename with demo frame",
+                         QString( ArgumentType[3] ),
+                         "Filename (typically .bin) with the frame values.",
+                         std::dynamic_pointer_cast< ManagerType >(this->manager)->mDemoFile.c_str()});
+
 }
 
 void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
@@ -97,6 +102,10 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
                 std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 1;
             }
 
+        }}
+     {const std::string &argument = input.getCmdOption("demo");
+        if (!argument.empty()){
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->mDemoFile= argument.c_str();
         }}
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");

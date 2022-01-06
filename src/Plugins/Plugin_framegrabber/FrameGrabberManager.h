@@ -56,6 +56,12 @@ public:
 
     Parameters params;
 
+    /**
+     * @brief mDemoFile by default empty, if not empty then the software reads
+     * a frame from the file indicated and does not try to connect to the framegrabber.
+     */
+    std::string mDemoFile;
+
 public Q_SLOTS:
 
     /**
@@ -92,5 +98,7 @@ private:
     std::chrono::steady_clock::time_point initialAcquisitionTime;
 
     ifind::Image::Pointer Upsample(ifind::Image::Pointer in);
+
+
 
 };

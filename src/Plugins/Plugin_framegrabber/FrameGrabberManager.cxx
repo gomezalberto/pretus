@@ -26,9 +26,15 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     gg::ColourSpace colour = gg::ColourSpace::I420;
     gg::VideoFrame frame(colour);
     this->Frame = new gg::VideoFrame(frame);
+    this->mDemoFile = "";
 }
 
 int FrameGrabberManager::Initialize(){
+
+    if (this->mDemoFile.length() > 0){
+        std::cout << "[FrameGrabberManager::Initialize] Initializing in demo mode using "<< this->mDemoFile<<"- no actual framegrabber needed"<<std::endl;
+        return 0;
+    }
 
     this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
     FrmGrab_SetMaxFps(this->Cap->get_frame_grabber(), 30);
@@ -137,7 +143,7 @@ void FrameGrabberManager::Send(void){
 ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
 
-    if (!this->mIsPaused){
+    if (!this->mIsPaused && this->mDemoFile.length() == 0){
         gg::ColourSpace colour = gg::ColourSpace::I420;
         gg::VideoFrame frame(colour);
 
@@ -150,12 +156,48 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
                 std::cerr << "[Error] FrameGrabberManager::GetFrame() -  reading frame from framegrabber. "  << std::endl;
             }
         }
+
+        assert( frame.data() != NULL );
+
         this->mutex_Frame.lock();
         this->Frame = &frame;
         this->mutex_Frame.unlock();
     }
 
-    assert( frame.data() != NULL );
+    if (this->mDemoFile.length() > 0 ){
+        // load from file
+
+        std::streampos begin,end;
+        ifstream myfile(this->mDemoFile, ios::in | ios::binary);
+        if (myfile.is_open())
+        {
+
+            begin = myfile.tellg();
+            myfile.seekg (0, ios::end);
+            end = myfile.tellg();
+
+            int nbytes = end-begin;
+            char *data = new char[nbytes];
+            myfile.seekg (0, ios::beg);
+            myfile.read(data, nbytes);
+            myfile.close();
+
+            int cols = 1920;
+            int rows = 1080;
+
+            this->Frame->init_from_specs(reinterpret_cast< unsigned char *>(data), nbytes, cols, rows);
+        }
+    }
+
+    //    {
+    //        std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
+    //        /// Test to write data
+    //        std::string filename("/tmp/epiphan_data_char.bin");
+    //        ofstream outfile(filename, ios::out | ios::binary);
+    //        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
+    //    }
+
+
 
     if (this->Frame->rows() == 0 || this->Frame->cols() == 0){
         return nullptr;
@@ -164,14 +206,6 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     /// copy the buffers
     const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
     const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
-
-//    {
-//        std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
-//        /// Test to write data
-//        std::string filename("/tmp/epiphan_data_char.bin");
-//        ofstream outfile(filename, ios::out | ios::binary);
-//        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
-//    }
 
 
     int8_t *Y_channelc = new int8_t[numberOfPixels];
@@ -184,6 +218,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     std::memcpy(V_channelc, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], numberOfPixelsUV);
 
     /// convert to RGB
+    /// @TODO: upsample the UV channels and use opencv -by far the simplest way.
     ifind::Image::PixelType R_channel[numberOfPixels];
     ifind::Image::PixelType G_channel[numberOfPixels];
     ifind::Image::PixelType B_channel[numberOfPixels];
