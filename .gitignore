@@ -1,0 +1,8 @@
+# Ignored paths and directories
+
+## pycharm project path
+.idea
+
+## build or release paths
+**/build
+**/release
