@@ -35,7 +35,7 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
 
 int FrameGrabberManager::Initialize(){
 
-    if (this->mDemoFile.length() > 0){
+    if (this->mDemoFile.length() > 1){
         std::cout << "[FrameGrabberManager::Initialize] Initializing in demo mode using "<< this->mDemoFile<<"- no actual framegrabber needed"<<std::endl;
         return 0;
     }
