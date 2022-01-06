@@ -3,6 +3,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QComboBox>
+#include <QSpacerItem>
 
 Widget_framegrabber::Widget_framegrabber(
     QWidget *parent, Qt::WindowFlags f)
@@ -36,13 +38,27 @@ Widget_framegrabber::Widget_framegrabber(
         QHBoxLayout *ph_layout = new QHBoxLayout();
         ph_layout->addWidget(mPausePlayButton);
 
+        mEncodingList = new QComboBox(this);
+        mEncodingList->setStyleSheet(QtPluginWidgetBase::sQComboBoxStyle);
+        ph_layout->addWidget(mEncodingList);
+
         ph_layout->addStretch();
 
         placeholder->setLayout(ph_layout);
         vLayout->addWidget(placeholder);
     }
 
+    QObject::connect(this->mEncodingList,
+            QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &Widget_framegrabber::slot_updateEncoding);
+
     this->AddImageViewCheckboxToLayout(vLayout);
+}
+
+void Widget_framegrabber::setEncodings(std::vector<std::string> &encs){
+    for (int i=0; i<encs.size(); i++){
+        mEncodingList->addItem(QString::fromStdString(encs[i]));
+    }
 }
 
 void Widget_framegrabber::slot_togglePlayPause(bool v){
@@ -52,6 +68,27 @@ void Widget_framegrabber::slot_togglePlayPause(bool v){
     } else {
         this->mPausePlayButton->setText("⏸︎");
     }
+
+}
+
+void Widget_framegrabber::slot_updateEncoding(int idx){
+    QString newenc = mEncodingList->itemText(idx);
+    Q_EMIT signal_newEncoding(newenc);
+}
+
+void Widget_framegrabber::setSelectedEncoding(QString enc){
+
+    int idx = -1;
+
+    for (int i=0; i<mEncodingList->count(); i++){
+        QString item_name = mEncodingList->itemText(i);
+        if (enc.toLower()==item_name.toLower()){
+            idx = i;
+            break;
+        }
+    }
+
+    mEncodingList->setCurrentIndex(idx);
 
 }
 

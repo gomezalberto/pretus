@@ -27,19 +27,72 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->TransmitFrameRate.set_capacity(60);
     this->mIsPaused = false;
     //gg::ColourSpace colour = gg::ColourSpace::I420;
-    gg::ColourSpace colour = gg::ColourSpace::BGRA;
-    gg::VideoFrame frame(colour);
-    this->Frame = new gg::VideoFrame(frame);
+    //gg::ColourSpace colour = gg::ColourSpace::BGRA;
+    //gg::VideoFrame frame(colour);
+    //this->Frame = new gg::VideoFrame(frame);
+    this->Frame = nullptr;
     this->mDemoFile = "";
 }
 
-int FrameGrabberManager::Initialize(){
+
+int FrameGrabberManager::updateVideoSettings(void){
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::updateVideoSettings() "<<std::endl;
+    }
 
     if (this->mDemoFile.length() > 1){
-        std::cout << "[FrameGrabberManager::Initialize] Initializing in demo mode using "<< this->mDemoFile<<"- no actual framegrabber needed"<<std::endl;
+        std::cout << "[FrameGrabberManager::updateVideoSettings] demo mode using "<< this->mDemoFile<<"- no actual framegrabber needed"<<std::endl;
         return 0;
     }
 
+    if (this->Cap != nullptr){
+        if (params.verbose){
+            std::cout << "    FrameGrabberManager::updateVideoSettings() resetting the capture"<<std::endl;
+        }
+        this->Cap = nullptr;
+    }
+
+    if (this->mVideoSettings.encoding == "I420"){
+        this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    } else if (this->mVideoSettings.encoding == "BGRA"){
+        this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_BGR24);
+    } else {
+        std::cout << "[ERROR] FrameGrabberManager::updateVideoSettings - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+        exit(-1);
+    }
+
+    FrmGrab_SetMaxFps(this->Cap->get_frame_grabber(), this->mVideoSettings.framerate);
+
+    V2U_VideoMode vm;
+    if (!FrmGrab_DetectVideoMode((FrmGrabber*)this->Cap->get_frame_grabber(), &vm))
+    {
+        std::cerr << "[FrameGrabberManager::updateVideoSettings] No signal detected"<<std::endl;
+        return -1;
+    }
+
+    return 0;
+
+}
+
+
+int FrameGrabberManager::Initialize(){
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::Initialize() "<<std::endl;
+    }
+
+    if (this->Frame == nullptr){
+        //gg::ColourSpace colour = gg::ColourSpace::I420;
+        gg::ColourSpace colour = gg::ColourSpace::BGRA;
+        gg::VideoFrame frame(colour);
+        this->Frame = new gg::VideoFrame(frame);
+    }
+
+
+
+    this->updateVideoSettings();
+    /*
     //this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
     this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_BGR24);
 
@@ -51,9 +104,15 @@ int FrameGrabberManager::Initialize(){
         std::cerr << "[FrameGrabberManager::Initialize] No signal detected"<<std::endl;
         return -1;
     }
+    */
     return 0;
 }
 
+void FrameGrabberManager::slot_updateEncoding(QString enc){
+
+    mVideoSettings.encoding = enc;
+    this->updateVideoSettings();
+}
 
 void FrameGrabberManager::slot_togglePlayPause(bool v){
     this->mIsPaused  =v;
@@ -64,6 +123,9 @@ void FrameGrabberManager::slot_togglePlayPause(bool v){
  */
 void FrameGrabberManager::Send(void){
 
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::Send() "<<std::endl;
+    }
     /// Go for next round and continue!
     if (this->IsActive() )
     {
@@ -147,11 +209,24 @@ void FrameGrabberManager::Send(void){
 
 
 ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
-
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() "<<std::endl;
+    }
 
     if (!this->mIsPaused && this->mDemoFile.length() <= 1){
-        //gg::ColourSpace colour = gg::ColourSpace::I420;
-        gg::ColourSpace colour = gg::ColourSpace::BGRA;
+        if (this->Cap == nullptr){
+            return nullptr;
+        }
+
+        gg::ColourSpace colour;
+        if (this->mVideoSettings.encoding == "I420"){
+            colour = gg::ColourSpace::I420;
+        } else if (this->mVideoSettings.encoding == "BGRA"){
+            colour = gg::ColourSpace::BGRA;
+        } else {
+            std::cout << "[ERROR] FrameGrabberManager::getFrameAsIfindImageData - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+            exit(-1);
+        }
         gg::VideoFrame frame(colour);
 
         {
@@ -178,13 +253,15 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
             {
                 std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
                 /// Test to write data
-                std::string filename("/tmp/epiphan_data_char.bin");
+                std::string filename((QString("/tmp/epiphan_data_char_") + this->mVideoSettings.encoding + ".bin").toStdString());
                 ofstream outfile(filename, ios::out | ios::binary);
                 outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
             }
 
         } else {
-            // load from file
+            if (params.verbose){
+                std::cout << "FrameGrabberManager::getFrameAsIfindImageData() load from  "<< this->mDemoFile<<std::endl;
+            }
 
             std::streampos begin,end;
             ifstream myfile(this->mDemoFile, ios::in | ios::binary);
@@ -210,27 +287,51 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     }
 
 
-
-
-
     if (this->Frame->rows() == 0 || this->Frame->cols() == 0){
         return nullptr;
     }
 
 
     /// Convert to RGB
-    const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
-    //const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
-    cv::Mat myuv(this->Frame->rows() + this->Frame->rows()/2, this->Frame->cols(), CV_8UC1, (unsigned char *) this->Frame->data());
-    //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
-    cv::Mat mrgb(this->Frame->rows(), this->Frame->cols(), CV_8UC3);
-    //cv::Mat mgray(this->Frame->rows(), this->Frame->cols(), CV_8UC1, ( unsigned char *)this->Frame->data());
-    cvtColor(myuv, mrgb, CV_YUV2BGR_I420); // CV_YUV2BGR_IYUV, CV_YUV2RGB_YV12
-    //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/rgb.png", mrgb);
+    const unsigned long rows = this->Frame->rows() , cols = this->Frame->cols() ;
+    const unsigned long numberOfPixels = cols * rows;
 
-    //std::cout << "[FrameGrabberManager::getFrameAsIfindImageData] converted"<<std::endl;
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() Convert data using "<< this->mVideoSettings.encoding.toStdString()<<std::endl;
+    }
+
+    cv::Mat mrgb(this->Frame->rows(), this->Frame->cols(), CV_8UC3);
+
+    if (this->mVideoSettings.encoding == "I420"){
+        cv::Mat myuv(this->Frame->rows() + this->Frame->rows()/2, this->Frame->cols(), CV_8UC1, (unsigned char *) this->Frame->data());
+        //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
+        cvtColor(myuv, mrgb, CV_YUV2BGR_I420); // CV_YUV2BGR_IYUV, CV_YUV2RGB_YV12
+    } else if (this->mVideoSettings.encoding == "BGRA"){
+
+        if (this->Frame->data_length() < this->Frame->rows() * this->Frame->cols() * 3){
+            this->mVideoSettings.encoding = "I420";
+            std::cout << "FrameGrabberManager::getFrameAsIfindImageData() - data incompatible with "<< this->mVideoSettings.encoding.toStdString() << ", setting to I420." << std::endl;
+            return nullptr;
+        }
+
+        cv::Mat mbgr(this->Frame->rows(), this->Frame->cols(), CV_8UC3, (unsigned char *) this->Frame->data());
+        mbgr.copyTo(mrgb);
+
+
+
+        //cv::Mat mrgb = mbgr;
+        //cvtColor(mbgr, mrgb, CV_BGR2RGB);
+    } else {
+        std::cout << "[ERROR] FrameGrabberManager::getFrameAsIfindImageData - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+        exit(-1);
+    }
+
 
     /// Do the studio swing
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() if needed do studio swing"<<std::endl;
+    }
 
     const ifind::Image::PixelType *p_end = &mrgb.data[0]+numberOfPixels*3;
     double factor0 = 1.0;
@@ -242,6 +343,10 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     for (ifind::Image::PixelType *p = &mrgb.data[0]; p <  p_end; ++p){
         ifind::Image::PixelType newval = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
         *p = std::min(std::max(newval,ifind::Image::PixelType(0)), ifind::Image::PixelType(255));
+    }
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() convert to ifind image"<<std::endl;
     }
 
     ifind::Image::Pointer image = ifind::Image::New();

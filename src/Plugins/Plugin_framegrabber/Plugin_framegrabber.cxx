@@ -13,6 +13,11 @@ Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
     {
         // create widget
         WidgetType * mWidget_ = new WidgetType;
+
+        std::vector<std::string> encodings = {"I420", "BGRA"};
+        mWidget_->setEncodings(encodings);
+        mWidget_->setSelectedEncoding(QString("BGR"));
+
         this->mWidget = mWidget_;
 
         ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
@@ -23,6 +28,10 @@ Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
         QObject::connect(mWidget_->mPausePlayButton,
                 &QPushButton::toggled, mWidget_,
                 &WidgetType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_,
+                &WidgetType::signal_newEncoding, w,
+                &ManagerType::slot_updateEncoding);
 
     }
     {

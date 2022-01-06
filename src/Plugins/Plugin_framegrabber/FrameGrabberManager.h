@@ -54,6 +54,31 @@ public:
         int n_components;
     };
 
+    struct VideoSettings {
+        VideoSettings(){
+            buffersize = 1;
+            framerate = 30;
+            w = 1920;
+            h = 1080;
+            encoding = "BGRA";
+        }
+
+        std::string toStdString(){
+            std::stringstream ss;
+            ss << "Video Settings:"<<std::endl;
+            ss << "\tBuffer size: "<< buffersize<<std::endl;
+            ss << "\tFrame rate: "<< framerate<<std::endl;
+            ss << "\tResolution: "<< w <<"x"<<h<<std::endl;
+            ss << "\tCodec: "<< encoding.toStdString() <<std::endl;
+            return ss.str();
+        }
+        int buffersize;
+        int framerate;
+        int w;
+        int h;
+        QString encoding;
+    };
+
     Parameters params;
 
     /**
@@ -71,6 +96,7 @@ public Q_SLOTS:
    */
     virtual void Send(void);
     virtual void slot_togglePlayPause(bool v);
+    virtual void slot_updateEncoding(QString enc);
 
 protected:
     FrameGrabberManager(QObject *parent = 0);
@@ -99,6 +125,8 @@ private:
 
     ifind::Image::Pointer Upsample(ifind::Image::Pointer in);
 
+    VideoSettings mVideoSettings;
+    int updateVideoSettings(void);
 
 
 };
