@@ -214,11 +214,11 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
     //const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
     cv::Mat myuv(this->Frame->rows() + this->Frame->rows()/2, this->Frame->cols(), CV_8UC1, (unsigned char *) this->Frame->data());
-    cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
+    //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
     cv::Mat mrgb(this->Frame->rows(), this->Frame->cols(), CV_8UC3);
     //cv::Mat mgray(this->Frame->rows(), this->Frame->cols(), CV_8UC1, ( unsigned char *)this->Frame->data());
-    cvtColor(myuv, mrgb, CV_YUV2RGB_YV12); // CV_YUV2RGB_YV12, CV_YUV420sp2RGB
-    cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/rgb.png", mrgb);
+    cvtColor(myuv, mrgb, CV_YUV2BGR_I420); // CV_YUV2BGR_IYUV, CV_YUV2RGB_YV12
+    //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/rgb.png", mrgb);
 
     //std::cout << "[FrameGrabberManager::getFrameAsIfindImageData] converted"<<std::endl;
 
