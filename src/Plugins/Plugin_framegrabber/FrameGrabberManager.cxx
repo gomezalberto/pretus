@@ -16,6 +16,9 @@
 #include <itkImageDuplicator.h>
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkResampleImageFilter.h>
+#include <opencv2/opencv.hpp>
+#include <itkOpenCVImageBridge.h>
+#include <itkVectorIndexSelectionCastImageFilter.h>
 
 FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
@@ -189,6 +192,8 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         }
     }
 
+    // BEGIN
+    // This snippet of code can be used to generate demo files:
     //    {
     //        std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
     //        /// Test to write data
@@ -196,6 +201,7 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     //        ofstream outfile(filename, ios::out | ios::binary);
     //        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
     //    }
+    // END
 
 
 
@@ -203,152 +209,67 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
         return nullptr;
     }
 
-    /// copy the buffers
+
+    /// Convert to RGB
     const unsigned long numberOfPixels = this->Frame->cols() *this->Frame->rows();
-    const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
+    //const unsigned long numberOfPixelsUV = this->Frame->cols()/ 2.0 * this->Frame->rows() / 2.0 ;
+    cv::Mat myuv(this->Frame->rows() + this->Frame->rows()/2, this->Frame->cols(), CV_8UC1, (unsigned char *) this->Frame->data());
+    cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
+    cv::Mat mrgb(this->Frame->rows(), this->Frame->cols(), CV_8UC3);
+    //cv::Mat mgray(this->Frame->rows(), this->Frame->cols(), CV_8UC1, ( unsigned char *)this->Frame->data());
+    cvtColor(myuv, mrgb, CV_YUV2RGB_YV12); // CV_YUV2RGB_YV12, CV_YUV420sp2RGB
+    cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/rgb.png", mrgb);
 
-
-    int8_t *Y_channelc = new int8_t[numberOfPixels];
-    int8_t *U_channelc = new int8_t[numberOfPixelsUV];
-    int8_t *V_channelc = new int8_t[numberOfPixelsUV];
-    //ifind::Image::PixelType Y_channel[numberOfPixels], U_channel[numberOfPixelsUV], V_channel[numberOfPixelsUV];
-
-    std::memcpy(Y_channelc, this->Frame->data(), numberOfPixels);
-    std::memcpy(U_channelc, &this->Frame->data()[numberOfPixels], numberOfPixelsUV);
-    std::memcpy(V_channelc, &this->Frame->data()[numberOfPixels+numberOfPixelsUV], numberOfPixelsUV);
-
-    /// convert to RGB
-    /// @TODO: upsample the UV channels and use opencv -by far the simplest way.
-    ifind::Image::PixelType R_channel[numberOfPixels];
-    ifind::Image::PixelType G_channel[numberOfPixels];
-    ifind::Image::PixelType B_channel[numberOfPixels];
-    int8_t *y = &Y_channelc[0], *u = &U_channelc[0], *v = &V_channelc[0];
-    ifind::Image::PixelType *r = &R_channel[0], *g = &G_channel[0], *b = &B_channel[0];
-    const int8_t *y_end = &Y_channelc[0]+numberOfPixels;
-    unsigned int npixel = 0, npixel_ = 0;
-    unsigned int i, j, i_, j_; // indices from the large image
-
-    float yoff=16, uoff=128, voff=128;
-
-    // define the conversion matrix C
-    float C00 = 1.1643, C01 = 0.0, C02 = 1.5958;
-    float C10 = 1.1643, C11 = -0.39173, C12 = -0.81290;
-    float C20 = 1.1643, C21 = 2.017, C22 = 0.0;
-
-    for (; y <  y_end; ++y, ++r, ++g, ++b){
-        // do NN interpolation for u and v
-        i = npixel / this->Frame->rows();
-        j = npixel - i * this->Frame->rows();
-        i_ = i / 2;
-        j_ = j / 2;
-        npixel_ = j_ + this->Frame->rows()/2;
-        //std::cout << "i, j "<< i << ", "<< j<<"     i_, j_" << i_ <<", "<< j_<< std::endl;
-        float u_= float(u[npixel_])-uoff;
-        float v_= float(v[npixel_])-voff;
-        float y_ = float(*y ) -yoff;
-
-        float r_ = ifind::Image::PixelType( C00 * y_  + C01* u_ + C02 *v_);
-        float g_ = ifind::Image::PixelType( C10 * y_  + C11* u_ + C12 *v_);
-        float b_ = ifind::Image::PixelType( C20 * y_  + C21* u_ + C22 *v_);
-        *r = r_ < 0 ? 0 : (r_ > 255 ? 255 : r_);
-        *g = g_ < 0 ? 0 : (g_ > 255 ? 255 : g_);
-        *b = b_ < 0 ? 0 : (b_ > 255 ? 255 : b_);
-
-        npixel++;
-        //std::cout << "r, g, b "<< int(*r) << ", "<< int(*g) <<", " << int(*b) << std::endl;
-    }
-
-    delete [] Y_channelc;
-    delete [] U_channelc;
-    delete [] V_channelc;
+    //std::cout << "[FrameGrabberManager::getFrameAsIfindImageData] converted"<<std::endl;
 
     /// Do the studio swing
 
+    const ifind::Image::PixelType *p_end = &mrgb.data[0]+numberOfPixels*3;
     double factor0 = 1.0;
     double factor1 = 0.0;
-    if (this->params.correct_studio_swing == true) {
-        factor0 = 255./(235.-16.);
-        factor1 = 16.0;
+    if (this->params.correct_studio_swing > 0) {
+        factor0 = 255./(235.-this->params.correct_studio_swing);
+        factor1 = this->params.correct_studio_swing;
     }
-    const ifind::Image::PixelType *r_end = &R_channel[0]+numberOfPixels;
-    r = &R_channel[0], g = &G_channel[0];
-    b = &B_channel[0];
-    for (; r <  r_end; ++r){
-        *r = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*r)-factor1)*factor0));
-        *g = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*g)-factor1)*factor0));
-        *b = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*b)-factor1)*factor0));
+    for (ifind::Image::PixelType *p = &mrgb.data[0]; p <  p_end; ++p){
+        ifind::Image::PixelType newval = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
+        *p = std::min(std::max(newval,ifind::Image::PixelType(0)), ifind::Image::PixelType(255));
     }
 
-    constexpr unsigned int Dimension = ifind::Image::ImageDimension;
+    ifind::Image::Pointer image = ifind::Image::New();
 
-    /// For an n-pixel I420 frame: Y×8×n U×2×n V×2×n (so here taking only the Y channel)
+    typedef itk::OpenCVImageBridge BridgeType;
+    // Convert to colour image
+    ifind::Image::ColorImageType::Pointer colourImage = ifind::Image::ColorImageType::New();
+    colourImage = BridgeType::CVMatToITKImage<ifind::Image::ColorImageType>(mrgb);
 
-    /// common to all
-    using ImportFilterType = itk::ImportImageFilter<ifind::Image::PixelType, Dimension>;
-    const itk::SpacePrecisionType origin[Dimension] = { 0.0, 0.0, 0.0 };
-    ImportFilterType::SizeType size;
-    size[2] = 1 ; // size along Z (one slice)
-    ImportFilterType::IndexType start;
-    start.Fill(0);
-    ImportFilterType::RegionType region;
-    region.SetIndex(start);
+    // extract components
+    using IndexSelectionType = itk::VectorIndexSelectionCastImageFilter<ifind::Image::ColorImageType, ifind::Image>;
+    {             // First component (R) as base layer
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(0);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->Graft(indexSelectionFilter->GetOutput(), "R");
 
-    size[0] = this->Frame->cols(); // size along X
-    size[1] = this->Frame->rows() ; // size along Y
-    const bool importImageFilterWillOwnTheBuffer = false;
-    ifind::Image::Pointer RGB;
-    /// Import R
-    {
-        ImportFilterType::Pointer importFilter = ImportFilterType::New();
-        region.SetSize(size);
-        importFilter->SetRegion(region);
-
-        /// @todo: change these
-        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-        importFilter->SetOrigin(origin);
-        importFilter->SetSpacing(spacing);
-
-        importFilter->SetImportPointer(&R_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-        //importFilter->SetImportPointer(&frame.data()[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-        importFilter->Update();
-        RGB = ifind::Image::New();
-        RGB->Graft(importFilter->GetOutput(), "R");
-        RGB->DisconnectPipeline();
     }
-    {
-        // No longer ensuring integrity here - buffer not copied
-        ImportFilterType::Pointer importFilter = ImportFilterType::New();
-        region.SetSize(size);
-        importFilter->SetRegion(region);
-
-        /// @todo: change these
-        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-        importFilter->SetOrigin(origin);
-        importFilter->SetSpacing(spacing);
-
-        importFilter->SetImportPointer(&G_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-        importFilter->Update();
-        RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "G");
-        RGB->DisconnectPipeline();
+    {             // G
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(1);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "G");
     }
-    {
-        // No longer ensuring integrity here - buffer not copied
-        ImportFilterType::Pointer importFilter = ImportFilterType::New();
-        region.SetSize(size);
-        importFilter->SetRegion(region);
-
-        /// @todo: change these
-        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-        importFilter->SetOrigin(origin);
-        importFilter->SetSpacing(spacing);
-
-        importFilter->SetImportPointer(&B_channel[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-        importFilter->Update();
-        RGB->GraftOverlay(importFilter->GetOutput(), RGB->GetNumberOfLayers(), "B");
-        RGB->DisconnectPipeline();
+    {             // B
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(2);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "B");
     }
 
-    return RGB;
+    return image;
+
 }
 
 ifind::Image::Pointer FrameGrabberManager::Upsample(ifind::Image::Pointer in){

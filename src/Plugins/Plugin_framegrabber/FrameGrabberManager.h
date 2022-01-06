@@ -39,7 +39,7 @@ public:
             n_components = 3;
 
             verbose = false;
-            correct_studio_swing = true;
+            correct_studio_swing = false;
         }
 
         double pixel_size[3];
