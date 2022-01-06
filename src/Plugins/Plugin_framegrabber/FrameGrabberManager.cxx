@@ -147,7 +147,7 @@ void FrameGrabberManager::Send(void){
 ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
 
-    if (!this->mIsPaused && this->mDemoFile.length() == 0){
+    if (!this->mIsPaused && this->mDemoFile.length() <= 1){
         //gg::ColourSpace colour = gg::ColourSpace::I420;
         gg::ColourSpace colour = gg::ColourSpace::BGRA;
         gg::VideoFrame frame(colour);
