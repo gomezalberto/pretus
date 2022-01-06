@@ -26,7 +26,8 @@ FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
     this->TransmitFrameRate.set_capacity(60);
     this->mIsPaused = false;
-    gg::ColourSpace colour = gg::ColourSpace::I420;
+    //gg::ColourSpace colour = gg::ColourSpace::I420;
+    gg::ColourSpace colour = gg::ColourSpace::BGRA;
     gg::VideoFrame frame(colour);
     this->Frame = new gg::VideoFrame(frame);
     this->mDemoFile = "";
@@ -147,7 +148,8 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
 
     if (!this->mIsPaused && this->mDemoFile.length() == 0){
-        gg::ColourSpace colour = gg::ColourSpace::I420;
+        //gg::ColourSpace colour = gg::ColourSpace::I420;
+        gg::ColourSpace colour = gg::ColourSpace::BGRA;
         gg::VideoFrame frame(colour);
 
         {
@@ -168,40 +170,44 @@ ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
     }
 
     if (this->mDemoFile.length() > 0 ){
-        // load from file
+        if (this->mDemoFile.length()==1) {
 
-        std::streampos begin,end;
-        ifstream myfile(this->mDemoFile, ios::in | ios::binary);
-        if (myfile.is_open())
-        {
+            // This snippet of code can be used to generate demo files:
+            {
+                std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
+                /// Test to write data
+                std::string filename("/tmp/epiphan_data_char.bin");
+                ofstream outfile(filename, ios::out | ios::binary);
+                outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
+            }
 
-            begin = myfile.tellg();
-            myfile.seekg (0, ios::end);
-            end = myfile.tellg();
+        } else {
+            // load from file
 
-            int nbytes = end-begin;
-            char *data = new char[nbytes];
-            myfile.seekg (0, ios::beg);
-            myfile.read(data, nbytes);
-            myfile.close();
+            std::streampos begin,end;
+            ifstream myfile(this->mDemoFile, ios::in | ios::binary);
+            if (myfile.is_open())
+            {
 
-            int cols = 1920;
-            int rows = 1080;
+                begin = myfile.tellg();
+                myfile.seekg (0, ios::end);
+                end = myfile.tellg();
 
-            this->Frame->init_from_specs(reinterpret_cast< unsigned char *>(data), nbytes, cols, rows);
+                int nbytes = end-begin;
+                char *data = new char[nbytes];
+                myfile.seekg (0, ios::beg);
+                myfile.read(data, nbytes);
+                myfile.close();
+
+                int cols = 1920;
+                int rows = 1080;
+
+                this->Frame->init_from_specs(reinterpret_cast< unsigned char *>(data), nbytes, cols, rows);
+            }
         }
     }
 
-    // BEGIN
-    // This snippet of code can be used to generate demo files:
-    //    {
-    //        std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
-    //        /// Test to write data
-    //        std::string filename("/tmp/epiphan_data_char.bin");
-    //        ofstream outfile(filename, ios::out | ios::binary);
-    //        outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
-    //    }
-    // END
+
 
 
 
