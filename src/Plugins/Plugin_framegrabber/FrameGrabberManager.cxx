@@ -13,16 +13,89 @@
 #include <itkImageFileWriter.h>
 #include <itkShiftScaleImageFilter.h>
 #include <QApplication>
+#include <itkImageDuplicator.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkResampleImageFilter.h>
+#include <opencv2/opencv.hpp>
+#include <itkOpenCVImageBridge.h>
+#include <itkVectorIndexSelectionCastImageFilter.h>
 
 FrameGrabberManager::FrameGrabberManager(QObject *parent) : Manager(parent){
     this->Cap = nullptr;
     this->latestAcquisitionTime = std::chrono::steady_clock::now();
     this->initialAcquisitionTime = std::chrono::steady_clock::now();
+    this->TransmitFrameRate.set_capacity(60);
+    this->mIsPaused = false;
+    //gg::ColourSpace colour = gg::ColourSpace::I420;
+    //gg::ColourSpace colour = gg::ColourSpace::BGRA;
+    //gg::VideoFrame frame(colour);
+    //this->Frame = new gg::VideoFrame(frame);
+    this->Frame = nullptr;
+    this->mDemoFile = "";
 }
+
+
+int FrameGrabberManager::updateVideoSettings(void){
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::updateVideoSettings() "<<std::endl;
+    }
+
+    if (this->mDemoFile.length() > 1){
+        std::cout << "[FrameGrabberManager::updateVideoSettings] demo mode using "<< this->mDemoFile<<"- no actual framegrabber needed"<<std::endl;
+        return 0;
+    }
+
+    if (this->Cap != nullptr){
+        if (params.verbose){
+            std::cout << "    FrameGrabberManager::updateVideoSettings() resetting the capture"<<std::endl;
+        }
+        this->Cap = nullptr;
+    }
+
+    if (this->mVideoSettings.encoding == "I420"){
+        this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    } else if (this->mVideoSettings.encoding == "BGRA"){
+        this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_BGR24);
+    } else {
+        std::cout << "[ERROR] FrameGrabberManager::updateVideoSettings - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+        exit(-1);
+    }
+
+    FrmGrab_SetMaxFps(this->Cap->get_frame_grabber(), this->mVideoSettings.framerate);
+
+    V2U_VideoMode vm;
+    if (!FrmGrab_DetectVideoMode((FrmGrabber*)this->Cap->get_frame_grabber(), &vm))
+    {
+        std::cerr << "[FrameGrabberManager::updateVideoSettings] No signal detected"<<std::endl;
+        return -1;
+    }
+
+    return 0;
+
+}
+
 
 int FrameGrabberManager::Initialize(){
 
-    this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::Initialize() "<<std::endl;
+    }
+
+    if (this->Frame == nullptr){
+        //gg::ColourSpace colour = gg::ColourSpace::I420;
+        gg::ColourSpace colour = gg::ColourSpace::BGRA;
+        gg::VideoFrame frame(colour);
+        this->Frame = new gg::VideoFrame(frame);
+    }
+
+
+
+    this->updateVideoSettings();
+    /*
+    //this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_BGR24);
+
     FrmGrab_SetMaxFps(this->Cap->get_frame_grabber(), 30);
 
     V2U_VideoMode vm;
@@ -31,18 +104,30 @@ int FrameGrabberManager::Initialize(){
         std::cerr << "[FrameGrabberManager::Initialize] No signal detected"<<std::endl;
         return -1;
     }
+    */
     return 0;
 }
 
+void FrameGrabberManager::slot_updateEncoding(QString enc){
 
+    mVideoSettings.encoding = enc;
+    this->updateVideoSettings();
+}
+
+void FrameGrabberManager::slot_togglePlayPause(bool v){
+    this->mIsPaused  =v;
+}
 
 /**
  * @brief Gets a frame, applies the homography and cropping, and converts it to VTK
  */
 void FrameGrabberManager::Send(void){
 
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::Send() "<<std::endl;
+    }
     /// Go for next round and continue!
-    if (this->IsActive())
+    if (this->IsActive() )
     {
 
         //int wait = 0;
@@ -58,26 +143,14 @@ void FrameGrabberManager::Send(void){
         QApplication::quit();
     }
 
-    auto YUV = this->getFrameAsIfindImageData();
+    auto image = this->getFrameAsIfindImageData(); // as RGB
 
     ///-----------------------------------
-    ifind::Image::Pointer Y = YUV[0];
-    if (Y != nullptr){
 
-        //        if (params.verbose){
-        //            for (int i=0; i<params.n_components; i++){
-        //                typedef itk::ImageFileWriter<ifind::Image> WriterType;
+    if (image != nullptr){
 
-        //                std::stringstream ss;
-        //                ss << "/tmp/image_"<< i <<"_"<< this->params.framecount<<".mhd";
-        //                std::cout << "[FrameGrabberManager::Send()] writing to file "<< ss.str()<<std::endl;
-        //                /// write the image
-        //                WriterType::Pointer writer = WriterType::New();
-        //                writer->SetFileName(ss.str());
-        //                writer->SetInput(YUV[i]);
-        //                writer->Update();
-        //            }
-        //        }
+
+
 
         this->mTransmitedFramesCount++;
         if (params.verbose){
@@ -102,146 +175,275 @@ void FrameGrabberManager::Send(void){
             QString timestring;
             timestring.sprintf("%02d:%02d:%02.3f", hours, minutes, seconds);
 
-            Y->SetMetaData<std::string>("StreamTime", timestring.toStdString());
+            image->SetMetaData<std::string>("StreamTime", timestring.toStdString());
 
             std::string timestamp = std::to_string(std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count());
 
-            Y->SetMetaData<std::string>("DNLTimestamp", timestamp);
-            Y->SetMetaData<std::string>("AcquisitionSystem", "FrameGrabber");
-            Y->SetMetaData<std::string>("NDimensions", "2");
-            Y->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
-            Y->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
-            Y->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
-            Y->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            image->SetMetaData<std::string>("DNLTimestamp", timestamp);
+            image->SetMetaData<std::string>("AcquisitionSystem", "FrameGrabber");
+            image->SetMetaData<std::string>("NDimensions", "2");
+            image->SetMetaData<std::string>("ImageMode", std::to_string(ifind::Image::ImageMode::External));
+            image->SetMetaData<>("AcquisitionFrameRate", QString::number(currentFrameRate).toStdString());
+            image->SetMetaData<>("TransmissionFrameRate", QString::number(this->params.CaptureFrameRate).toStdString());
+            image->SetMetaData<>("TransmitedFrameCount", QString::number(this->mTransmitedFramesCount).toStdString());
+            auto current_transmit_t = std::chrono::steady_clock::now();
+            int duration = std::chrono::duration_cast<std::chrono::milliseconds>(current_transmit_t - this->last_transmit_t).count();
+            this->TransmitFrameRate.push_back(1000.0 / double(duration));
+            double total_fr= 0;
+            for (boost::circular_buffer<double>::const_iterator cit = this->TransmitFrameRate.begin(); cit != this->TransmitFrameRate.end(); ++cit){
+                total_fr+= *cit;
+            }
+            auto current_fr = total_fr / this->TransmitFrameRate.size();
+            image->SetMetaData<>("MeasuredFrameRate", QString::number(current_fr).toStdString());
+            this->last_transmit_t = current_transmit_t;
+            image->SetMetaData<bool>("IsColor", true);
         }
-        Y->SetSpacing(params.pixel_size);
+        image->SetSpacing(params.pixel_size);
         if (this->mTransmitedStreamType.size()>0){
-            Y->SetStreamType(this->mTransmitedStreamType);
+            image->SetStreamType(this->mTransmitedStreamType);
         }
-        Q_EMIT this->ImageGenerated(Y);
+        Q_EMIT this->ImageGenerated(image);
     }
 }
 
 
-std::vector<ifind::Image::Pointer> FrameGrabberManager::getFrameAsIfindImageData(void ) {
 
+ifind::Image::Pointer FrameGrabberManager::getFrameAsIfindImageData(void ) {
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() "<<std::endl;
+    }
 
-    gg::ColourSpace colour = gg::ColourSpace::I420;
-    gg::VideoFrame frame(colour);
-    {
-        try {
+    if (!this->mIsPaused && this->mDemoFile.length() <= 1){
+        if (this->Cap == nullptr){
+            return nullptr;
+        }
 
-            this->Cap->get_frame(frame);
+        gg::ColourSpace colour;
+        if (this->mVideoSettings.encoding == "I420"){
+            colour = gg::ColourSpace::I420;
+        } else if (this->mVideoSettings.encoding == "BGRA"){
+            colour = gg::ColourSpace::BGRA;
+        } else {
+            std::cout << "[ERROR] FrameGrabberManager::getFrameAsIfindImageData - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+            exit(-1);
+        }
+        gg::VideoFrame frame(colour);
 
-        } catch (...) {
-            std::cerr << "[Error] FrameGrabberManager::GetFrame() -  reading frame from framegrabber. "  << std::endl;
+        {
+            try {
+
+                this->Cap->get_frame(frame);
+
+            } catch (...) {
+                std::cerr << "[Error] FrameGrabberManager::GetFrame() -  reading frame from framegrabber. "  << std::endl;
+            }
+        }
+
+        assert( frame.data() != NULL );
+
+        this->mutex_Frame.lock();
+        this->Frame = &frame;
+        this->mutex_Frame.unlock();
+    }
+
+    if (this->mDemoFile.length() > 0 ){
+        if (this->mDemoFile.length()==1) {
+
+            // This snippet of code can be used to generate demo files:
+            {
+                std::cout << "FrameGrabberManager::getFrameAsIfindImageData - "<< this->Frame->rows() << "x"<< this->Frame->cols() <<", total: "<< this->Frame->data_length()<<std::endl;
+                /// Test to write data
+                std::string filename((QString("/tmp/epiphan_data_char_") + this->mVideoSettings.encoding + ".bin").toStdString());
+                ofstream outfile(filename, ios::out | ios::binary);
+                outfile.write(reinterpret_cast< char *>(this->Frame->data()), this->Frame->data_length());
+            }
+
+        } else {
+            if (params.verbose){
+                std::cout << "FrameGrabberManager::getFrameAsIfindImageData() load from  "<< this->mDemoFile<<std::endl;
+            }
+
+            std::streampos begin,end;
+            ifstream myfile(this->mDemoFile, ios::in | ios::binary);
+            if (myfile.is_open())
+            {
+
+                begin = myfile.tellg();
+                myfile.seekg (0, ios::end);
+                end = myfile.tellg();
+
+                int nbytes = end-begin;
+                char *data = new char[nbytes];
+                myfile.seekg (0, ios::beg);
+                myfile.read(data, nbytes);
+                myfile.close();
+
+                int cols = 1920;
+                int rows = 1080;
+
+                this->Frame->init_from_specs(reinterpret_cast< unsigned char *>(data), nbytes, cols, rows);
+            }
         }
     }
 
-    assert( frame.data() != NULL );
 
-    if (frame.rows() == 0 || frame.cols() == 0){
-        std::vector<ifind::Image::Pointer> YUV(params.n_components, nullptr);
-        return YUV;
+    if (this->Frame->rows() == 0 || this->Frame->cols() == 0){
+        return nullptr;
     }
 
-    /// copy the buffer
-    const unsigned long numberOfPixels = frame.cols() *frame.rows() *1.02; /// I do not know why I need to add osme extra pixels but otherwise it fills weird values at the end
-    ifind::Image::PixelType frame_data[numberOfPixels];
-    std::memcpy(&frame_data, frame.data(), sizeof(ifind::Image::PixelType)*numberOfPixels);
+
+    /// Convert to RGB
+    const unsigned long rows = this->Frame->rows() , cols = this->Frame->cols() ;
+    const unsigned long numberOfPixels = cols * rows;
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() Convert data using "<< this->mVideoSettings.encoding.toStdString()<<std::endl;
+    }
+
+    cv::Mat mrgb(this->Frame->rows(), this->Frame->cols(), CV_8UC3);
+
+    if (this->mVideoSettings.encoding == "I420"){
+        cv::Mat myuv(this->Frame->rows() + this->Frame->rows()/2, this->Frame->cols(), CV_8UC1, (unsigned char *) this->Frame->data());
+        //cv::imwrite("/home/ag09/data/VITAL/lungs/epiphan/data/yuv.png", myuv);
+        cvtColor(myuv, mrgb, CV_YUV2BGR_I420); // CV_YUV2BGR_IYUV, CV_YUV2RGB_YV12
+    } else if (this->mVideoSettings.encoding == "BGRA"){
+
+        if (this->Frame->data_length() < this->Frame->rows() * this->Frame->cols() * 3){
+            this->mVideoSettings.encoding = "I420";
+            std::cout << "FrameGrabberManager::getFrameAsIfindImageData() - data incompatible with "<< this->mVideoSettings.encoding.toStdString() << ", setting to I420." << std::endl;
+            return nullptr;
+        }
+
+        cv::Mat mbgr(this->Frame->rows(), this->Frame->cols(), CV_8UC3, (unsigned char *) this->Frame->data());
+        mbgr.copyTo(mrgb);
+
+
+
+        //cv::Mat mrgb = mbgr;
+        //cvtColor(mbgr, mrgb, CV_BGR2RGB);
+    } else {
+        std::cout << "[ERROR] FrameGrabberManager::getFrameAsIfindImageData - unsupported video encoding: "<< this->mVideoSettings.encoding.toStdString() <<std::endl;
+        exit(-1);
+    }
+
 
     /// Do the studio swing
-    const ifind::Image::PixelType *p_end = &frame_data[0]+numberOfPixels;
+
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() if needed do studio swing"<<std::endl;
+    }
+
+    const ifind::Image::PixelType *p_end = &mrgb.data[0]+numberOfPixels*3;
     double factor0 = 1.0;
     double factor1 = 0.0;
-    if (this->params.correct_studio_swing == true) {
-        factor0 = 255./(235.-16.);
-        factor1 = 16.0;
+    if (this->params.correct_studio_swing > 0) {
+        factor0 = 255./(235.-this->params.correct_studio_swing);
+        factor1 = this->params.correct_studio_swing;
     }
-    for (ifind::Image::PixelType *p = &frame_data[0]; p <  p_end; ++p){
-        *p = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
+    for (ifind::Image::PixelType *p = &mrgb.data[0]; p <  p_end; ++p){
+        ifind::Image::PixelType newval = static_cast<ifind::Image::PixelType>(std::floor( (static_cast<double>(*p)-factor1)*factor0));
+        *p = std::min(std::max(newval,ifind::Image::PixelType(0)), ifind::Image::PixelType(255));
     }
 
-    constexpr unsigned int Dimension = ifind::Image::ImageDimension;
-    std::vector<ifind::Image::Pointer> YUV(params.n_components);
-    /// For an n-pixel I420 frame: Y×8×n U×2×n V×2×n (so here taking only the Y channel)
-
-    /// common to all
-    using ImportFilterType = itk::ImportImageFilter<ifind::Image::PixelType, Dimension>;
-    const itk::SpacePrecisionType origin[Dimension] = { 0.0, 0.0, 0.0 };
-    ImportFilterType::SizeType size;
-    size[2] = 1 ; // size along Z (one slice)
-    ImportFilterType::IndexType start;
-    start.Fill(0);
-    ImportFilterType::RegionType region;
-    region.SetIndex(start);
-
-    unsigned long buffer_idx = 0;
-
-    /// Import Y
-    ImportFilterType::Pointer importFilter = ImportFilterType::New();
-
-    size[0] = frame.cols(); // size along X
-    size[1] = frame.rows() ; // size along Y
-
-    region.SetSize(size);
-    importFilter->SetRegion(region);
-
-    /// @todo: change these
-    const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-    importFilter->SetOrigin(origin);
-    importFilter->SetSpacing(spacing);
-
-    const bool importImageFilterWillOwnTheBuffer = false;
-    importFilter->SetImportPointer(&frame_data[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-    //importFilter->SetImportPointer(&frame.data()[0], numberOfPixels, importImageFilterWillOwnTheBuffer);
-    importFilter->Update();
-    ifind::Image::Pointer Y = ifind::Image::New();
-    Y->Graft(importFilter->GetOutput(), "Y");
-    Y->DisconnectPipeline();
-    YUV[0] = Y;
-
-    /// now get the U and V components
-    if (params.n_components ==3) {
-        buffer_idx+=numberOfPixels;
-        // No longer ensuring integrity here - buffer not copied
-        ImportFilterType::Pointer importFilter = ImportFilterType::New();
-
-        size[0] = frame.cols()/2; // size along X
-        size[1] = frame.rows()/2; // size along Y
-
-        region.SetSize(size);
-
-        importFilter->SetRegion(region);
-
-        /// @todo: change these
-        const itk::SpacePrecisionType spacing[Dimension] = { 1.0, 1.0, 1.0 };
-        importFilter->SetOrigin(origin);
-        importFilter->SetSpacing(spacing);
-
-        const unsigned int numberOfPixels = size[0] * size[1];
-        {
-            ifind::Image::PixelType *localBuffer = &frame.data()[buffer_idx];
-
-            const bool importImageFilterWillOwnTheBuffer = false;
-            importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
-            importFilter->Update();
-            YUV[1] = ifind::Image::New();
-            YUV[1]->Graft(importFilter->GetOutput(),"U");
-            buffer_idx+=numberOfPixels;
-        }
-        {
-            ifind::Image::PixelType *localBuffer = &frame.data()[buffer_idx];
-
-            const bool importImageFilterWillOwnTheBuffer = false;
-            importFilter->SetImportPointer(localBuffer, numberOfPixels, importImageFilterWillOwnTheBuffer);
-            importFilter->Update();
-            YUV[2] = ifind::Image::New();
-            YUV[2]->Graft(importFilter->GetOutput(), "V");
-            buffer_idx+=numberOfPixels;
-        }
+    if (params.verbose){
+        std::cout << "FrameGrabberManager::getFrameAsIfindImageData() convert to ifind image"<<std::endl;
     }
-    return YUV;
+
+    ifind::Image::Pointer image = ifind::Image::New();
+
+    typedef itk::OpenCVImageBridge BridgeType;
+    // Convert to colour image
+    ifind::Image::ColorImageType::Pointer colourImage = ifind::Image::ColorImageType::New();
+    colourImage = BridgeType::CVMatToITKImage<ifind::Image::ColorImageType>(mrgb);
+
+    // extract components
+    using IndexSelectionType = itk::VectorIndexSelectionCastImageFilter<ifind::Image::ColorImageType, ifind::Image>;
+    {             // First component (R) as base layer
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(0);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->Graft(indexSelectionFilter->GetOutput(), "R");
+
+    }
+    {             // G
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(1);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "G");
+    }
+    {             // B
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(2);
+        indexSelectionFilter->SetInput(colourImage);
+        indexSelectionFilter->Update();
+        image->GraftOverlay(indexSelectionFilter->GetOutput(), image->GetNumberOfLayers(), "B");
+    }
+
+    return image;
 
 }
 
+ifind::Image::Pointer FrameGrabberManager::Upsample(ifind::Image::Pointer in){
+
+    ifind::Image::SizeType size = in->GetLargestPossibleRegion().GetSize();
+
+    using T_Transform = itk::IdentityTransform<double, 3>;
+
+    // If ITK resampler determines there is something to interpolate which is
+    // usually the case when upscaling (!) then we must specify the interpolation
+    // algorithm. In our case, we want bicubic interpolation. One way to implement
+    // it is with a third order b-spline. So the type is specified here and the
+    // order will be specified with a method call later on.
+    using T_Interpolator = itk::LinearInterpolateImageFunction<ifind::Image, double>;
+
+    // The resampler type itself.
+    using T_ResampleFilter = itk::ResampleImageFilter<ifind::Image, ifind::Image>;
+    // Instantiate the transform and specify it should be the id transform.
+    T_Transform::Pointer _pTransform = T_Transform::New();
+    _pTransform->SetIdentity();
+
+    // Instantiate the b-spline interpolator and set it as the third order
+    // for bicubic.
+    T_Interpolator::Pointer _pInterpolator = T_Interpolator::New();
+
+    // Instantiate the resampler. Wire in the transform and the interpolator.
+    T_ResampleFilter::Pointer _pResizeFilter = T_ResampleFilter::New();
+    _pResizeFilter->SetTransform(_pTransform);
+    _pResizeFilter->SetInterpolator(_pInterpolator);
+
+    // Set the output origin. You may shift the original image "inside" the
+    // new image size by specifying something else than 0.0, 0.0 here.
+
+    const double vfOutputOrigin[3] = { 0.0, 0.0, 0.0 };
+    _pResizeFilter->SetOutputOrigin(vfOutputOrigin);
+
+
+    // Fetch original image spacing.
+    const ifind::Image::SpacingType & vfInputSpacing = in->GetSpacing();
+    // Will be {1.0, 1.0} in the usual
+    // case.
+
+    double vfOutputSpacing[3];
+    vfOutputSpacing[0] = vfInputSpacing[0] / 2.0;
+    vfOutputSpacing[1] = vfInputSpacing[1] / 2.0;
+    vfOutputSpacing[2] = 1.0;
+
+    // Set the output spacing. If you comment out the following line, the original
+    // image will be simply put in the upper left corner of the new image without
+    // any scaling.
+    _pResizeFilter->SetOutputSpacing(vfOutputSpacing);
+
+    // Set the output size as specified on the command line.
+
+    itk::Size<3> vnOutputSize = { { size[0] * 2, size[1] * 2, 1 } };
+    _pResizeFilter->SetSize(vnOutputSize);
+
+    // Specify the input.
+
+    _pResizeFilter->SetInput(in);
+    _pResizeFilter->Update();
+    return _pResizeFilter->GetOutput();
+
+}

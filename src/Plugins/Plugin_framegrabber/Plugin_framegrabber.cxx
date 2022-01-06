@@ -1,5 +1,6 @@
 #include "Plugin_framegrabber.h"
 #include <QObject>
+#include <QPushButton>
 
 Q_DECLARE_METATYPE(ifind::Image::Pointer)
 Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
@@ -12,7 +13,26 @@ Plugin_framegrabber::Plugin_framegrabber(QObject *parent) : Plugin(parent)
     {
         // create widget
         WidgetType * mWidget_ = new WidgetType;
+
+        std::vector<std::string> encodings = {"I420", "BGRA"};
+        mWidget_->setEncodings(encodings);
+        mWidget_->setSelectedEncoding(QString("BGR"));
+
         this->mWidget = mWidget_;
+
+        ManagerType *w = std::dynamic_pointer_cast< ManagerType >(this->manager).get();
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, w,
+                &ManagerType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_->mPausePlayButton,
+                &QPushButton::toggled, mWidget_,
+                &WidgetType::slot_togglePlayPause);
+
+        QObject::connect(mWidget_,
+                &WidgetType::signal_newEncoding, w,
+                &ManagerType::slot_updateEncoding);
+
     }
     {
         // create image widget
@@ -40,13 +60,14 @@ void Plugin_framegrabber::SetDefaultArguments(){
     this->RemoveArgument("stream");
     this->RemoveArgument("layer");
     this->RemoveArgument("time");
+    this->RemoveArgument("framerate");
     // arguments are defined with: name, placeholder for value, argument type,  description, default value
     mArguments.push_back({"studioswing", "<val>",
                           QString( Plugin::ArgumentType[0] ),
                           "Correct for studio swing (1) or not (0).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing)});
 
-    mArguments.push_back({"resolution", "<val>",
+    mArguments.push_back({"pixelsize", "<val>",
                           QString( Plugin::ArgumentType[2] ),
                           "Value, in mm, of the pixel size (isotropic).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0])});
@@ -55,6 +76,16 @@ void Plugin_framegrabber::SetDefaultArguments(){
                           QString( Plugin::ArgumentType[0] ),
                           "USe color images (1) or not (0).",
                           QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components==3)});
+
+    mArguments.push_back({"framerate", "<val>",
+                         QString( ArgumentType[2] ),
+                         "Frame rate at which the framegrabber captures data.",
+                         QString::number(std::dynamic_pointer_cast< ManagerType >(this->manager)->params.CaptureFrameRate)});
+
+    mArguments.push_back({"demo", "filename with demo frame",
+                         QString( ArgumentType[3] ),
+                         "Filename (typically .bin) with the frame values.",
+                         std::dynamic_pointer_cast< ManagerType >(this->manager)->mDemoFile.c_str()});
 
 }
 
@@ -66,7 +97,7 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.correct_studio_swing= atoi(argument.c_str());
         }}
-    {const std::string &argument = input.getCmdOption("resolution");
+    {const std::string &argument = input.getCmdOption("pixelsize");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[0]= atof(argument.c_str());
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.pixel_size[1]= atof(argument.c_str());
@@ -80,6 +111,10 @@ void Plugin_framegrabber::SetCommandLineArguments(int argc, char* argv[]){
                 std::dynamic_pointer_cast< ManagerType >(this->manager)->params.n_components = 1;
             }
 
+        }}
+     {const std::string &argument = input.getCmdOption("demo");
+        if (!argument.empty()){
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->mDemoFile= argument.c_str();
         }}
     // no need to add above since already in plugin
     {const std::string &argument = input.getCmdOption("framerate");

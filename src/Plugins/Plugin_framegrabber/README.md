@@ -9,7 +9,6 @@ The following plug-in options can be tweaked via the command line interface:
 ``` bash
 # PLUGIN Frame grabber
    Reads real-time imaging from a video source using the Epiphan DVI2USB 3.0  grabber.
-	--framegrabber_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
 	--framegrabber_verbose <val> [ type: BOOL]	Whether to print debug information (1) or not (0). (Default: 0) 
 	--framegrabber_showimage <val> [ type: INT]	Whether to display realtime image outputs in the central window (1) or not (0). 
                                             		(Default: <1 for input plugins, 0 for the rest>) 
@@ -17,14 +16,16 @@ The following plug-in options can be tweaked via the command line interface:
                                              		1- top left, 2- top right, 3-bottom left, 4-bottom right. (Default: visible, 
                                              		default location depends on widget.) 
    Plugin-specific arguments:
-	--framegrabber_studioswing <val> [ type: BOOL]	Correct for studio swing (1) or not (0). (Default: 1) 
-	--framegrabber_resolution <val> [ type: FLOAT]	Value, in mm, of the pixel size (isotropic). (Default: 1) 
+        --framegrabber_studioswing <val> [ type: BOOL]	Correct for studio swing (1) or not (0). (Default: 0) 
+        --framegrabber_pixelsize <val> [ type: FLOAT]	Value, in mm, of the pixel size (isotropic). (Default: 1) 
+        --framegrabber_framerate <val> [ type: FLOAT]	Frame rate at which the plugin does the work. (Default: 20) 
+        --framegrabber_demo filename with demo frame [ type: STRING]	Filename (typically .bin) with the frame values. (Default: )
 ```
 
 
 # Build and configuration
 
-This plug-in requires setting new CMake variables, the Epiphan SDK available and that the drivers are installed. More details below.
+This plug-in requires setting new CMake variables, the Epiphan SDK available and that the drivers are installed. More details below. This plug-in also needs OpenCV.
 
 ## CMake configuration
 

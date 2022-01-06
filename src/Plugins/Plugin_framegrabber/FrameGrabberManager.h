@@ -9,6 +9,7 @@
 #include <videoframe.h>
 #include <epiphansdk_video_source.h>
 #include <chrono>
+#include <boost/circular_buffer.hpp>
 
 // define some custom EDIDs
 class FrameGrabberManager : public Manager{
@@ -35,10 +36,10 @@ public:
             Device_name = "DVI2USB 3.0 ET";
             //Resolution_factor = 1.0;
             CaptureFrameRate  = 0; /// this will be as fast as can by default
-            n_components = 1;
+            n_components = 3;
 
             verbose = false;
-            correct_studio_swing = true;
+            correct_studio_swing = false;
         }
 
         double pixel_size[3];
@@ -53,7 +54,38 @@ public:
         int n_components;
     };
 
+    struct VideoSettings {
+        VideoSettings(){
+            buffersize = 1;
+            framerate = 30;
+            w = 1920;
+            h = 1080;
+            encoding = "BGRA";
+        }
+
+        std::string toStdString(){
+            std::stringstream ss;
+            ss << "Video Settings:"<<std::endl;
+            ss << "\tBuffer size: "<< buffersize<<std::endl;
+            ss << "\tFrame rate: "<< framerate<<std::endl;
+            ss << "\tResolution: "<< w <<"x"<<h<<std::endl;
+            ss << "\tCodec: "<< encoding.toStdString() <<std::endl;
+            return ss.str();
+        }
+        int buffersize;
+        int framerate;
+        int w;
+        int h;
+        QString encoding;
+    };
+
     Parameters params;
+
+    /**
+     * @brief mDemoFile by default empty, if not empty then the software reads
+     * a frame from the file indicated and does not try to connect to the framegrabber.
+     */
+    std::string mDemoFile;
 
 public Q_SLOTS:
 
@@ -63,22 +95,38 @@ public Q_SLOTS:
    * This method has to be public so that it can be binded to the periodic callback
    */
     virtual void Send(void);
+    virtual void slot_togglePlayPause(bool v);
+    virtual void slot_updateEncoding(QString enc);
 
 protected:
     FrameGrabberManager(QObject *parent = 0);
 
 private:
+    int FrameRate;
+    boost::circular_buffer<double> TransmitFrameRate;
+    std::chrono::steady_clock::time_point last_transmit_t;
 
     gg::VideoSourceEpiphanSDK *Cap;
+    bool mIsPaused;
+    std::mutex mutex_frame_buffer;
+    std::mutex mutex_Frame;
+    gg::VideoFrame *Frame;
 
     /**
      * @brief GetFrame
      * @return nullptr if the re is no frame
      */
-    std::vector<ifind::Image::Pointer> getFrameAsIfindImageData(void);
-    std::mutex mutex_frame_buffer;
+    ifind::Image::Pointer getFrameAsIfindImageData(void);
+
+    //ifind::Image::Pointer YUV2RGB(std::vector<ifind::Image::Pointer> &YUV );
 
     std::chrono::steady_clock::time_point latestAcquisitionTime;
     std::chrono::steady_clock::time_point initialAcquisitionTime;
+
+    ifind::Image::Pointer Upsample(ifind::Image::Pointer in);
+
+    VideoSettings mVideoSettings;
+    int updateVideoSettings(void);
+
 
 };

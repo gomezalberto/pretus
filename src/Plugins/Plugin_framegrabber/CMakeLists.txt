@@ -8,6 +8,8 @@ include(${ITK_USE_FILE})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}")
 
+find_package(OpenCV COMPONENTS core  video imgproc rgbd  REQUIRED) # highgui
+
 find_package(Boost REQUIRED COMPONENTS filesystem thread chrono)#COMPONENTS system filesystem thread date_time iostreams serialization)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -36,6 +38,7 @@ target_link_libraries(Plugin_framegrabber
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
   videograbber
+  ${OpenCV_LIBS}
   )
 
 
