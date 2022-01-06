@@ -40,7 +40,9 @@ int FrameGrabberManager::Initialize(){
         return 0;
     }
 
-    this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    //this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_I420);
+    this->Cap = new gg::VideoSourceEpiphanSDK(this->params.Device_name.data(), V2U_GRABFRAME_FORMAT_BGR24);
+
     FrmGrab_SetMaxFps(this->Cap->get_frame_grabber(), 30);
 
     V2U_VideoMode vm;
