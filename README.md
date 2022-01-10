@@ -12,18 +12,22 @@ This class, together with convenience readers and writers make up the [Common](s
 * Support: [pretus@googlegroups.com](mailto:pretus@googlegroups.com).
 
 ### Citations
-If you use PRETUS please cite our preprint:
-[Alberto Gomez, Veronika A. Zimmer, Gavin Wheeler, Nicolas Toussaint, Shujie Deng, Robert Wright, Emily Skelton, Jackie Matthew, Bernhard Kainz, Jo Hajnal, Julia Schnabel. "PRETUS: A plug-in based platform for real-time ultrasound imaging research", 2021 - arXiv:2109.0651](https://arxiv.org/abs/2109.06519)
+If you use PRETUS please cite our SoftwareX article:
+[Alberto Gomez, Veronika A. Zimmer, Gavin Wheeler, Nicolas Toussaint, Shujie Deng, Robert Wright, Emily Skelton, Jackie Matthew, Bernhard Kainz, Jo Hajnal, Julia Schnabel. "PRETUS: A plug-in based platform for real-time ultrasound imaging research", in SoftwareX, vol 17, 2022 ](https://www.sciencedirect.com/science/article/pii/S2352711021001849)
 
 ```bibtex
 @misc{gomez2021pretus,
       title={PRETUS: A plug-in based platform for real-time ultrasound imaging research}, 
+      journal = {SoftwareX},
+      volume = {17},
+      pages = {100959},
       author={Alberto Gomez and Veronika A. Zimmer and Gavin Wheeler and Nicolas Toussaint and Shujie Deng and Robert Wright and Emily Skelton and Jackie Matthew and Bernhard Kainz and Jo Hajnal and Julia Schnabel},
-      year={2021},
-      eprint={2109.06519},
-      archivePrefix={arXiv},
-      primaryClass={physics.med-ph}
+      year={2022},
+      issn = {2352-7110},
+      doi = {https://doi.org/10.1016/j.softx.2021.100959}, 
+      url = {https://www.sciencedirect.com/science/article/pii/S2352711021001849}
 }
+
 ```
 
 ### Contributors
