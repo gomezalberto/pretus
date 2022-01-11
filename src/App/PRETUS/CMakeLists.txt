@@ -98,3 +98,35 @@ install(
     DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
 
+##############################################
+# This is still not working great #
+
+include(GetPrerequisites)
+
+set(BINARY_LOCATION "${CMAKE_INSTALL_PREFIX}/bin/pretus")
+get_prerequisites(${BINARY_LOCATION} DEPENDENCIES 0 0 "" "")
+
+message("Dependencies: ")
+foreach(DEPENDENCY_FILE ${DEPENDENCIES})
+
+  get_filename_component(DEPENDENCY_NAME "${DEPENDENCY_FILE}" NAME)
+  get_filename_component(DEPENDENCY "${DEPENDENCY_FILE}" REALPATH)
+  get_filename_component(DEPENDENCY_PATH "${DEPENDENCY}" DIRECTORY)
+  #install(FILES ${DEPENDENCY} DESTINATION "${DEPENDENCY_PATH}" )
+  #message("   ${DEPENDENCY_FILE}")
+  #message("       ${DEPENDENCY}")
+  #message("       ${DEPENDENCY_PATH}")
+  message("       ${DEPENDENCY_NAME}")
+  #set(CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_PACKAGE_NAME}-lib (=${CPACK_PACKAGE_VERSION})")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${DEPENDENCY_NAME}")
+endforeach()
+
+SET(CPACK_GENERATOR "DEB")
+#set(CPACK_DEB_COMPONENT_INSTALL ON)
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "AG") #required
+INCLUDE(CPack)
+
+
+
+
+
