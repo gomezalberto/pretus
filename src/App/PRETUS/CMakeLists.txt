@@ -100,6 +100,8 @@ install(
 
 ##############################################
 # This is still not working great #
+# maybe get some inspiration from MITK:
+# https://github.com/MITK/MITK/blob/master/CMakeLists.txt
 
 include(GetPrerequisites)
 
