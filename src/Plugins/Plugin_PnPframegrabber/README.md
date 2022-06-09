@@ -30,8 +30,44 @@ The following plug-in options can be tweaked via the command line interface:
 ```
 
 
-# Build and configuration
+## Build and configuration
 
 This plug-in requires opencv. In Linux it requires the V4L2 libraries (vidoe for linux) installed, otherwise it is just plug and play.
 The framegrabber can be tested in advance with OBS or VLC players to check that it is correctly recognised by the system.
 
+## Resolution tests Using Frame-grabber MiraBox Video Capture
+* Scripts 
+```
+cd $HOME/repositories/pretus/src/Plugins/Plugin_PnPframegrabber
+conda activate pretus 
+python framegrabber_capturing_video.py --fW 1024 --fH 768 --FPS 60 --buffer_size 1 
+```
+
+* Terminal logs
+
+ * --fW 1024 --fH 768 --FPS 60 --buffer_size 1 
+``` 
+python framegrabber_capturing_video.py --fW 1024 --fH 768 --FPS 60 --buffer_size 1 
+fps: 60.0
+resolution: 1024.0x768.0
+mode: MJPG
+Buffer size: 1.0
+```
+
+ * --fW 1280 --fH 960 --FPS 30 --buffer_size 1
+``` 
+python framegrabber_capturing_video.py --fW 1280 --fH 960 --FPS 30 --buffer_size 1
+fps: 30.0
+resolution: 1280.0x960.0
+mode: MJPG
+Buffer size: 1.0
+``` 
+
+ * --fW 1920 --fH 1080 --FPS 60 --buffer_size 1
+``` 
+python framegrabber_capturing_video.py --fW 1920 --fH 1080 --FPS 60 --buffer_size 1
+fps: 60.0
+resolution: 1920.0x1080.0
+mode: MJPG
+Buffer size: 1.0
+```
