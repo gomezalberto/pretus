@@ -395,8 +395,15 @@ $HOME/build/pretus/release
     * `BUILD_PLUGIN_VIDEOMANAGER` enabled
     * `BUILD_PLUGIN_PNPFRAMEGRABBER` enabled (you might need an installed hardware driver)
     * `BUILD_PLUGIN_FRAMEGRABBER` enabled (you need an hardware installed driver)
-* Go to the build folder `cd $HOME/build/pretus/release`, do `make`, and `make install`.
-  The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
+* Make project 
+The `make install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
+``` 
+cd $HOME/build/pretus/4cv
+conda activate pretus
+make
+make install 
+```  
+
 * Build pretus with Cmake-gui as follows
  ![fig](Art/pretus-build.png)
  See plug-in further [instructions](src/Plugins) on how to configure CMake options.
@@ -404,7 +411,7 @@ $HOME/build/pretus/release
 ### Using/testing PRETUS
 * Application usage
   * Launch help of the application
-    ```bash
+    ```
     cd $HOME/local/pretus
     conda activate pretus
     sh launcher_pretus.sh -h
