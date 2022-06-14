@@ -1,10 +1,10 @@
 # Plug & Play Framegrabber plugin.
-A plug-in to read real time images using a plug and play framegrabber that supports V4L2.
+A plug-in to read real time images using a plug and play USB framegrabber that supports V4L2.
+This plug-in requires opencv. In Linux it requires the V4L2 libraries installed, otherwise it is just plug and play.
+The USB framegrabber can be tested in advance with VLC player (go to video menu, click in advance and set /dev/video0 card) to check that it is correctly recognised by the system.
 
 ## Build and configuration
-This plug-in requires opencv. In Linux it requires the V4L2 libraries (vidoe for linux) installed, otherwise it is just plug and play.
-The framegrabber can be tested in advance with OBS or VLC players to check that it is correctly recognised by the system.
-
+See [README](../../../README.md#building-pretus)
 
 ## Usage
 ``` 
@@ -12,6 +12,8 @@ cd $HOME/local/pretus
 conda activate pretus
 sh launcher_pretus.sh -pipeline "pnpframegrabber>gui"
 ```
+
+![launcher](../../../Art/launcher_pretus_sh_pipeline_pnpframegrabber_gui.png)
 
 ## Help for `sh launcher_pretus.sh -h`
 The following plug-in options can be tweaked via the command line interface.
@@ -39,7 +41,7 @@ The following plug-in options can be tweaked via the command line interface.
 
 ```
 
-## Resolution tests Using Frame-grabber MiraBox Video Capture
+## Resolution tests Using USB framegrabber MiraBox Video Capture
 * Scripts 
 ```
 cd $HOME/repositories/pretus/src/Plugins/Plugin_PnPframegrabber
