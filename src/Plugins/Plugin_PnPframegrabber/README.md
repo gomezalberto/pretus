@@ -10,7 +10,7 @@ The framegrabber can be tested in advance with OBS or VLC players to check that 
 ``` 
 cd $HOME/local/pretus
 conda activate pretus
-sh launcher_pretus.sh -pipeline "videomanager>gui>pnpframegrabber"  
+sh launcher_pretus.sh -pipeline "pnpframegrabber>gui"
 ```
 
 ## Help for `sh launcher_pretus.sh -h`
