@@ -33,7 +33,7 @@ if (BUILD_PLUGIN_FRAMEGRABBER)
   add_subdirectory(Plugin_framegrabber)
 endif()
 
-option(BUILD_PLUGIN_PNPFRAMEGRABBER "Build plugin to receive images from the a Plug & Play framegrabber (e.g. using v4l)" OFF)
+option(BUILD_PLUGIN_PNPFRAMEGRABBER "Build plugin to receive images from the Plug & Play framegrabber (e.g. using v4l)" OFF)
 if (BUILD_PLUGIN_PNPFRAMEGRABBER)
   add_subdirectory(Plugin_PnPframegrabber)
 endif()

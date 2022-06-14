@@ -349,12 +349,26 @@ Pre-requisites (likely already in your system!):
     * Go to the build folder, in a terminal do `make && make install`.
       
 ### Building PRETUS
+* Open terminal with conda environment
+``` 
+conda activate pretus
+```
 * Creating building paths
   ```bash
   mkdir -p $HOME/local/pretus # 
   mkdir -p $HOME/build/pretus/release/ && cd $HOME/build/pretus/release/ 
   ```
-* CMake tags in PRETUS
+* Open cmake-gui
+```
+cd $HOME/repositories/pretus/src
+cmake-gui .
+```
+* Select paths for source code and build binaries:
+``` 
+$HOME/repositories/pretus/src
+$HOME/build/pretus/release
+```
+* Setting up cmake tags in PRETUS
   * `CMAKE_INSTALL_PREFIX` set to `$HOME/local/pretus`
   * `VTK_DIR` set to `$HOME/workspace/VTK/release`
   * `ITK_DIR` set to `$HOME/workspace/ITK/release`
@@ -381,21 +395,30 @@ Pre-requisites (likely already in your system!):
     * `BUILD_PLUGIN_VIDEOMANAGER` enabled
     * `BUILD_PLUGIN_PNPFRAMEGRABBER` enabled (you might need an installed hardware driver)
     * `BUILD_PLUGIN_FRAMEGRABBER` enabled (you need an hardware installed driver)
-  * Go to the build folder in the terminal, do `make`, and `make install`.
-    The `install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
-  * Make sure you have your conda environment activated e.g.: `conda activate pretus`.
+* Make project 
+The `make install` step is mandatory for if you use Python plug-ins (else PRETUS will not find the python sources)
+``` 
+cd $HOME/build/pretus/4cv
+conda activate pretus
+make
+make install 
+```  
+
 * Build pretus with Cmake-gui as follows
  ![fig](Art/pretus-build.png)
- See plug-in further [instructions](src/Plugins) on how to configure CMake options for them.
+ See plug-in further [instructions](src/Plugins) on how to configure CMake options.
+
+### Using/testing PRETUS
 * Application usage
   * Launch help of the application
-    ```bash
+    ```
     cd $HOME/local/pretus
-    ./launch_pretus -h
+    conda activate pretus
+    sh launcher_pretus.sh -h
     ```
   * Launch example
   ```
-  ./launcher_pretus.sh -pipeline "videomanager>pythonalgorithm>cppalgorithm>gui" --videomanager_input  ~/path/video.mp4
+  sh launcher_pretus.sh -pipeline "videomanager>pythonalgorithm>cppalgorithm>gui" --videomanager_input  $HOME/datasets/video-demo/echo.mp4
   ```
 
 * Notes
