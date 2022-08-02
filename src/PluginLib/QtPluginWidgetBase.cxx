@@ -18,6 +18,10 @@ const QString QtPluginWidgetBase::sQComboBoxStyle = "QComboBox { background-colo
     "QComboBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
     "QComboBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
 
+const QString QtPluginWidgetBase::sQSpinBoxStyle = "QSpinBox { background-color : black; color : white} "
+    "QSpinBox::indicator {border: 2px solid white; background : none; color: white; border-radius: 3px;}"
+    "QSpinBox::indicator:checked {border: 2px solid white; background :  rgb(50, 150, 255); color: white;}";
+
 const QString QtPluginWidgetBase::sQLabelStyle = "QLabel { background-color : black; color : white; }";
 
 const QString QtPluginWidgetBase::sQPushButtonStyle = "QPushButton { border: 2px solid white; background-color : black; color : white; } "

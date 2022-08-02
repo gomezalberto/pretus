@@ -80,6 +80,17 @@ vtkSmartPointer<vtkMatrix4x4> Image::GetMetaDataMatrix (std::string key)
     return ret;
 }
 
+void Image::SetSpacingAllLAyers(const SpacingType &spacing){
+    this->SetSpacing(spacing);
+    int N = this->GetNumberOfLayers();
+    for (int i=0; i<N; i++){
+        if (this->GetOverlay(i) == nullptr){
+            continue;
+        }
+        this->m_Converters[i]->GetInput()->SetSpacing(spacing);
+    }
+}
+
 void Image::ShallowCopy (const Image *data){
 
     itk::MetaDataDictionary dic = data->GetMetaDataDictionary();

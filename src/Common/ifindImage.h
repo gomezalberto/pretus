@@ -193,6 +193,12 @@ public:
     virtual void ShallowMerge(const Image *data, bool mergeLayers=false);
 
     /**
+     * @brief SetSpacingAllLAyers
+     * @param spacing
+     */
+    virtual void SetSpacingAllLAyers(const SpacingType &spacing);
+
+    /**
    * @brief Graft the information and PixelData from the input
    * @param data
    */

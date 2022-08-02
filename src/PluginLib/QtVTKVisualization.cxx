@@ -15,11 +15,44 @@
 #include <vtkImageAppendComponents.h>
 #include <QVTKWidget.h>
 #include <QPainter>
-
+#include <vtkCallbackCommand.h>
 #include <QResizeEvent>
 
 #include "vtkLookupTableGenerator.h"
 #include "VisualizationConsts.h"
+
+// for the callback to pick points:
+#include <vtkCoordinate.h>
+
+
+namespace {
+void ClickCallbackFunction(vtkObject* caller, long unsigned int eventId, void* clientData, void* callData)
+{
+    //std::cout << "Click callback. Point picked at " << std::endl;
+
+    // We can get the calling object like this:
+    // vtkRenderWindowInteractor *iren =
+    //  static_cast<vtkRenderWindowInteractor*>(caller);
+    vtkRenderWindowInteractor *iren = static_cast<vtkRenderWindowInteractor*>(caller);
+
+    int x = iren->GetEventPosition()[0];
+    int y = iren->GetEventPosition()[1];
+    //std::cout << "(x,y) = (" << x << "," << y << ")" << std::endl;
+    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate->SetCoordinateSystemToDisplay();
+    coordinate->SetValue(x,y,0);
+
+    // This doesn't produce the right value if the sphere is zoomed in???
+    double* world = coordinate->GetComputedWorldValue(iren->GetRenderWindow()->GetRenderers()->GetFirstRenderer());
+    //std::cout << "World coordinate: " << world[0] << ", " << world[1] << ", " << world[2] << std::endl;
+    QVector2D vec(world[0], world[1]);
+
+    auto visualizer = static_cast<QtVTKVisualization *>(clientData);
+    Q_EMIT visualizer->PointPicked(vec);
+
+}
+}
+
 
 static const bool sDefaultParametersShowRuler(false);
 static const bool sDefaultParametersShowColorbar(false);
@@ -34,6 +67,8 @@ QtVTKVisualization::Parameters::Parameters()
     , mOverlayLayer(sDefaultOverlayLayer)
     , mLutId(sDefaultParametersLutId)
 {}
+
+
 
 const bool QtVTKVisualization::Parameters::ShowRuler() const {
     return mShowRuler;
@@ -58,6 +93,9 @@ const int QtVTKVisualization::Parameters::LutId() const {
 QVTKWidget *QtVTKVisualization::GetQVTKWidget(){
     return this->vtkWidget;
 }
+
+
+
 
 void QtVTKVisualization::Parameters::Usage()
 {
@@ -394,6 +432,7 @@ void QtVTKVisualization::SetViewScale(float viewScale){
     mViewScale = viewScale;
 }
 
+
 void QtVTKVisualization::SetZSlice(int newZSlice)
 {
     if (this->zSlice == newZSlice) {
@@ -456,6 +495,15 @@ void QtVTKVisualization::SetupInteractor()
 
     vtkNew<vtkRenderer> renderer;
     this->renderWindow->AddRenderer(renderer.GetPointer());
+
+
+    // add some observers just in case
+    vtkNew<vtkCallbackCommand> clickCallback;
+    clickCallback->SetClientData(this);
+    clickCallback->SetCallback(ClickCallbackFunction);
+
+    iren.GetPointer()->AddObserver(vtkCommand::LeftButtonPressEvent, clickCallback);
+
 }
 
 void QtVTKVisualization::resizeEvent(QResizeEvent *event)

@@ -9,8 +9,14 @@
 #include <vtkExtractVOI.h>
 #include <vtkRenderWindow.h>
 #include <vtkScalarBarActor.h>
-
 #include <ifindStreamTypeHelper.h>
+#include <QVector2D>
+
+namespace {
+
+void ClickCallbackFunction(vtkObject* caller, long unsigned int eventId,
+                           void* clientData, void* callData);
+}
 
 class QVTKWidget;
 
@@ -78,6 +84,9 @@ public:
     virtual void SendImageToWidgetImpl(ifind::Image::Pointer image);
 
 
+
+
+
 public Q_SLOTS:
     virtual void slot_Terminate(void);
 
@@ -92,6 +101,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void ZSliceChanged(int arg);
+    void PointPicked(QVector2D &vec);
 
 protected:
     virtual void SetupInteractor();
