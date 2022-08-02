@@ -19,6 +19,7 @@ public:
     static const QString sQComboBoxStyle ;
     static const QString sQLabelStyle;
     static const QString sQPushButtonStyle;
+    static const QString sQSpinBoxStyle;
     static const QString sQGroupBoxStyle;
     static const QString sQLineEditStyle;
 
