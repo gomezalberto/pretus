@@ -98,6 +98,7 @@ public Q_SLOTS:
      */
     virtual void SetZSlice(int newZSlice);
     virtual void SetViewScale(float viewScale);
+    virtual void EnableOverlay(bool enabled);
 
 Q_SIGNALS:
     void ZSliceChanged(int arg);
@@ -136,6 +137,7 @@ private:
 
     uint64_t latestTimeStamp;
     int zSlice;
+    bool mShowOverlay;
 
     Parameters mParams;
 };

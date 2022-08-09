@@ -174,6 +174,7 @@ QtVTKVisualization::QtVTKVisualization(QWidget *parent)
     vtkWidget->resize(256, 256);
     this->renderWindow = this->vtkWidget->GetRenderWindow();
     this->mViewScale = 0.5;
+    this->mShowOverlay = true;
 
     //If it is needed, then the below code will hide the green color in the border.
     l->setMargin(1);
@@ -278,8 +279,11 @@ void QtVTKVisualization::SendImageToWidgetImpl(ifind::Image::Pointer image)
         layerOrder.insert(layerOrder.begin(), baselayer); // This will always have 6 elements
 
         unsigned int upperlimit = this->mParams.OverlayLayer() != 0 ? image->GetNumberOfLayers() : 1;
+        if (mShowOverlay == false){
+            upperlimit = 1;
+        }
 
-        if (this->mParams.OverlayLayer() != 0){
+        if (mShowOverlay && (this->mParams.OverlayLayer() != 0)){
             /// show only one layer, as overlay, selected by the user
             layerOrder.clear();
             layerOrder.push_back(baselayer);
@@ -432,6 +436,10 @@ void QtVTKVisualization::SetViewScale(float viewScale){
     mViewScale = viewScale;
 }
 
+void QtVTKVisualization::EnableOverlay(bool enabled)
+{
+    this->mShowOverlay = enabled;
+}
 
 void QtVTKVisualization::SetZSlice(int newZSlice)
 {
