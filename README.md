@@ -258,6 +258,7 @@ Pre-requisites (likely already in your system!):
    cv::cvtColor(in.at(0).get(), originalHSV, cv::COLOR_BGR2HSV);
    cv::cvtColor(in.at(1).get(), filteredHSV, cv::COLOR_BGR2HSV);
    ```
+* In Windows, you may need to add the line `#include <stdexcept>` to the same file as above `$HOME/repositories/opencv_build/modules/cvv/src/qtutil/filter/diffFilterWidget.cpp` if the compiler complains about an isue with `std::logic_except` being not part of std.
 
 * The version of opencv and OpenCV_contrib are 3.4.4 and higher versions might work. To them build and install follow these steps:
 * Configure opencv, setting the following CMake variables:
