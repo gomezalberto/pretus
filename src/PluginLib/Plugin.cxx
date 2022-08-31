@@ -44,6 +44,7 @@ void Plugin::Initialize(void){
 
     if (this->mWidget != nullptr){
         this->mWidget->setPluginName(this->GetCompactPluginName());
+        //std::cout << "Plugin::Initialize setting streams in the widget to "<< ifind::StreamTypeSetToString(this->mStreamTypes)<<" for plugin "<< this->GetPluginName().toStdString()<< std::endl;
         this->mWidget->SetInputStreamTypes(this->mStreamTypes);
 
         /// Need to connect the plugin signal, instead of the worker signal, because
@@ -131,8 +132,16 @@ void Plugin::slot_updateGUI(){
 
 void Plugin::slot_updateInputStream(int idx){
     //std::cout << "Plugin::slot_updateInputStream "<< this->GetCompactPluginName().toStdString() << " set input "<< idx<<std::endl;
+    if (idx > 0){
+        this->mWidget->mInputStreamComboBox->blockSignals(true);
+        this->mWidget->mInputStreamComboBox->setCurrentIndex(idx);
+        this->mWidget->mInputStreamComboBox->blockSignals(false);
+    }
+
     std::string selected_stream = this->mWidget->mInputStreamComboBox->currentText().toStdString();
+
     ifind::StreamTypeSet stream =  ifind::InitialiseStreamTypeSetFromString(selected_stream.c_str());
+    //std::cout << "Plugin::slot_updateInputStream setting streams in the widget to "<< ifind::StreamTypeSetToString(stream)<<" for plugin "<< this->GetPluginName().toStdString()<< std::endl;
     this->SetInputStream(stream);
 
     // update the layers
@@ -232,6 +241,13 @@ void Plugin::slot_imageReceived(ifind::Image::Pointer image){
             this->mAvailableLayersForAvailableStream[image->GetStreamType()] = nlayers;
             // now update the widget
             //std::cout << "\tPlugin::slot_imageReceived  at "<< this->GetCompactPluginName().toStdString() << " the streams so far are "<< ifind::StreamTypeSetToString(this->mAvailableStreamTypes)<<std::endl;
+            //std::cout << "\tPlugin::slot_imageReceived, the user has requested stream of "<< ifind::StreamTypeSetToString(this->mStreamTypes)<<std::endl;
+            ifind::Image::StreamType requested_stream = *(this->mStreamTypes.begin()); // get iterator to 1st element
+            //std::advance(first, 9);
+            bool found = this->mAvailableStreamTypes.find(requested_stream) != this->mAvailableStreamTypes.end();
+            //std::cout << "\tPlugin::slot_imageReceived,  "<< found << " at index "<< this->mAvailableStreamTypes.size() <<std::endl;
+
+
             this->mWidget->mInputStreamComboBox->clear();
             QString qstreams(ifind::StreamTypeSetToString(this->mAvailableStreamTypes).c_str());
             QStringList stream_list = qstreams.split(",");
@@ -241,8 +257,13 @@ void Plugin::slot_imageReceived(ifind::Image::Pointer image){
                 }
             }
             // Trigger the update
-            this->slot_updateInputStream(0);
-        }        
+            if (found == true){
+                int idx = this->mAvailableStreamTypes.size()-1;
+                //std::cout << "\tPlugin::slot_imageReceived in plugin "<< this->GetPluginName().toStdString() <<",  setting stream "<< requested_stream << " at index "<< idx <<std::endl;
+                this->slot_updateInputStream(idx);
+            }
+            //
+        }
     }
     m_mutex_inputStreamTypes.unlock();
 
@@ -269,6 +290,7 @@ void Plugin::slot_configurationReceived(ifind::Image::Pointer image){
 
 void Plugin::SetInputStream(ifind::StreamTypeSet &stream){
     this->mStreamTypes = stream;
+    //std:cout << "Plugin::SetInputStream - stream set to "<< ifind::StreamTypeSetToString(this->mStreamTypes)<< " for plugin "<< this->GetPluginName().toStdString() << std::endl;
 }
 
 void Plugin::RemoveArgument(const QString &name){
@@ -352,7 +374,9 @@ void Plugin::SetCommandLineArguments(int argc, char* argv[]){
     {const std::string &argument = input.getCmdOption("stream");
         if (!argument.empty()){
             ifind::StreamTypeSet stream =  ifind::InitialiseStreamTypeSetFromString(argument.c_str());
+            //std::cout << "Plugin::SetCommandLineArguments - setting stream to "<< ifind::StreamTypeSetToString(stream)<< " for plugin "<< this->GetPluginName().toStdString() << std::endl;
             this->SetInputStream(stream);
+
         }}
     {const std::string &argument = input.getCmdOption("layer");
         if (!argument.empty()){
