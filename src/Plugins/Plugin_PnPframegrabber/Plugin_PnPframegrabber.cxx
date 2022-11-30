@@ -133,6 +133,10 @@ void Plugin_PnPframegrabber::SetCommandLineArguments(int argc, char* argv[]){
     {const std::string &argument = input.getCmdOption("resolution");
         if (!argument.empty()){
             std::dynamic_pointer_cast< ManagerType >(this->manager)->params.resolution= QString(argument.c_str());
+            std::dynamic_pointer_cast< ManagerType >(this->manager)->slot_updateResolution( QString(argument.c_str()) );
+            WidgetType* ww = reinterpret_cast<WidgetType*>(mWidget);
+            ww->setSelectedResolution(QString(argument.c_str()));
+
         }}
     {const std::string &argument = input.getCmdOption("color");
         if (!argument.empty()){
