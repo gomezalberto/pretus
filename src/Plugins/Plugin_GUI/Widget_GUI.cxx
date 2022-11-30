@@ -33,12 +33,17 @@ Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(p
 
     auto sliderWidget = new QWidget();
     auto hLayout = new QHBoxLayout(this);
-    auto slLabel = new QLabel("Scale: ");
-    slLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
-    hLayout->addWidget(slLabel);
+    mSlLabel = new QLabel("Scale: ");
+    mSlLabel->setStyleSheet(QtPluginWidgetBase::sQLabelStyle);
+    hLayout->addWidget(mSlLabel);
     hLayout->addWidget(mSlider);
     hLayout->addWidget(mResetButton);
     sliderWidget->setLayout(hLayout);
+    this->slot_updateSliderLabel();
+
+
+    QObject::connect(this->mSlider, &QSlider::valueChanged,
+             this, &Widget_GUI::slot_updateSliderLabel);
 
 
     auto vLayout = new QVBoxLayout(this);
@@ -48,6 +53,19 @@ Widget_GUI::Widget_GUI(QWidget *parent, Qt::WindowFlags f): QtPluginWidgetBase(p
 
     vLayout->addWidget(mLabel);
     vLayout->addWidget(sliderWidget);
+}
+
+void Widget_GUI::slot_updateSliderLabel(){
+
+    int valueInt = mSlider->value();
+    float valueFloat = valueInt / 100.0;
+
+    QString s;
+    s.sprintf("%.2f", valueFloat);
+
+    QString text = "Scale: " + s.rightJustified(5, ' ');
+
+    this->mSlLabel->setText(text);
 }
 
 void Widget_GUI::SendImageToWidgetImpl(ifind::Image::Pointer image){
