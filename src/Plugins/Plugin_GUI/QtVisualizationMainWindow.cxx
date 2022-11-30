@@ -29,6 +29,7 @@ QtVisualizationMainWindow::QtVisualizationMainWindow( QWidget *parent, Qt::Windo
                                  "darkMagenta", "darkYellow", "darkGray", "gray", "lightGray",
                                  "color0", "color1", "white", "black"});
 
+    mViewScale = 0.5;
     // set up the left panel
     {
         //auto panelWidget = new QWidget();
@@ -120,7 +121,6 @@ void QtVisualizationMainWindow::SetCommandLineArguments(const std::vector<std::s
 
 void QtVisualizationMainWindow::Initialize()
 {
-
     // See hopw many widgets need to be visualized
     this->setStyleSheet("QWidget { background-color : black}");
     mCentralPanelWidget->setStyleSheet("QWidget { background-color : black}");
@@ -169,22 +169,33 @@ void QtVisualizationMainWindow::Initialize()
 
 }
 
-
-
 void QtVisualizationMainWindow::ResetViewScale(){
 
-    float viewScale = 0.5;
+    mViewScale = 0.5;
 
-    Q_EMIT SignalSetViewScale(viewScale);
+    Q_EMIT SignalSetViewScale(mViewScale);
 
 }
 
 void QtVisualizationMainWindow::SetViewScale(int viewScaleInt){
 
     float maxViewScale = 100;
-    float viewScale = float(viewScaleInt)/maxViewScale;
+    mViewScale = float(viewScaleInt)/maxViewScale;
 
-    Q_EMIT SignalSetViewScale(viewScale);
+    Q_EMIT SignalSetViewScale(mViewScale);
+
+}
+
+void QtVisualizationMainWindow::SetViewScaleFloat(float viewScale){
+
+    if (viewScale < 0 || viewScale > 2){
+        std::cout << "[WARNING} QtVisualizationMainWindow::SetViewScaleFloat - invalid scale "<< viewScale <<", setting to 0.5"<<std::endl;
+        mViewScale = 0.5;
+    } else {
+        mViewScale = viewScale;
+    }
+
+    Q_EMIT SignalSetViewScale(mViewScale);
 
 }
 
@@ -246,6 +257,8 @@ void QtVisualizationMainWindow::InitializeCentralPanel(){
             if (this->mUseColors){
                 ww->setStyleSheet(QString("QFrame {border: 1px solid ") + mWidgetColors[i]+ "}" );
             }
+
+            ww->SetViewScale(mViewScale);
 
             QObject::connect(this, &QtVisualizationMainWindow::SignalSetViewScale, ww,
                              &QtVTKVisualization::SetViewScale);

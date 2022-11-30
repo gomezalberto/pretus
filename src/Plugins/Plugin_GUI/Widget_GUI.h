@@ -17,6 +17,11 @@ public:
 
     QSlider *mSlider;
     QPushButton *mResetButton;
+
+public Q_SLOTS:
+    virtual void slot_updateSliderLabel();
+
 private:
-    QLabel *mLabel;
+    QLabel *mLabel;    
+    QLabel *mSlLabel;
 };

@@ -28,6 +28,7 @@ public Q_SLOTS:
     virtual void Initialize();
     virtual void InitializeCentralPanel();
     virtual void SetViewScale(int viewScaleInt);
+    virtual void SetViewScaleFloat(float viewScale);
     virtual void ResetViewScale();
 
 Q_SIGNALS:
@@ -55,6 +56,7 @@ protected:
 
     QStringList mWidgetColors;
     bool mUseColors;
+    float mViewScale;
 
 
 

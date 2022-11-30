@@ -101,6 +101,11 @@ void Plugin_GUI::SetDefaultArguments(){
                             QString( ArgumentType[0] ),
                             "Wether use colours for widgets or not.",
                             QString::number(this->mVisualizer->useColors())});
+
+    mArguments.push_back({"scale", "<val>",
+                            QString( ArgumentType[2] ),
+                            "Scale factor for the image widgets.",
+                            QString::number(0.5)});
 }
 
 
@@ -113,6 +118,14 @@ void Plugin_GUI::SetCommandLineArguments(int argc, char* argv[])
     {const std::string &argument = input.getCmdOption("usecolors");
         if (!argument.empty()){
             this->mVisualizer->setUseColors( atoi(argument.c_str()));
+        }}
+
+    {const std::string &argument = input.getCmdOption("scale");
+        if (!argument.empty()){
+            this->mVisualizer->SetViewScaleFloat(atof(argument.c_str()));
+            WidgetType* ww = reinterpret_cast<WidgetType*>(mWidget);
+            int valueInt = int(atof(argument.c_str()) * 100);
+            ww->mSlider->setValue(valueInt);
         }}
 
     mArgs = std::vector<std::string>(argv, argv + argc);
