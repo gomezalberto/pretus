@@ -230,6 +230,7 @@ void VideoManager::Send(void)
             this->last_transmit_t = current_transmit_t;
 
             image->SetMetaData<bool>("IsColor", true);
+            image->SetMetaData<std::string>("IsPaused", QString::number(this->mIsPaused).toStdString());
         }
 
         if (this->mTransmitedStreamType.size()>0){
